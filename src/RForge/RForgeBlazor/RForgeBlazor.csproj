@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<PackageId>RForge.Blazor</PackageId>
+		<Product>RForge.Blazor</Product>
+		<Version>0.1.0</Version>
+		<PackageTags>blazor; components; library</PackageTags>
+		<Authors>Rumhyek</Authors>
+		<Title>Light Weight Blazor Components</Title>
+		<RepositoryUrl>https://github.com/rumhyek/rforge</RepositoryUrl>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\RForge.Abstractions\RForge.Abstractions.csproj" />
+	</ItemGroup>
+
+</Project>

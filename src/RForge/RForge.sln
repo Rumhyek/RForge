@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34701.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForgeBlazor", "RForgeBlazor\RForgeBlazor.csproj", "{2660F5A7-928C-4D3D-9970-0E9C5CDDA1B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Abstractions", "RForge.Abstractions\RForge.Abstractions.csproj", "{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2660F5A7-928C-4D3D-9970-0E9C5CDDA1B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2660F5A7-928C-4D3D-9970-0E9C5CDDA1B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2660F5A7-928C-4D3D-9970-0E9C5CDDA1B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2660F5A7-928C-4D3D-9970-0E9C5CDDA1B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AAFE48D9-A9B6-466C-AB8D-4B42E344F321}
+	EndGlobalSection
+EndGlobal
