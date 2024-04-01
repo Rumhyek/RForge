@@ -5,6 +5,7 @@
 		<Nullable>disable</Nullable>
 		<PackageId>RForge.Blazor</PackageId>
 		<Product>RForge.Blazor</Product>
+		<LangVersion>latest</LangVersion>
 		<Version>0.1.0</Version>
 		<PackageTags>blazor; components; library</PackageTags>
 		<Authors>Rumhyek</Authors>

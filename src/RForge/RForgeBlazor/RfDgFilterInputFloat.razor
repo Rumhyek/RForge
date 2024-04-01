@@ -1,0 +1,58 @@
+@inherits RfDgFilterInput<float?>
+
+<th>
+    <input type="number"
+           placeholder="@Placeholder"
+           value="@Value"
+           @onchange=OnChange
+           name="@Name"
+           title="@Title"
+           class="form-control @CssClass"
+           step="@Step"
+           min="@MinValue"
+           max="@MaxValue"
+           aria-label="@AriaLabelValue" />
+</th>
+
+@code {
+
+    [Parameter]
+    public float? MinValue { get; set; }
+
+    [Parameter]
+    public float? MaxValue { get; set; }
+
+    [Parameter]
+    public float Step { get; set; } = 1;
+
+    public override string DefaultAriaLabelValue => "Number Filter";
+
+
+    public override async Task OnChange(ChangeEventArgs args)
+    {
+        if (args.Value == null)
+            Value = null;
+        else if (float.TryParse(args.Value.ToString(), out float val))
+            Value = val;
+        else
+            Value = null;
+
+        if (Value != null)
+        {
+            //clamp
+            if (MinValue.HasValue == true && MinValue > Value)
+                Value = MinValue;
+
+            if (MaxValue.HasValue == true && MaxValue < Value)
+                Value = MaxValue;
+        }
+
+        await NotifyChange(Value);
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (GridContext == null)
+            throw new ArgumentNullException($"{nameof(RfDgFilterInputFloat)} must be within a {nameof(GridContext)}");
+    }
+}
