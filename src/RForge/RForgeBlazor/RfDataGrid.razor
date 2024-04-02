@@ -4,6 +4,7 @@
 @implements IDisposable
 @typeparam TRowData
 
+
 <CascadingValue Value="GridContext">
     @if (Data == null)
     {
@@ -16,7 +17,11 @@
                         <tr>
                             @for (int i = 0; i < PreRenderColumnCount; i++)
                             {
-                                <th><span class="skeleton"></span></th>
+                                <th>
+                                    <div class="skeleton-lines">
+                                        <div></div>
+                                    </div>
+                                </th>
                             }
                         </tr>
                     }
@@ -25,7 +30,9 @@
                         <tr class="filter-row">
                             @for (int i = 0; i < PreRenderColumnCount; i++)
                             {
-                                <th><span class="skeleton"></span></th>
+                                <th>
+                                    <input class="input is-skeleton is-small">
+                                </th>
                             }
                         </tr>
                     }
@@ -39,21 +46,25 @@
                         <tr>
                             @for (int c = 0; c < PreRenderColumnCount; c++)
                             {
-                                <td><span class="skeleton"></span></td>
+                                <td>
+                                    <div class="skeleton-lines">
+                                        <div></div>
+                                    </div>
+                                </td>
                             }
                         </tr>
                     }
                 </tbody>
             }
         </table>
-        <div class="d-flex gap-3 justify-content-between mt-1 align-items-center">
+        <div class="is-flex gap-3 is-justify-content-space-between is-align-items-center">
             <div>
                 @if (ShowPaging == true)
                 {
                     int totalPills = MaxPagingOptions + 4;
                     int currentPill = (int)Math.Floor(totalPills / 2f);
 
-                    <div class="d-flex gap-1">
+                    <div class="is-flex gap-1">
                         @for (int i = 0; i < totalPills; i++)
                         {
                             string css = null;
@@ -94,39 +105,55 @@
                         var rowCss = "";
                         if (AllowSelection == true && currentSelection.Contains(row) == true)
                         {
-                            rowCss += " selected";
+                            rowCss += " selected is-primary";
                         }
 
-                        <tr class="@rowCss" @onclick=(async () => await OnRowClick(row))>
+                        <tr class="@rowCss" @onclick=@(async ()=> await OnRowClick(row))>
                             @Cells(row)
                         </tr>
                     }
                 }
             </tbody>
         </table>
-        <div class="d-flex gap-3 justify-content-between mt-1 align-items-center">
+        <div class="is-flex gap-3 is-justify-content-space-between is-align-items-center">
             <div>
                 @if (ShowPaging == true)
                 {
                     var pagingTabs = PagingTabs;
-                    <div class="d-flex">
-                        <div class="page-option navigation-buttons" @onclick=OnFirstPageClick>&le;</div>
-                        <div class="page-option navigation-buttons" @onclick=OnPreviousPageClick>&lt;</div>
+                    <div class="is-flex">
+                        <div class="button" @onclick="@OnFirstPageClick">
+                            <span class="icon">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </span>
+                        </div>
+                        <div class="button" @onclick="@OnPreviousPageClick">
+                            <span class="icon">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </span>
+                        </div>
                         @foreach (var pageIndex in pagingTabs)
                         {
                             string css = null;
                             if (pageIndex == CurrentPageIndex)
                             {
-                                css = "current";
+                                css = "is-primary";
                             }
 
-                            <div class="page-option @css" @onclick=(async e => await OnPageIndexClick(pageIndex))>
+                            <div class="button @css" @onclick=@(async () => await OnPageIndexClick(pageIndex))>
                                 @(pageIndex + 1)
                             </div>
 
                         }
-                        <div class="page-option navigation-buttons" @onclick=OnNextPageClick>&gt;</div>
-                        <div class="page-option navigation-buttons" @onclick=OnLastPageClick>&ge;</div>
+                        <div class="button" @onclick="@OnNextPageClick">
+                            <span class="icon">
+                                <i class="fa-solid fa-angle-right"></i>
+                            </span>
+                        </div>
+                        <div class="button" @onclick="@OnLastPageClick">
+                            <span class="icon">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </span>
+                        </div>
                     </div>
                 }
             </div>
@@ -201,7 +228,13 @@
     public RenderFragment<TRowData> Cells { get; set; }
 
     [Parameter]
+    public string CssClass { get; set; }
+
+    [Parameter]
     public bool Compact { get; set; } = true;
+
+    [Parameter]
+    public bool IsFullWidth { get; set; } = true;
 
     private DataGridContext GridContext { get; set; }
 
@@ -209,15 +242,22 @@
     {
         get
         {
-            string css = "";
+            string css = "table";
+
+            if (string.IsNullOrEmpty(CssClass) == false)
+                css += $" {CssClass}";
+
+            if (IsFullWidth == true)
+                css += " is-fullwidth";
+
             if (AllowFilters == true && Filters != null)
-                css += "has-filters ";
+                css += " has-filters";
 
             if (AllowSelection == true && Cells != null && Data != null)
-                css += "selectable ";
+                css += " is-hoverable";
 
             if (Compact == true)
-                css += "compact ";
+                css += " is-striped";
 
             return css;
         }

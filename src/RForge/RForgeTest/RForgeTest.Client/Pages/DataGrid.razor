@@ -1,0 +1,121 @@
+﻿@page "/data-grid"
+@using RForge.Abstractions
+@rendermode InteractiveAuto
+
+@inject IGetFakeUsers getFakeUsers
+
+<h1 class="title">Data Grid</h1>
+
+<RfDataGrid @rendermode="InteractiveAuto"
+            TRowData="UserRowData"
+            @bind-SortKey=SortKey
+            @bind-SortOrder=SortOrder
+            AllowFilters=true 
+            Data=Users
+            AllowSelection=true
+            PageSize=PageSize
+            TotalCount=TotalCount
+            @bind-CurrentPageIndex=CurrentPageIndex
+            OnLoadData="@LoadData">
+
+    <Headers>
+        <RfDgHeader SortKey="Id">Id</RfDgHeader>
+        <RfDgHeader SortKey="FirstName">First Name</RfDgHeader>
+        <RfDgHeader SortKey="LastName">Last Name</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+    </Headers>
+
+    <Filters>
+        <RfDgFilterInputInt @bind-Value=Filters.Id />
+        <RfDgFilterInputText @bind-Value=Filters.FirstName />
+        <RfDgFilterInputText @bind-Value=Filters.LastName />
+        <RfDgFilterInputText @bind-Value=Filters.Email />
+    </Filters>
+
+    <Cells>
+      <RfDgCell TRowData="UserRowData">@context.Id</RfDgCell>
+      <RfDgCell TRowData="UserRowData">@context.FirstName</RfDgCell>
+        <RfDgCell TRowData="UserRowData">@context.LastName</RfDgCell>
+        <RfDgCell TRowData="UserRowData">@context.Email</RfDgCell>
+    </Cells>
+
+</RfDataGrid>
+
+@code {
+
+    public List<UserRowData> Users { get; set; }
+
+    private FilterData Filters { get; set; } = new FilterData();
+
+    private int TotalCount { get; set; }
+    private int PageSize { get; set; } = 10;
+    private int CurrentPageIndex { get; set; }
+    public RfSortOrder SortOrder { get; set; }
+    public string SortKey { get; set; }
+
+    public Task LoadData()
+    {
+        var users = getFakeUsers.Get();
+
+        if (Filters.Id.HasValue == true)
+            users = users.Where(u => u.Id == Filters.Id);
+
+        if (string.IsNullOrEmpty(Filters.FirstName) == false)
+            users = users.Where(u => u.FirstName.Contains(Filters.FirstName));
+
+        if (string.IsNullOrEmpty(Filters.LastName) == false)
+            users = users.Where(u => u.LastName.Contains(Filters.LastName));
+
+        if (string.IsNullOrEmpty(Filters.Email) == false)
+            users = users.Where(u => u.Email.Contains(Filters.Email));
+
+        if (SortOrder != RfSortOrder.None)
+        {
+            switch (SortKey)
+            {
+                case "FirstName":
+                    if (SortOrder == RfSortOrder.Ascending)
+                        users = users.OrderBy(u => u.FirstName);
+                    else
+                        users = users.OrderByDescending(u => u.FirstName);
+                    break;
+                case "LastName":
+                    if (SortOrder == RfSortOrder.Ascending)
+                        users = users.OrderBy(u => u.LastName);
+                    else
+                        users = users.OrderByDescending(u => u.LastName);
+                    break;
+                case "Email":
+                    if (SortOrder == RfSortOrder.Ascending)
+                        users = users.OrderBy(u => u.Email);
+                    else
+                        users = users.OrderByDescending(u => u.Email);
+                    break;
+                case "Id":
+                    if (SortOrder == RfSortOrder.Ascending)
+                        users = users.OrderBy(u => u.Id);
+                    else
+                        users = users.OrderByDescending(u => u.Id);
+                    break;
+            }
+        }
+
+        TotalCount = users.Count();
+
+        Users = users
+            .Skip(CurrentPageIndex * PageSize)
+            .Take(PageSize)
+            .ToList();
+
+        return Task.CompletedTask;
+    }
+
+    private class FilterData
+    {
+        public int? Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+    }
+
+}

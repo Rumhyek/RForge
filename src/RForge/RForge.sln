@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForgeBlazor", "RForgeBlazor\RForgeBlazor.csproj", "{2660F5A7-928C-4D3D-9970-0E9C5CDDA1B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeBlazor", "RForgeBlazor\RForgeBlazor.csproj", "{2660F5A7-928C-4D3D-9970-0E9C5CDDA1B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Abstractions", "RForge.Abstractions\RForge.Abstractions.csproj", "{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Abstractions", "RForge.Abstractions\RForge.Abstractions.csproj", "{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForgeTest", "RForgeTest\RForgeTest\RForgeTest.csproj", "{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForgeTest.Client", "RForgeTest\RForgeTest.Client\RForgeTest.Client.csproj", "{211B08FD-14AB-4225-9B28-EB0926E680FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{3D1AE443-6D56-4A48-BC5B-D0833EA8BB45}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +27,21 @@ Global
 		{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{211B08FD-14AB-4225-9B28-EB0926E680FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{211B08FD-14AB-4225-9B28-EB0926E680FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{211B08FD-14AB-4225-9B28-EB0926E680FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{211B08FD-14AB-4225-9B28-EB0926E680FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A} = {3D1AE443-6D56-4A48-BC5B-D0833EA8BB45}
+		{211B08FD-14AB-4225-9B28-EB0926E680FA} = {3D1AE443-6D56-4A48-BC5B-D0833EA8BB45}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AAFE48D9-A9B6-466C-AB8D-4B42E344F321}

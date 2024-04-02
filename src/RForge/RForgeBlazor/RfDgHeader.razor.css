@@ -1,0 +1,48 @@
+﻿
+
+/* Table Sorts */
+th.sortable {
+    cursor: pointer;
+    position: relative;
+    padding-right: 1.875rem;
+    user-select: none;
+}
+
+    th.sortable.sort-asc, table th.sortable.sort-desc {
+    }
+
+th.sortable:hover {
+    cursor: pointer;
+}
+
+th.sortable .table--sort-icon {
+    position: absolute;
+    right: 0.9375rem;
+    top: 1.125rem;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+    th.sortable .table--sort-icon .fa-sort {
+        color: var(--bulma-text);
+    }
+
+th.sortable:hover .table--sort-icon {
+    /*color: var(--ui-04);*/
+}
+
+th.sortable .table--sort-icon .fa-sort-up, th.sortable .table--sort-icon .fa-sort-down {
+    display: none;
+}
+
+    th.sortable.sort-asc .table--sort-icon .fa-sort-up {
+        display: inline;
+    }
+
+th.sortable.sort-desc .table--sort-icon .fa-sort-down {
+    display: inline;
+}
+
+th.sortable.sort-asc .table--sort-icon .fa-sort, th.sortable.sort-desc .table--sort-icon .fa-sort {
+    display: none;
+}
