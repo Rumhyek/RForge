@@ -1,0 +1,42 @@
+@using RForge.Abstractions.Notifications
+
+@implements IDisposable
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+
+@if (Messages != null)
+{
+    @foreach (var location in Messages)
+    {
+        if (location.Value.Count > 0)
+        {
+            <div class="notification-container @LocationCssClass(location.Key)">
+                @foreach (var notification in location.Value)
+                {
+                    <div class="notification @ColorCssClass(notification.Options.Color)">
+                        @notification.DisplayFragment
+                    </div>
+                }
+            </div>
+        }
+    }
+}
+
+@code {
+
+    public static RenderFragment MessageOnly(string message) => __builder =>
+    {
+        @message
+    };
+
+    public static RenderFragment MessageAndTitle((string Message, string Title) notification) => __builder =>
+    {
+        <div class="block"><strong>@notification.Title</strong></div>
+        @notification.Message
+    };
+
+
+}

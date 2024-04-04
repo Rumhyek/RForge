@@ -1,16 +1,18 @@
-﻿@inherits LayoutComponentBase
+﻿@using RForgeBlazor
+@inherits LayoutComponentBase
+
+
+<RfNotificatonManager />
 
 <NavMenu />
 
 <div class="main-content">
-
-<div class="container p-4">
-    @Body
-</div>
+    <div class="container p-4">
+        @Body
+    </div>
 </div>
 
 <footer class="footer">
-    
 </footer>
 
 <div id="blazor-error-ui">

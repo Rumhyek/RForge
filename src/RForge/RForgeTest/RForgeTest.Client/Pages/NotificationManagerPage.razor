@@ -1,0 +1,116 @@
+﻿@using RForge.Abstractions.Notifications
+@using RForgeBlazor.Models
+@page "/notification-manager"
+@rendermode InteractiveAuto
+
+@inject INotificationManager nm
+
+<PageTitle>Notification Manager</PageTitle>
+
+
+<h1 class="title"> Notification Manager</h1>
+
+<button class="button is-info mb-3" @onclick="OnAddCustomMessageClick">Add Custom</button>
+<button class="button is-info mb-3" @onclick="OnAddMessageClick">Add Message Only</button>
+<button class="button is-info mb-3" @onclick="OnAddMessageTitleClick">Add Message + Title</button>
+
+<div class="field">
+    <label class="label">Title</label>
+    <div class="control">
+        <input type="text" class="input" @bind-value=TitleText />
+    </div>
+</div>
+
+<div class="field">
+    <label class="label">Message</label>
+    <div class="control">
+        <input type="text" class="input" @bind-value=MessageText />
+    </div>
+</div>
+
+<div class="field">
+    <label class="label">Type</label>
+    <div class="control">
+        <div class="select">
+            <InputSelect @bind-Value="@Severity">
+                @foreach (var value in Enum.GetValues<RfNotificationSeverity>())
+                {
+                    <option value="@value">@value</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+
+    private int currentCount = 0;
+
+    public string MessageText { get; set; }
+    public string TitleText { get; set; }
+    public RfNotificationSeverity Severity { get; set; }
+
+    public static RenderFragment MessageTemplate(string message) => (__builder) =>
+    {
+        <h1>CUSTOM</h1>
+        <div>@message</div>
+    };
+
+    private void OnAddCustomMessageClick()
+    {
+        switch (Severity)
+        {
+            case RfNotificationSeverity.Info:
+                nm.AddInfo(MessageTemplate(MessageText));
+                break;
+            case RfNotificationSeverity.Success:
+                nm.AddSuccess(MessageTemplate(MessageText));
+                break;
+            case RfNotificationSeverity.Warning:
+                nm.AddWarning(MessageTemplate(MessageText));
+                break;
+            case RfNotificationSeverity.Error:
+                nm.AddError(MessageTemplate(MessageText));
+                break;
+        }
+    }
+    private void OnAddMessageClick()
+    {
+        switch (Severity)
+        {
+            case RfNotificationSeverity.Info:
+                nm.AddInfo((MessageText));
+                break;
+            case RfNotificationSeverity.Success:
+                nm.AddSuccess((MessageText));
+                break;
+            case RfNotificationSeverity.Warning:
+                nm.AddWarning((MessageText));
+                break;
+            case RfNotificationSeverity.Error:
+                nm.AddError((MessageText));
+                break;
+        }
+
+    }
+    private void OnAddMessageTitleClick()
+    {
+        switch (Severity)
+        {
+            case RfNotificationSeverity.Info:
+                nm.AddInfo((MessageText), TitleText);
+                break;
+            case RfNotificationSeverity.Success:
+                nm.AddSuccess((MessageText), TitleText);
+                break;
+            case RfNotificationSeverity.Warning:
+                nm.AddWarning((MessageText), TitleText);
+                break;
+            case RfNotificationSeverity.Error:
+                nm.AddError((MessageText), TitleText);
+                break;
+        }
+    }
+}

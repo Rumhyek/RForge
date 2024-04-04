@@ -1,3 +1,4 @@
+using RForgeBlazor.Models;
 using RForgeTest.Client.Pages;
 using RForgeTest.Client.TestModels;
 using RForgeTest.Components;
@@ -10,6 +11,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<IGetFakeUsers, GetFakeUsers>();
+builder.Services.AddScoped<INotificationManager, NotificationManager>();
 
 var app = builder.Build();
 
