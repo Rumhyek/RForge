@@ -18,6 +18,7 @@ public partial class RfNotificatonManager : IDisposable
         Color = RfNotificationColor.Danger,
         Position = RfNotificationPosition.TopCenter,
         ShowCloseButton = true,
+        Icon = "fa-solid fa-circle-minus",
     };
 
     [Parameter]
@@ -26,6 +27,7 @@ public partial class RfNotificatonManager : IDisposable
         Color = RfNotificationColor.Warning,
         Position = RfNotificationPosition.TopCenter,
         ShowCloseButton = true,
+        Icon = "fa-solid fa-circle-exclamation",
     };
 
     [Parameter]
@@ -35,6 +37,7 @@ public partial class RfNotificatonManager : IDisposable
         Position = RfNotificationPosition.TopCenter,
         ShowCloseButton = true,
         ShowFor = 10000,
+        Icon = "fa-solid fa-circle-info",
     };
 
     [Parameter]
@@ -44,10 +47,11 @@ public partial class RfNotificatonManager : IDisposable
         Position = RfNotificationPosition.TopCenter,
         ShowCloseButton = true,
         ShowFor = 4000,
+        Icon = "fa-solid fa-circle-check",
     };
     #endregion
 
-    private Dictionary<RfNotificationPosition, List<(RenderFragment DisplayFragment, NotificationOptions Options)>> Messages { get; set; }
+    private Dictionary<RfNotificationPosition, List<NotificationDetails>> Messages { get; set; }
 
     protected override void OnInitialized()
     {
@@ -130,12 +134,28 @@ public partial class RfNotificatonManager : IDisposable
         }
 
         configuration?.Invoke(baseOptions);
-        Messages[baseOptions.Position].Add((content, defaultOptions));
+
+        var notification = new NotificationDetails()
+        {
+            DisplayFragment = content,
+            Id = Guid.NewGuid(),
+            Options = baseOptions,
+        };
+
+        if(baseOptions.ShowFor.HasValue && baseOptions.ShowFor > 0)
+        {
+            notification.Timer = new CountdownTimer(baseOptions.ShowFor.Value)
+                .OnElapsed(() => OnRemoveNotification(notification));
+
+            _ = notification.Timer.StartAsync();
+        }
+        
+        Messages[baseOptions.Position].Add(notification);
 
         StateHasChanged();
     }
 
-    private string LocationCssClass(RfNotificationPosition location)
+    private static string LocationCssClass(RfNotificationPosition location)
     {
         switch (location)
         {
@@ -151,30 +171,53 @@ public partial class RfNotificatonManager : IDisposable
         return null;
     }
 
-    private string ColorCssClass(RfNotificationColor color)
+    internal void OnRemoveNotification(NotificationDetails notification)
     {
-        switch (color)
+        if (notification == null) return;
+
+        notification.Timer?.Dispose();
+        notification.Timer = null;
+
+        foreach(var location in Messages.Keys)
         {
-            case RfNotificationColor.Danger: return "is-danger";
-            case RfNotificationColor.Primary: return "is-primary";
-            case RfNotificationColor.Link: return "is-link";
-            case RfNotificationColor.Info: return "is-info";
-            case RfNotificationColor.Success: return "is-success";
-            case RfNotificationColor.Warning: return "is-warning";
+            var notifications = Messages[location];
+            if(notifications.RemoveAll(n => n.Id == notification.Id) > 0)
+            {
+                StateHasChanged();
+                return;
+            }
         }
-
-        return null;
     }
-
 
     public void Dispose()
     {
         if (_notificationManager != null)
         {
             _notificationManager.OnShow -= NotificationManager_OnShow;
+            _notificationManager.OnClearAll -= NotificationManager_OnClearAll;
+            _notificationManager.OnClearByPosition -= NotificationManager_OnClearByPosition;
+            _notificationManager.OnClearBySeverity -= NotificationManager_OnClearBySeverity;
+        }
 
+        foreach(var position in Messages.Values)
+        {
+            foreach(var notification in position)
+            {
+                notification.Timer?.Dispose();
+                notification.Timer = null;
+            }
         }
 
         Messages.Clear();
+    }
+
+    public class NotificationDetails
+    {
+        public NotificationOptions Options { get; set; }
+        public Guid Id { get; set; }
+        public RenderFragment DisplayFragment { get; set; }
+
+        internal CountdownTimer Timer { get; set; }
+        
     }
 }

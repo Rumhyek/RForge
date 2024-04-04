@@ -1,0 +1,41 @@
+﻿
+
+
+.notification-container {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    z-index: 999;
+}
+
+.top-left {
+    top: 2rem;
+    left: 2rem;
+}
+
+.top-right {
+    top: 2rem;
+    right: 2rem;
+}
+
+.top-center {
+    top: 2rem;
+    left: 50%;
+    transform: translate(-50%, 0%);
+}
+
+.bottom-left {
+    bottom: 2rem;
+    left: 2rem;
+}
+
+.bottom-right {
+    bottom: 2rem;
+    right: 2rem;
+}
+
+.bottom-center {
+    bottom: 2rem;
+    left: 50%;
+    transform: translate(-50%, 0%);
+}

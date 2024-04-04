@@ -8,6 +8,7 @@
 <PageTitle>Notification Manager</PageTitle>
 
 
+
 <h1 class="title"> Notification Manager</h1>
 
 <button class="button is-info mb-3" @onclick="OnAddCustomMessageClick">Add Custom</button>
@@ -41,7 +42,21 @@
         </div>
     </div>
 </div>
+<div class="field">
+    <label class="label">Position</label>
+    <div class="control">
+        <div class="select">
+            <InputSelect @bind-Value="@Position">
+                @foreach (var value in Enum.GetValues<RfNotificationPosition>())
+                {
+                    <option value="@value">@value</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+</div>
 
+<RfNotificatonManager />
 
 @code {
 
@@ -51,6 +66,7 @@
     public string MessageText { get; set; }
     public string TitleText { get; set; }
     public RfNotificationSeverity Severity { get; set; }
+    public RfNotificationPosition Position { get; set; }
 
     public static RenderFragment MessageTemplate(string message) => (__builder) =>
     {
@@ -63,16 +79,16 @@
         switch (Severity)
         {
             case RfNotificationSeverity.Info:
-                nm.AddInfo(MessageTemplate(MessageText));
+                nm.AddInfo(MessageTemplate(MessageText), options => options.Position = Position);
                 break;
             case RfNotificationSeverity.Success:
-                nm.AddSuccess(MessageTemplate(MessageText));
+                nm.AddSuccess(MessageTemplate(MessageText), options => options.Position = Position);
                 break;
             case RfNotificationSeverity.Warning:
-                nm.AddWarning(MessageTemplate(MessageText));
+                nm.AddWarning(MessageTemplate(MessageText), options => options.Position = Position);
                 break;
             case RfNotificationSeverity.Error:
-                nm.AddError(MessageTemplate(MessageText));
+                nm.AddError(MessageTemplate(MessageText), options => options.Position = Position);
                 break;
         }
     }
@@ -81,16 +97,16 @@
         switch (Severity)
         {
             case RfNotificationSeverity.Info:
-                nm.AddInfo((MessageText));
+                nm.AddInfo((MessageText), options => options.Position = Position);
                 break;
             case RfNotificationSeverity.Success:
-                nm.AddSuccess((MessageText));
+                nm.AddSuccess((MessageText), options => options.Position = Position);
                 break;
             case RfNotificationSeverity.Warning:
-                nm.AddWarning((MessageText));
+                nm.AddWarning((MessageText), options => options.Position = Position);
                 break;
             case RfNotificationSeverity.Error:
-                nm.AddError((MessageText));
+                nm.AddError((MessageText), options => options.Position = Position);
                 break;
         }
 
@@ -100,16 +116,16 @@
         switch (Severity)
         {
             case RfNotificationSeverity.Info:
-                nm.AddInfo((MessageText), TitleText);
+                nm.AddInfo((MessageText), TitleText, options => options.Position = Position);
                 break;
             case RfNotificationSeverity.Success:
-                nm.AddSuccess((MessageText), TitleText);
+                nm.AddSuccess((MessageText), TitleText, options => options.Position = Position);
                 break;
             case RfNotificationSeverity.Warning:
-                nm.AddWarning((MessageText), TitleText);
+                nm.AddWarning((MessageText), TitleText, options => options.Position = Position);
                 break;
             case RfNotificationSeverity.Error:
-                nm.AddError((MessageText), TitleText);
+                nm.AddError((MessageText), TitleText, options => options.Position = Position);
                 break;
         }
     }

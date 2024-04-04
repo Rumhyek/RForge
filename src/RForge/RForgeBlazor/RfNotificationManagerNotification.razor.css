@@ -1,0 +1,23 @@
+﻿
+
+.notification {
+    max-width: calc(100vw - 4rem);
+    width: 36rem;
+    animation: fadein .4s;
+}
+
+.notification .icon {
+    font-size: 1.5em;
+    opacity: .75;
+}
+
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

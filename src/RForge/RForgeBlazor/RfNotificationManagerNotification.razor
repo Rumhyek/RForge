@@ -1,0 +1,87 @@
+@using RForge.Abstractions.Notifications
+@using static RForgeBlazor.RfNotificatonManager
+
+@if (Details == null)
+{
+    <div class="notification is-skeleton">
+    </div>
+}
+else
+{
+    <div class="notification @ColorCssClass">
+
+        @if (Details.Options.ShowCloseButton == true)
+        {
+            <button class="delete" @onclick="OnCloseClick"></button>
+        }
+
+        @if (string.IsNullOrWhiteSpace(Details.Options.Icon) == false)
+        {
+            <div class="columns">
+                <div class="column is-narrow">
+                    <span class="icon">
+                        <i class="@Details.Options.Icon"></i>
+                    </span>
+                </div>
+                <div class="column">
+                    @Details.DisplayFragment
+
+                </div>
+            </div>
+        }
+        else
+        {
+            @Details.DisplayFragment
+        }
+    </div>
+}
+
+@code {
+
+    [CascadingParameter]
+    public RfNotificatonManager NotificatonManager { get; set; }
+
+    [Parameter]
+    public NotificationDetails Details { get; set; }
+
+    private void OnCloseClick()
+    {
+        NotificatonManager.OnRemoveNotification(Details);
+    }
+
+    private void OnTimerElapsed()
+    {
+        NotificatonManager.OnRemoveNotification(Details);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // if(Details.Timer != null)
+        // {
+        //     Details.Timer.OnElapsed(OnTimerElapsed);
+        //     await Details.Timer.StartAsync();
+        // }
+    }
+
+    private string ColorCssClass
+    {
+        get
+        {
+            if (Details == null)
+                return null;
+
+            switch (Details.Options.Color)
+            {
+                case RfNotificationColor.Danger: return "is-danger";
+                case RfNotificationColor.Primary: return "is-primary";
+                case RfNotificationColor.Link: return "is-link";
+                case RfNotificationColor.Info: return "is-info";
+                case RfNotificationColor.Success: return "is-success";
+                case RfNotificationColor.Warning: return "is-warning";
+            }
+
+            return null;
+        }
+    }
+
+}
