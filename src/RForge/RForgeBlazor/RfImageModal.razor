@@ -1,12 +1,19 @@
+@inherits RfModalBase
 
 @using RForgeBlazor.Services
 
-<div class="modal @modalCss">
+<div class="modal @modalCss" style="@modalStyles">
     <div class="modal-background"></div>
-    <div class="modal-content" style="@modalContentStyles">
+    <div class="modal-content @modalContentCss">
         <div class="image" style="@imageContainerStyles">
-            <img src="@ImageUrl" title="@ImageTitle" />
+            <img src="@ImageUrl" title="@ImageCaption" />
         </div>
+        @if (string.IsNullOrWhiteSpace(ImageCaption) == false)
+        {
+            <div class="has-text-centered is-italic block mt-1 is-size-5">
+                @ImageCaption
+            </div>
+        }
     </div>
     <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
 </div>
@@ -15,57 +22,22 @@
 @code {
 
     [Parameter]
-    public string ModalCss { get; set; }
-
-    [Parameter]
     public string ImageCss { get; set; }
-    [Parameter]
-    public string ImageWidth { get; set; }
+
     [Parameter]
     public ImageRatio? ImageRatio { get; set; }
     [Parameter]
-    public string ImageTitle { get; set; }
+    public string ImageCaption { get; set; }
 
-
-    [Parameter]
-    public bool IsVisible { get; set; }
-    [Parameter]
-    public EventCallback<bool> IsVisibleChanged { get; set; }
 
     [Parameter]
     public string ImageUrl { get; set; }
 
-
-    private string modalCss
-    {
-        get
-        {
-            string css = null;
-
-            CssHelper.AddIfTrue(ref css, isVisible == true, "is-active");
-            CssHelper.AddIfTrue(ref css, string.IsNullOrEmpty(ModalCss) == false, ModalCss);
-
-            return css;
-        }
-    }
-
-    private string modalContentStyles
-    {
-        get
-        {
-            if (isVisible == false) return null;
-
-            string styles = null;
-            CssHelper.AddIfTrue(ref styles, string.IsNullOrWhiteSpace(ImageWidth) == false, () => $"--bulma-modal-content-width: {ImageWidth};");
-
-            return styles;
-        }
-    }
     private string imageContainerStyles
     {
         get
         {
-            if (isVisible == false) return null;
+            if (IsVisible == false) return null;
 
             string styles = null;
             CssHelper.AddIfTrue(ref styles, ImageRatio != null, () => $"aspect-ratio: {ImageRatio.Value.Width} / {ImageRatio.Value.Height};");
@@ -74,17 +46,8 @@
         }
     }
 
-    private bool isVisible
-    {
-        get
-        {
-            return IsVisible == true && string.IsNullOrWhiteSpace(ImageUrl) == false;
-        }
-    }
-
     private async Task OnCloseClick()
     {
         await IsVisibleChanged.InvokeAsync(false);
     }
-
 }

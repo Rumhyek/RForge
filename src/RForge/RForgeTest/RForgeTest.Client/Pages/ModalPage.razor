@@ -14,13 +14,20 @@
 </div>
 
 <div class="field">
+    <label class="label">Image Caption</label>
+    <input type="text" class="input" @bind-value="ImageCaption" />
+</div>
+
+<div class="field">
     <label class="label">Image Ratio</label>
-    <InputSelect TValue="int" @bind-Value:get="SelectedImageOptionValue" @bind-Value:set="OnSelectImageChange">
-        @foreach (var option in ImageRatioExamples)
-        {
-            <option value="@option.Value">@option.Text</option>
-        }
-    </InputSelect>
+    <div class="select">
+        <InputSelect TValue="int" @bind-Value:get="SelectedImageOptionValue" @bind-Value:set="OnSelectImageChange">
+            @foreach (var option in ImageRatioExamples)
+            {
+                <option value="@option.Value">@option.Text</option>
+            }
+        </InputSelect>
+    </div>
 </div>
 
 <a class="button block" @onclick="@(() => Example2IsVisible = true)">Open</a>
@@ -29,7 +36,11 @@
     I'm a basic Modal
 </RfModal>
 
-<RfImageModal ImageUrl="@SelectedOption.DefaultImageUrl" ImageRatio="@SelectedOption.ImageRatio" ImageWidth=@ImageCustomWidth @bind-IsVisible=Example2IsVisible />
+<RfImageModal ImageUrl="@SelectedOption.DefaultImageUrl"
+              ImageRatio="@SelectedOption.ImageRatio" 
+              Width=@ImageCustomWidth 
+              ImageCaption=@ImageCaption
+              @bind-IsVisible=Example2IsVisible />
 
 
 @code {
@@ -42,6 +53,8 @@
     private List<ImageRatioExample> ImageRatioExamples { get; set; }
     private ImageRatioExample SelectedOption { get; set; }
     private int SelectedImageOptionValue { get; set; }
+    private string ImageCaption { get; set; }
+
     protected override void OnInitialized()
     {
         ImageRatioExamples = new()
