@@ -1,4 +1,4 @@
-using RForgeBlazor.Models;
+using RForgeBlazor.Services;
 using RForgeTest.Client.Pages;
 using RForgeTest.Client.TestModels;
 using RForgeTest.Components;

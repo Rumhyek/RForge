@@ -1,0 +1,47 @@
+
+@using RForgeBlazor.Services
+
+<div class="modal @ModalCss">
+    <div class="modal-background"></div>
+        <div class="modal-content">
+            <div class="box">
+                @ChildContent
+            </div>
+        </div>
+    <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public string CssClass { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsVisibleChanged { get; set; }
+
+    private string ModalCss
+    {
+        get
+        {
+            string css = null;
+
+            CssHelper.AddIfTrue(ref css, IsVisible == true, "is-active");
+            CssHelper.AddIfTrue(ref css, string.IsNullOrEmpty(CssClass) == false, CssClass);
+
+            return css;
+        }
+    }
+
+    private async Task OnCloseClick()
+    {
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+}

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using RForge.Abstractions.Notifications;
-using RForgeBlazor.Models;
+using RForge.Abstractions;
+using RForgeBlazor.Services;
 
 namespace RForgeBlazor;
 public partial class RfNotificatonManager : IDisposable

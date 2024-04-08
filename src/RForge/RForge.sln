@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeBlazor", "RForgeBlazo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Abstractions", "RForge.Abstractions\RForge.Abstractions.csproj", "{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForgeTest", "RForgeTest\RForgeTest\RForgeTest.csproj", "{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeTest", "RForgeTest\RForgeTest\RForgeTest.csproj", "{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForgeTest.Client", "RForgeTest\RForgeTest.Client\RForgeTest.Client.csproj", "{211B08FD-14AB-4225-9B28-EB0926E680FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeTest.Client", "RForgeTest\RForgeTest.Client\RForgeTest.Client.csproj", "{211B08FD-14AB-4225-9B28-EB0926E680FA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{3D1AE443-6D56-4A48-BC5B-D0833EA8BB45}"
 EndProject

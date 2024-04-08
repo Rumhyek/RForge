@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using RForgeBlazor.Models;
+using RForgeBlazor.Services;
 using RForgeTest.Client.TestModels;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

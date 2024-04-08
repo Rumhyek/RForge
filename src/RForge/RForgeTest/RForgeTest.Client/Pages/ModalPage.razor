@@ -1,0 +1,22 @@
+﻿
+@page "/modal"
+@rendermode InteractiveAuto
+
+<h3>ModalPage</h3>
+
+<a class="button" @onclick="@OnShowExample1Click">Show Basic Modal - Example 1</a>
+
+<RfModal @bind-IsVisible="Example1IsVisible">
+    I'm a basic Modal
+</RfModal>
+
+
+@code {
+
+    public bool Example1IsVisible { get; set; }
+
+    public void OnShowExample1Click()
+    {
+        Example1IsVisible = true;
+    }
+}
