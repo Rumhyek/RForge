@@ -1,7 +1,5 @@
 @inherits RfModalBase
 
-@using RForgeBlazor.Services
-
 <div class="modal @modalCss" style="@modalStyles">
     <div class="modal-background"></div>
     <div class="modal-content @modalContentCss">
@@ -17,7 +15,6 @@
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }
-
 
     private async Task OnCloseClick()
     {

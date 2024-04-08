@@ -4,7 +4,7 @@
 @rendermode InteractiveAuto
 
 <h4 class="is-size-4 block">Basic Modal</h4>
-<a class="button block" @onclick="@(() => Example1IsVisible = true)">Show Basic Modal - Example 1</a>
+<a class="button block is-primary" @onclick="@(() => Example1IsVisible = true)">Show Basic Modal - Example 1</a>
 
 <h4 class="is-size-4 block">Image Modals</h4>
 
@@ -30,7 +30,15 @@
     </div>
 </div>
 
-<a class="button block" @onclick="@(() => Example2IsVisible = true)">Open</a>
+<a class="button block is-primary" @onclick="@(() => Example2IsVisible = true)">Open</a>
+
+<h4 class="is-size-4">Card Modal</h4>
+<a class="button block is-primary" @onclick="@(() => Example3IsVisible = true)">Full Example</a>
+<a class="button block is-primary" @onclick="@(() => Example5IsVisible = true)">Title Attribute</a>
+<a class="button block is-primary" @onclick="@(() => Example4IsVisible = true)">No Header</a>
+<a class="button block is-primary" @onclick="@(() => Example6IsVisible = true)">No Footer</a>
+<a class="button block is-primary" @onclick="@(() => Example7IsVisible = true)">No Footer or Header</a>
+
 
 <RfModal @bind-IsVisible=Example1IsVisible>
     I'm a basic Modal
@@ -42,6 +50,104 @@
               ImageCaption=@ImageCaption
               @bind-IsVisible=Example2IsVisible />
 
+<RfCardModal @bind-IsVisible="Example3IsVisible" ShowCloseButton="true">
+    <Head>
+        <div class="modal-card-title">Card Title Header</div>
+    </Head>
+    <Body>
+        <div class="image is-1by1 mb-3 mr-3" style="float: left; width: 150px;">
+            <img src="https://placehold.co/150x150/" title="placeholder"/>
+        </div>
+        <div class="content">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Phasellus faucibus scelerisque eleifend donec pretium vulputate. Id eu nisl nunc mi. Aliquet bibendum enim facilisis gravida. Tristique risus nec feugiat in fermentum posuere urna. Eu tincidunt tortor aliquam nulla. Urna condimentum mattis pellentesque id nibh tortor id aliquet lectus. Semper feugiat nibh sed pulvinar proin gravida. Nisi lacus sed viverra tellus in hac. Diam volutpat commodo sed egestas egestas fringilla phasellus faucibus. Ut aliquam purus sit amet luctus venenatis lectus magna fringilla. Tortor id aliquet lectus proin. Commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend. Ac orci phasellus egestas tellus rutrum tellus pellentesque eu tincidunt.</p>
+            <p>Sed viverra tellus in hac habitasse. Ac placerat vestibulum lectus mauris ultrices eros. At lectus urna duis convallis convallis tellus id interdum. Pretium viverra suspendisse potenti nullam ac. Sagittis id consectetur purus ut faucibus pulvinar elementum integer. Mattis enim ut tellus elementum sagittis vitae et leo duis. Purus viverra accumsan in nisl nisi scelerisque eu ultrices vitae. Nibh ipsum consequat nisl vel. Aliquam vestibulum morbi blandit cursus risus at. Congue eu consequat ac felis. Enim diam vulputate ut pharetra sit. Praesent tristique magna sit amet purus gravida quis blandit turpis. Faucibus scelerisque eleifend donec pretium vulputate sapien nec.</p>
+            <p>Eget nunc lobortis mattis aliquam faucibus. Ipsum a arcu cursus vitae congue mauris. Et odio pellentesque diam volutpat commodo sed egestas. Facilisis gravida neque convallis a cras semper. Risus at ultrices mi tempus imperdiet. Nec nam aliquam sem et tortor consequat id porta nibh. Pellentesque habitant morbi tristique senectus et. Elementum pulvinar etiam non quam lacus suspendisse faucibus interdum. Vitae nunc sed velit dignissim sodales ut eu sem integer. Eros donec ac odio tempor orci dapibus ultrices. Donec adipiscing tristique risus nec. Mauris sit amet massa vitae tortor condimentum lacinia quis vel.</p>
+            <p>Tristique senectus et netus et malesuada fames ac turpis egestas. Mattis aliquam faucibus purus in massa. Gravida dictum fusce ut placerat orci nulla pellentesque dignissim enim. Vestibulum lectus mauris ultrices eros. Quam lacus suspendisse faucibus interdum posuere lorem ipsum. Dui vivamus arcu felis bibendum ut tristique. Aenean vel elit scelerisque mauris pellentesque pulvinar. Fusce ut placerat orci nulla pellentesque dignissim. Tellus in metus vulputate eu scelerisque felis imperdiet proin fermentum. Elit sed vulputate mi sit amet mauris commodo quis. Nunc scelerisque viverra mauris in. Praesent tristique magna sit amet purus gravida quis blandit turpis. Quisque egestas diam in arcu.</p>
+            <p>Varius duis at consectetur lorem donec massa sapien. Eu scelerisque felis imperdiet proin fermentum leo vel. In cursus turpis massa tincidunt dui. Sed arcu non odio euismod lacinia at. Ac placerat vestibulum lectus mauris ultrices. Duis ut diam quam nulla. Lectus mauris ultrices eros in cursus. Eros donec ac odio tempor orci dapibus. Non nisi est sit amet facilisis magna etiam tempor orci. Eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis. Malesuada proin libero nunc consequat. Pulvinar etiam non quam lacus. Quis eleifend quam adipiscing vitae proin. Sed augue lacus viverra vitae. Tellus molestie nunc non blandit massa enim.</p>
+        </div>
+    </Body>
+    <Foot>
+        <div class="buttons">
+            <button class="button is-success" @onclick=@(() => Example3IsVisible = false)>Save</button>
+            <button class="button" @onclick=@(() => Example3IsVisible = false)>Close</button>
+        </div>
+    </Foot>
+</RfCardModal>
+
+<RfCardModal @bind-IsVisible="Example4IsVisible" ShowCloseButton="true">
+    <Body>
+        <div class="image is-1by1 mb-3 mr-3" style="float: left; width: 150px;">
+            <img src="https://placehold.co/150x150/" title="placeholder" />
+        </div>
+        <div class="content">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Phasellus faucibus scelerisque eleifend donec pretium vulputate. Id eu nisl nunc mi. Aliquet bibendum enim facilisis gravida. Tristique risus nec feugiat in fermentum posuere urna. Eu tincidunt tortor aliquam nulla. Urna condimentum mattis pellentesque id nibh tortor id aliquet lectus. Semper feugiat nibh sed pulvinar proin gravida. Nisi lacus sed viverra tellus in hac. Diam volutpat commodo sed egestas egestas fringilla phasellus faucibus. Ut aliquam purus sit amet luctus venenatis lectus magna fringilla. Tortor id aliquet lectus proin. Commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend. Ac orci phasellus egestas tellus rutrum tellus pellentesque eu tincidunt.</p>
+            <p>Sed viverra tellus in hac habitasse. Ac placerat vestibulum lectus mauris ultrices eros. At lectus urna duis convallis convallis tellus id interdum. Pretium viverra suspendisse potenti nullam ac. Sagittis id consectetur purus ut faucibus pulvinar elementum integer. Mattis enim ut tellus elementum sagittis vitae et leo duis. Purus viverra accumsan in nisl nisi scelerisque eu ultrices vitae. Nibh ipsum consequat nisl vel. Aliquam vestibulum morbi blandit cursus risus at. Congue eu consequat ac felis. Enim diam vulputate ut pharetra sit. Praesent tristique magna sit amet purus gravida quis blandit turpis. Faucibus scelerisque eleifend donec pretium vulputate sapien nec.</p>
+            <p>Eget nunc lobortis mattis aliquam faucibus. Ipsum a arcu cursus vitae congue mauris. Et odio pellentesque diam volutpat commodo sed egestas. Facilisis gravida neque convallis a cras semper. Risus at ultrices mi tempus imperdiet. Nec nam aliquam sem et tortor consequat id porta nibh. Pellentesque habitant morbi tristique senectus et. Elementum pulvinar etiam non quam lacus suspendisse faucibus interdum. Vitae nunc sed velit dignissim sodales ut eu sem integer. Eros donec ac odio tempor orci dapibus ultrices. Donec adipiscing tristique risus nec. Mauris sit amet massa vitae tortor condimentum lacinia quis vel.</p>
+            <p>Tristique senectus et netus et malesuada fames ac turpis egestas. Mattis aliquam faucibus purus in massa. Gravida dictum fusce ut placerat orci nulla pellentesque dignissim enim. Vestibulum lectus mauris ultrices eros. Quam lacus suspendisse faucibus interdum posuere lorem ipsum. Dui vivamus arcu felis bibendum ut tristique. Aenean vel elit scelerisque mauris pellentesque pulvinar. Fusce ut placerat orci nulla pellentesque dignissim. Tellus in metus vulputate eu scelerisque felis imperdiet proin fermentum. Elit sed vulputate mi sit amet mauris commodo quis. Nunc scelerisque viverra mauris in. Praesent tristique magna sit amet purus gravida quis blandit turpis. Quisque egestas diam in arcu.</p>
+            <p>Varius duis at consectetur lorem donec massa sapien. Eu scelerisque felis imperdiet proin fermentum leo vel. In cursus turpis massa tincidunt dui. Sed arcu non odio euismod lacinia at. Ac placerat vestibulum lectus mauris ultrices. Duis ut diam quam nulla. Lectus mauris ultrices eros in cursus. Eros donec ac odio tempor orci dapibus. Non nisi est sit amet facilisis magna etiam tempor orci. Eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis. Malesuada proin libero nunc consequat. Pulvinar etiam non quam lacus. Quis eleifend quam adipiscing vitae proin. Sed augue lacus viverra vitae. Tellus molestie nunc non blandit massa enim.</p>
+        </div>
+    </Body>
+    <Foot>
+        <div class="buttons">
+            <button class="button is-success" @onclick=@(() => Example4IsVisible = false)>Save</button>
+            <button class="button" @onclick=@(() => Example4IsVisible = false)>Close</button>
+        </div>
+    </Foot>
+</RfCardModal>
+
+<RfCardModal @bind-IsVisible="Example5IsVisible" Title="Set By Attribute" ShowCloseButton="true">
+    <Body>
+        <div class="image is-1by1 mb-3 mr-3" style="float: left; width: 150px;">
+            <img src="https://placehold.co/150x150/" title="placeholder" />
+        </div>
+        <div class="content">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Phasellus faucibus scelerisque eleifend donec pretium vulputate. Id eu nisl nunc mi. Aliquet bibendum enim facilisis gravida. Tristique risus nec feugiat in fermentum posuere urna. Eu tincidunt tortor aliquam nulla. Urna condimentum mattis pellentesque id nibh tortor id aliquet lectus. Semper feugiat nibh sed pulvinar proin gravida. Nisi lacus sed viverra tellus in hac. Diam volutpat commodo sed egestas egestas fringilla phasellus faucibus. Ut aliquam purus sit amet luctus venenatis lectus magna fringilla. Tortor id aliquet lectus proin. Commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend. Ac orci phasellus egestas tellus rutrum tellus pellentesque eu tincidunt.</p>
+            <p>Sed viverra tellus in hac habitasse. Ac placerat vestibulum lectus mauris ultrices eros. At lectus urna duis convallis convallis tellus id interdum. Pretium viverra suspendisse potenti nullam ac. Sagittis id consectetur purus ut faucibus pulvinar elementum integer. Mattis enim ut tellus elementum sagittis vitae et leo duis. Purus viverra accumsan in nisl nisi scelerisque eu ultrices vitae. Nibh ipsum consequat nisl vel. Aliquam vestibulum morbi blandit cursus risus at. Congue eu consequat ac felis. Enim diam vulputate ut pharetra sit. Praesent tristique magna sit amet purus gravida quis blandit turpis. Faucibus scelerisque eleifend donec pretium vulputate sapien nec.</p>
+            <p>Eget nunc lobortis mattis aliquam faucibus. Ipsum a arcu cursus vitae congue mauris. Et odio pellentesque diam volutpat commodo sed egestas. Facilisis gravida neque convallis a cras semper. Risus at ultrices mi tempus imperdiet. Nec nam aliquam sem et tortor consequat id porta nibh. Pellentesque habitant morbi tristique senectus et. Elementum pulvinar etiam non quam lacus suspendisse faucibus interdum. Vitae nunc sed velit dignissim sodales ut eu sem integer. Eros donec ac odio tempor orci dapibus ultrices. Donec adipiscing tristique risus nec. Mauris sit amet massa vitae tortor condimentum lacinia quis vel.</p>
+            <p>Tristique senectus et netus et malesuada fames ac turpis egestas. Mattis aliquam faucibus purus in massa. Gravida dictum fusce ut placerat orci nulla pellentesque dignissim enim. Vestibulum lectus mauris ultrices eros. Quam lacus suspendisse faucibus interdum posuere lorem ipsum. Dui vivamus arcu felis bibendum ut tristique. Aenean vel elit scelerisque mauris pellentesque pulvinar. Fusce ut placerat orci nulla pellentesque dignissim. Tellus in metus vulputate eu scelerisque felis imperdiet proin fermentum. Elit sed vulputate mi sit amet mauris commodo quis. Nunc scelerisque viverra mauris in. Praesent tristique magna sit amet purus gravida quis blandit turpis. Quisque egestas diam in arcu.</p>
+            <p>Varius duis at consectetur lorem donec massa sapien. Eu scelerisque felis imperdiet proin fermentum leo vel. In cursus turpis massa tincidunt dui. Sed arcu non odio euismod lacinia at. Ac placerat vestibulum lectus mauris ultrices. Duis ut diam quam nulla. Lectus mauris ultrices eros in cursus. Eros donec ac odio tempor orci dapibus. Non nisi est sit amet facilisis magna etiam tempor orci. Eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis. Malesuada proin libero nunc consequat. Pulvinar etiam non quam lacus. Quis eleifend quam adipiscing vitae proin. Sed augue lacus viverra vitae. Tellus molestie nunc non blandit massa enim.</p>
+        </div>
+    </Body>
+    <Foot>
+        <div class="buttons">
+            <button class="button is-success" @onclick=@(() => Example5IsVisible = false)>Save</button>
+            <button class="button" @onclick=@(() => Example5IsVisible = false)>Close</button>
+        </div>
+    </Foot>
+</RfCardModal>
+
+<RfCardModal @bind-IsVisible="Example6IsVisible" ShowCloseButton="true">
+    <Head>
+        <div class="modal-card-title">Card Title Header</div>
+    </Head>
+    <Body>
+        <div class="image is-1by1 mb-3 mr-3" style="float: left; width: 150px;">
+            <img src="https://placehold.co/150x150/" title="placeholder" />
+        </div>
+        <div class="content">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Phasellus faucibus scelerisque eleifend donec pretium vulputate. Id eu nisl nunc mi. Aliquet bibendum enim facilisis gravida. Tristique risus nec feugiat in fermentum posuere urna. Eu tincidunt tortor aliquam nulla. Urna condimentum mattis pellentesque id nibh tortor id aliquet lectus. Semper feugiat nibh sed pulvinar proin gravida. Nisi lacus sed viverra tellus in hac. Diam volutpat commodo sed egestas egestas fringilla phasellus faucibus. Ut aliquam purus sit amet luctus venenatis lectus magna fringilla. Tortor id aliquet lectus proin. Commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend. Ac orci phasellus egestas tellus rutrum tellus pellentesque eu tincidunt.</p>
+            <p>Sed viverra tellus in hac habitasse. Ac placerat vestibulum lectus mauris ultrices eros. At lectus urna duis convallis convallis tellus id interdum. Pretium viverra suspendisse potenti nullam ac. Sagittis id consectetur purus ut faucibus pulvinar elementum integer. Mattis enim ut tellus elementum sagittis vitae et leo duis. Purus viverra accumsan in nisl nisi scelerisque eu ultrices vitae. Nibh ipsum consequat nisl vel. Aliquam vestibulum morbi blandit cursus risus at. Congue eu consequat ac felis. Enim diam vulputate ut pharetra sit. Praesent tristique magna sit amet purus gravida quis blandit turpis. Faucibus scelerisque eleifend donec pretium vulputate sapien nec.</p>
+            <p>Eget nunc lobortis mattis aliquam faucibus. Ipsum a arcu cursus vitae congue mauris. Et odio pellentesque diam volutpat commodo sed egestas. Facilisis gravida neque convallis a cras semper. Risus at ultrices mi tempus imperdiet. Nec nam aliquam sem et tortor consequat id porta nibh. Pellentesque habitant morbi tristique senectus et. Elementum pulvinar etiam non quam lacus suspendisse faucibus interdum. Vitae nunc sed velit dignissim sodales ut eu sem integer. Eros donec ac odio tempor orci dapibus ultrices. Donec adipiscing tristique risus nec. Mauris sit amet massa vitae tortor condimentum lacinia quis vel.</p>
+            <p>Tristique senectus et netus et malesuada fames ac turpis egestas. Mattis aliquam faucibus purus in massa. Gravida dictum fusce ut placerat orci nulla pellentesque dignissim enim. Vestibulum lectus mauris ultrices eros. Quam lacus suspendisse faucibus interdum posuere lorem ipsum. Dui vivamus arcu felis bibendum ut tristique. Aenean vel elit scelerisque mauris pellentesque pulvinar. Fusce ut placerat orci nulla pellentesque dignissim. Tellus in metus vulputate eu scelerisque felis imperdiet proin fermentum. Elit sed vulputate mi sit amet mauris commodo quis. Nunc scelerisque viverra mauris in. Praesent tristique magna sit amet purus gravida quis blandit turpis. Quisque egestas diam in arcu.</p>
+            <p>Varius duis at consectetur lorem donec massa sapien. Eu scelerisque felis imperdiet proin fermentum leo vel. In cursus turpis massa tincidunt dui. Sed arcu non odio euismod lacinia at. Ac placerat vestibulum lectus mauris ultrices. Duis ut diam quam nulla. Lectus mauris ultrices eros in cursus. Eros donec ac odio tempor orci dapibus. Non nisi est sit amet facilisis magna etiam tempor orci. Eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis. Malesuada proin libero nunc consequat. Pulvinar etiam non quam lacus. Quis eleifend quam adipiscing vitae proin. Sed augue lacus viverra vitae. Tellus molestie nunc non blandit massa enim.</p>
+        </div>
+    </Body>
+</RfCardModal>
+
+<RfCardModal @bind-IsVisible="Example7IsVisible" ShowCloseButton="true">
+    <Body>
+        <div class="image is-1by1 mb-3 mr-3" style="float: left; width: 150px;">
+            <img src="https://placehold.co/150x150/" title="placeholder" />
+        </div>
+        <div class="content">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Phasellus faucibus scelerisque eleifend donec pretium vulputate. Id eu nisl nunc mi. Aliquet bibendum enim facilisis gravida. Tristique risus nec feugiat in fermentum posuere urna. Eu tincidunt tortor aliquam nulla. Urna condimentum mattis pellentesque id nibh tortor id aliquet lectus. Semper feugiat nibh sed pulvinar proin gravida. Nisi lacus sed viverra tellus in hac. Diam volutpat commodo sed egestas egestas fringilla phasellus faucibus. Ut aliquam purus sit amet luctus venenatis lectus magna fringilla. Tortor id aliquet lectus proin. Commodo sed egestas egestas fringilla phasellus faucibus scelerisque eleifend. Ac orci phasellus egestas tellus rutrum tellus pellentesque eu tincidunt.</p>
+            <p>Sed viverra tellus in hac habitasse. Ac placerat vestibulum lectus mauris ultrices eros. At lectus urna duis convallis convallis tellus id interdum. Pretium viverra suspendisse potenti nullam ac. Sagittis id consectetur purus ut faucibus pulvinar elementum integer. Mattis enim ut tellus elementum sagittis vitae et leo duis. Purus viverra accumsan in nisl nisi scelerisque eu ultrices vitae. Nibh ipsum consequat nisl vel. Aliquam vestibulum morbi blandit cursus risus at. Congue eu consequat ac felis. Enim diam vulputate ut pharetra sit. Praesent tristique magna sit amet purus gravida quis blandit turpis. Faucibus scelerisque eleifend donec pretium vulputate sapien nec.</p>
+            <p>Eget nunc lobortis mattis aliquam faucibus. Ipsum a arcu cursus vitae congue mauris. Et odio pellentesque diam volutpat commodo sed egestas. Facilisis gravida neque convallis a cras semper. Risus at ultrices mi tempus imperdiet. Nec nam aliquam sem et tortor consequat id porta nibh. Pellentesque habitant morbi tristique senectus et. Elementum pulvinar etiam non quam lacus suspendisse faucibus interdum. Vitae nunc sed velit dignissim sodales ut eu sem integer. Eros donec ac odio tempor orci dapibus ultrices. Donec adipiscing tristique risus nec. Mauris sit amet massa vitae tortor condimentum lacinia quis vel.</p>
+            <p>Tristique senectus et netus et malesuada fames ac turpis egestas. Mattis aliquam faucibus purus in massa. Gravida dictum fusce ut placerat orci nulla pellentesque dignissim enim. Vestibulum lectus mauris ultrices eros. Quam lacus suspendisse faucibus interdum posuere lorem ipsum. Dui vivamus arcu felis bibendum ut tristique. Aenean vel elit scelerisque mauris pellentesque pulvinar. Fusce ut placerat orci nulla pellentesque dignissim. Tellus in metus vulputate eu scelerisque felis imperdiet proin fermentum. Elit sed vulputate mi sit amet mauris commodo quis. Nunc scelerisque viverra mauris in. Praesent tristique magna sit amet purus gravida quis blandit turpis. Quisque egestas diam in arcu.</p>
+            <p>Varius duis at consectetur lorem donec massa sapien. Eu scelerisque felis imperdiet proin fermentum leo vel. In cursus turpis massa tincidunt dui. Sed arcu non odio euismod lacinia at. Ac placerat vestibulum lectus mauris ultrices. Duis ut diam quam nulla. Lectus mauris ultrices eros in cursus. Eros donec ac odio tempor orci dapibus. Non nisi est sit amet facilisis magna etiam tempor orci. Eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis. Malesuada proin libero nunc consequat. Pulvinar etiam non quam lacus. Quis eleifend quam adipiscing vitae proin. Sed augue lacus viverra vitae. Tellus molestie nunc non blandit massa enim.</p>
+        </div>
+    </Body>
+</RfCardModal>
 
 @code {
 
@@ -54,6 +160,13 @@
     private ImageRatioExample SelectedOption { get; set; }
     private int SelectedImageOptionValue { get; set; }
     private string ImageCaption { get; set; }
+
+    //Card Modal Variables
+    public bool Example3IsVisible { get; set; }
+    public bool Example4IsVisible { get; set; }
+    public bool Example5IsVisible { get; set; }
+    public bool Example6IsVisible { get; set; }
+    public bool Example7IsVisible { get; set; }
 
     protected override void OnInitialized()
     {

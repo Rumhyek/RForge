@@ -1,0 +1,67 @@
+@inherits RfModalBase
+
+<div class="modal @modalCss" style="@modalStyles">
+    <div class="modal-background"></div>
+    <div class="modal-card @modalContentCss">
+        @if (showHead == true)
+        {
+            <div class="modal-card-head">
+                @if (Head != null)
+                {
+                    @Head
+                }
+                else
+                {
+                    <p class="modal-card-title">@Title</p>
+                }
+                @if (ShowCloseButton == true)
+                {
+                    <button class="delete" aria-label="close" @onclick="OnCloseClick"></button>
+                }
+            </div>
+        }
+        <div class="modal-card-body">
+            @Body
+        </div>
+        @if (Foot != null)
+        {
+            <div class="modal-card-foot">
+                @Foot
+            </div>
+        }
+    </div>
+    @if (showHead == false && ShowCloseButton == true)
+    {
+        <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public bool ShowCloseButton { get; set; }
+
+    [Parameter]
+    public RenderFragment Head { get; set; }
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public RenderFragment Body { get; set; }
+
+    [Parameter]
+    public RenderFragment Foot { get; set; }
+
+    private bool showHead
+    {
+        get
+        {
+            return Head != null || string.IsNullOrWhiteSpace(Title) == false;
+        }
+    }
+
+    private async Task OnCloseClick()
+    {
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+}
