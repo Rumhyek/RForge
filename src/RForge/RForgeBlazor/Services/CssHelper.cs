@@ -13,10 +13,19 @@ namespace RForgeBlazor.Services
         {
             if (shouldAdd == false) return;
 
-            if (css == null) 
+            if (css == null)
                 css = addClass;
-            else 
+            else
                 css += $" {addClass}";
+        }
+        internal static void AddIfTrue(ref string css, bool shouldAdd, Func<string> classToAdd)
+        {
+            if (shouldAdd == false) return;
+
+            if (css == null)
+                css = classToAdd();
+            else
+                css += $" {classToAdd()}";
         }
     }
 }

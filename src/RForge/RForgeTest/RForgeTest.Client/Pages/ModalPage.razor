@@ -1,22 +1,120 @@
-﻿
+﻿@using RForge.Abstractions
+
 @page "/modal"
 @rendermode InteractiveAuto
 
-<h3>ModalPage</h3>
+<h4 class="is-size-4 block">Basic Modal</h4>
+<a class="button block" @onclick="@(() => Example1IsVisible = true)">Show Basic Modal - Example 1</a>
 
-<a class="button" @onclick="@OnShowExample1Click">Show Basic Modal - Example 1</a>
+<h4 class="is-size-4 block">Image Modals</h4>
 
-<RfModal @bind-IsVisible="Example1IsVisible">
+<div class="field">
+    <label class="label">Custom Width</label>
+    <input type="text" class="input" @bind-value="ImageCustomWidth" />
+</div>
+
+<div class="field">
+    <label class="label">Image Ratio</label>
+    <InputSelect TValue="int" @bind-Value:get="SelectedImageOptionValue" @bind-Value:set="OnSelectImageChange">
+        @foreach (var option in ImageRatioExamples)
+        {
+            <option value="@option.Value">@option.Text</option>
+        }
+    </InputSelect>
+</div>
+
+<a class="button block" @onclick="@(() => Example2IsVisible = true)">Open</a>
+
+<RfModal @bind-IsVisible=Example1IsVisible>
     I'm a basic Modal
 </RfModal>
+
+<RfImageModal ImageUrl="@SelectedOption.DefaultImageUrl" ImageRatio="@SelectedOption.ImageRatio" ImageWidth=@ImageCustomWidth @bind-IsVisible=Example2IsVisible />
 
 
 @code {
 
     public bool Example1IsVisible { get; set; }
 
-    public void OnShowExample1Click()
+    //Image Modal Variables
+    public bool Example2IsVisible { get; set; }
+    public string ImageCustomWidth { get; set; }
+    private List<ImageRatioExample> ImageRatioExamples { get; set; }
+    private ImageRatioExample SelectedOption { get; set; }
+    private int SelectedImageOptionValue { get; set; }
+    protected override void OnInitialized()
     {
-        Example1IsVisible = true;
+        ImageRatioExamples = new()
+    {
+            new ImageRatioExample(),
+            new ImageRatioExample(ImageRatio.Square),
+            new ImageRatioExample(ImageRatio.Is1By2),
+            new ImageRatioExample(ImageRatio.Is1By3),
+            new ImageRatioExample(ImageRatio.Is2By1),
+            new ImageRatioExample(ImageRatio.Is2By3),
+            new ImageRatioExample(ImageRatio.Is3By1),
+            new ImageRatioExample(ImageRatio.Is3By2),
+            new ImageRatioExample(ImageRatio.Is3By4),
+            new ImageRatioExample(ImageRatio.Is3By5),
+            new ImageRatioExample(ImageRatio.Is4By3),
+            new ImageRatioExample(ImageRatio.Is4By5),
+            new ImageRatioExample(ImageRatio.Is5By3),
+            new ImageRatioExample(ImageRatio.Is5By4),
+            new ImageRatioExample(ImageRatio.Is9By16),
+            new ImageRatioExample(ImageRatio.Is16By9)
+        };
+        SelectedOption = ImageRatioExamples.First();
     }
+
+    private void OnSelectImageChange(int value)
+    {
+        SelectedImageOptionValue = value;
+        SelectedOption = ImageRatioExamples.First(i => i.Value == value);
+    }
+
+    private class ImageRatioExample
+    {
+        public ImageRatioExample()
+        {
+
+        }
+        public ImageRatioExample(ImageRatio ratio)
+        {
+            ImageRatio = ratio;
+        }
+
+        public ImageRatio? ImageRatio { get; set; }
+
+        public int Value
+        {
+            get
+            {
+                if (ImageRatio == null) return 0;
+
+                return ImageRatio.Value.Width * 10000 + ImageRatio.Value.Height;
+            }
+        }
+
+        public string Text
+        {
+            get
+            {
+                if (ImageRatio == null) return "None";
+
+                return $"{ImageRatio.Value.Width} By {ImageRatio.Value.Height}";
+            }
+        }
+
+        public string DefaultImageUrl
+        {
+            get
+            {
+                if (ImageRatio == null)
+                    return "https://placehold.co/600x400/";
+
+                return $"https://placehold.co/{ImageRatio.Value.Width * 100}x{ImageRatio.Value.Height * 100}/";
+            }
+        }
+    }
+
 }
