@@ -15,7 +15,10 @@
             </div>
         }
     </div>
-    <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
+    @if(ShowCloseButton == true)
+    {
+        <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
+    }
 </div>
 
 

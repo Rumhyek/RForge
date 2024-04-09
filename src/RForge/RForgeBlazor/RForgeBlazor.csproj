@@ -23,11 +23,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="wwwroot\" />
+	  <ProjectReference Include="..\RForge.Abstractions\RForge.Abstractions.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\RForge.Abstractions\RForge.Abstractions.csproj" />
+	  <Folder Include="wwwroot\" />
 	</ItemGroup>
 
 </Project>

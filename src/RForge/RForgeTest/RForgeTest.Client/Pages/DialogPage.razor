@@ -1,0 +1,183 @@
+﻿@using RForge.Abstractions
+@using RForgeBlazor.Services
+
+@inject IDialogManager dialogManager
+@inject INotificationManager notificationManager
+
+@page "/dialog"
+@rendermode InteractiveAuto
+
+<h3 class="is-size-3">Dialogs</h3>
+
+<h4 class="is-size-4">Alerts (no callbacks)</h4>
+<div class="buttons">
+    <a class="button" @onclick=@(() => ShowAlertNoCallback())>Messsage</a>
+    <a class="button" @onclick=@(() => ShowAlertNoCallback("message + title", "Alert Title"))>Messsage + Title</a>
+    <a class="button" @onclick=@(() => ShowAlertNoCallback("message + title + Custom Ok", "Alert Title", "Custom"))>Messsage + Title + Custom Ok</a>
+    <a class="button" @onclick=@(() => ShowAlertCustomNoCallback())>Custom Render</a>
+</div>
+
+<h4 class="is-size-4">Alerts (with callbacks)</h4>
+<div class="buttons">
+    <a class="button" @onclick=@(() => ShowAlertWithCallback())>Messsage</a>
+    <a class="button" @onclick=@(() => ShowAlertWithCallback("message + title", "Alert Title"))>Messsage + Title</a>
+    <a class="button" @onclick=@(() => ShowAlertWithCallback("message + title + Custom Ok", "Alert Title", "Custom"))>Messsage + Title + Custom Ok</a>
+    <a class="button" @onclick=@(() => ShowAlertCustomWithCallback())>Custom Render</a>
+</div>
+
+<h4 class="is-size-4">Confirm</h4>
+<div class="buttons">
+    <a class="button" @onclick=@(() => ShowConfirm())>Messsage</a>
+    <a class="button" @onclick=@(() => ShowConfirm("message + title. Are you sure?", "Confirm Title"))>Messsage + Title</a>
+    <a class="button" @onclick=@(() => ShowConfirm("message + title + Custom Ok. Are you sure?", "Confirm Title", "Yes", "No"))>Messsage + Title + Custom Ok</a>
+    <a class="button" @onclick=@(() => ShowConfirmCustomRender())>Custom Render</a>
+</div>
+
+<h4 class="is-size-4">Prompt</h4>
+<div class="buttons">
+    <a class="button" @onclick=@(() => ShowPrompt())>Messsage</a>
+    <a class="button" @onclick=@(() => ShowPrompt("message + title. Are you sure?", "Confirm Title"))>Messsage + Title</a>
+    <a class="button" @onclick=@(() => ShowPrompt("message + title + Custom Ok. Are you sure?", "Confirm Title", "Yes", "No"))>Messsage + Title + Custom Ok</a>
+    <a class="button" @onclick=@(() => ShowPromptCustomRender())>Custom Render</a>
+</div>
+
+<h4 class="is-size-4">Advanced</h4>
+<a class="button" @onclick=@ShowMultiple>Show Multiple</a>
+
+<RfDialogManager />
+
+<RfNotificatonManager />
+
+@code {
+
+    public static RenderFragment CustomAlert => __builder =>
+    {
+        <article class="media">
+            <div class="media-left">
+                <figure class="image is-64x64">
+                    <img src="https://placehold.co/100x100/" alt="Image">
+                </figure>
+            </div>
+            <div class="media-content">
+                <div class="content">
+                    <p>
+                        <strong>John Smith</strong> <small>@@johnsmith</small> <small>31m</small>
+                        <br>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean efficitur sit amet massa fringilla
+                        egestas. Nullam condimentum luctus turpis.
+                    </p>
+                </div>
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="retweet">
+                            <span class="icon is-small">
+                                <i class="fa-solid fa-retweet" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                        <a class="level-item" aria-label="like">
+                            <span class="icon is-small">
+                                <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </article>
+    };
+
+    public void ShowAlertCustomNoCallback()
+    {
+        dialogManager.Alert(CustomAlert);
+    }
+
+    public void ShowAlertCustomWithCallback()
+    {
+        dialogManager.Alert(CustomAlert, OnAlertCallback);
+    }
+
+    public void ShowAlertNoCallback(string message = "An example message", string title = null, string confirmText = null)
+    {
+        if (confirmText != null)
+            dialogManager.Alert(message, title, confirmText);
+        else if (title != null)
+            dialogManager.Alert(message, title);
+        else
+            dialogManager.Alert(message);
+    }
+
+    public void ShowAlertWithCallback(string message = "An example message", string title = null, string confirmText = null)
+    {
+        if (confirmText != null)
+            dialogManager.Alert(message, title, OnAlertCallback, confirmText);
+        else if (title != null)
+            dialogManager.Alert(message, title, OnAlertCallback);
+        else
+            dialogManager.Alert(message, OnAlertCallback);
+    }
+
+    public Task OnAlertCallback()
+    {
+        ShowAlertNoCallback("Called after closing alert with callback");
+        return Task.CompletedTask;
+    }
+
+    public void ShowConfirm(string message = "Are you sure?", string title = null, string confirmText = null, string cancelText = null)
+    {
+        if (confirmText != null)
+            dialogManager.Confirm(message, title, OnConfirmCallback, confirmText, cancelText);
+        else if (title != null)
+            dialogManager.Confirm(message, title, OnConfirmCallback);
+        else
+            dialogManager.Confirm(message, OnConfirmCallback);
+    }
+
+    public void ShowConfirmCustomRender()
+    {
+        dialogManager.Confirm(CustomAlert, OnConfirmCallback);
+    }
+
+    public async Task OnConfirmCallback(bool confirmed)
+    {
+        await Task.Delay(2000);
+
+        if(confirmed == true) 
+            ShowAlertNoCallback("Confirmed!");
+        else
+            ShowAlertNoCallback("Cancelled!");
+    }
+
+    public void ShowPrompt(string message = "Are you sure?", string title = null, string confirmText = null, string cancelText = null)
+    {
+        if (confirmText != null)
+            dialogManager.Prompt(message, title, OnPromptCallback, confirmText, cancelText);
+        else if (title != null)
+            dialogManager.Prompt(message, title, OnPromptCallback);
+        else
+            dialogManager.Prompt(message, OnPromptCallback);
+    }
+
+    public void ShowPromptCustomRender()
+    {
+        dialogManager.Prompt(CustomAlert, OnPromptCallback);
+    }
+
+
+    public async Task OnPromptCallback(string message)
+    {
+        await Task.Delay(2000);
+
+        if (message == null)
+            notificationManager.AddWarning($"No message given", "Failed to Save", options => options.Position = RForge.Abstractions.Notifications.RfNotificationPosition.BottomRight);
+        else
+
+            notificationManager.AddSuccess($"Mesage: {message}", "Successfully Saved!", options => options.Position = RForge.Abstractions.Notifications.RfNotificationPosition.BottomRight);
+    }
+
+    public void ShowMultiple()
+    {
+        for(int i = 4; i > 0; i--)
+            dialogManager.Alert($"Showing 4 alerts queued. ({i} reamining)");
+        
+    }
+
+}

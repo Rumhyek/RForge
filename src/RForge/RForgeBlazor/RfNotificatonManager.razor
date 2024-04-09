@@ -31,7 +31,7 @@
 
     public static RenderFragment MessageAndTitle((string Message, string Title) notification) => __builder =>
     {
-        <div class="block"><strong>@notification.Title</strong></div>
+        <div class="block is-size-5"><strong>@notification.Title</strong></div>
         @notification.Message
     };
 

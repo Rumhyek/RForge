@@ -44,7 +44,7 @@ else
     [Parameter]
     public NotificationDetails Details { get; set; }
 
-    private void OnCloseClick()
+    private async void OnCloseClick()
     {
         NotificatonManager.OnRemoveNotification(Details);
     }

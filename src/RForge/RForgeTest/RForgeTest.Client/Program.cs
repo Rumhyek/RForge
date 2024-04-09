@@ -6,5 +6,6 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddScoped<IGetFakeUsers, GetFakeUsers>();
 builder.Services.AddScoped<INotificationManager, NotificationManager>();
+builder.Services.AddScoped<IDialogManager, DialogManager>();
 
 await builder.Build().RunAsync();

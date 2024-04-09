@@ -24,6 +24,9 @@ public class RfModalBase : ComponentBase
     [Parameter]
     public EventCallback<bool> IsVisibleChanged { get; set; }
 
+    [Parameter]
+    public bool ShowCloseButton { get; set; } = true;
+
 
     protected void addBaseModalCss(ref string css)
     {

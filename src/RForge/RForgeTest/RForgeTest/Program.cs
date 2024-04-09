@@ -12,6 +12,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped<IGetFakeUsers, GetFakeUsers>();
 builder.Services.AddScoped<INotificationManager, NotificationManager>();
+builder.Services.AddScoped<IDialogManager, DialogManager>();
 
 var app = builder.Build();
 
