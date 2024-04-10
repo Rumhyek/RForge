@@ -10,12 +10,12 @@
             TRowData="UserRowData"
             @bind-SortKey=SortKey
             @bind-SortOrder=SortOrder
-            AllowFilters=true 
+            @bind-CurrentPageIndex=CurrentPageIndex
+            TotalCount=TotalCount
+            AllowFilters=true
             Data=Users
             AllowSelection=true
             PageSize=PageSize
-            TotalCount=TotalCount
-            @bind-CurrentPageIndex=CurrentPageIndex
             OnLoadData="@LoadData">
 
     <Headers>
@@ -33,8 +33,8 @@
     </Filters>
 
     <Cells>
-      <RfDgCell TRowData="UserRowData">@context.Id</RfDgCell>
-      <RfDgCell TRowData="UserRowData">@context.FirstName</RfDgCell>
+        <RfDgCell TRowData="UserRowData">@context.Id</RfDgCell>
+        <RfDgCell TRowData="UserRowData">@context.FirstName</RfDgCell>
         <RfDgCell TRowData="UserRowData">@context.LastName</RfDgCell>
         <RfDgCell TRowData="UserRowData">@context.Email</RfDgCell>
     </Cells>

@@ -14,7 +14,14 @@
                 }
                 else
                 {
-                    @ChildContent(SelectedItem)
+                    @if (SelectedItemTemplate != null)
+                    {
+                        @SelectedItemTemplate(SelectedItem)
+                    }
+                    else
+                    {
+                        @ChildContent(SelectedItem)
+                    }
                 }
             </span>
             <span class="rf-icon icon is-small @IsLoadingCss">
@@ -63,7 +70,15 @@
                        @onkeydown=@(async (e) => await OnItemKeyDown(e, item))
                        tabindex="0">
 
-                        @ChildContent(item)
+                        @if(RowItemTemplate != null)
+                        {
+                            @RowItemTemplate(item)
+                        }
+                        else
+                        {
+                            @ChildContent(item)
+                        }
+
                     </a>
                 }
             }

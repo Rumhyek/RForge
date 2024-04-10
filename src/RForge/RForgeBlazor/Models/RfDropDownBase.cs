@@ -12,6 +12,14 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     public RenderFragment<TItem> ChildContent { get; set; }
 
     [Parameter]
+    public RenderFragment<TItem> RowItemTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem> SelectedItemTemplate { get; set; }
+
+
+
+    [Parameter]
     public Func<TItem, TItem, bool> ItemComparer { get; set; }
 
     [Parameter]

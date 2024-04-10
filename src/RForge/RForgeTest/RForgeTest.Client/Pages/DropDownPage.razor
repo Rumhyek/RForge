@@ -1,4 +1,5 @@
 ﻿@page "/dropdown"
+@using RForge.Abstractions.DropDowns
 
 @inject IGetFakeUsers getFakeUsers
 @rendermode InteractiveAuto
@@ -17,8 +18,8 @@
                     FilterIcon=""
                     Items=Items>
 
+            <img src="https://placehold.co/5x5/" />
             <strong>@context.FirstName</strong> @context.LastName
-
         </RfDropDown>
     </div>
 
@@ -32,12 +33,90 @@
 
         </RfDropDown>
     </div>
+
+    <div class="column">
+        <RfDropDown TItem="UserRowData"
+                    @bind-SelectedItem="SelectedItem3"
+                    OnLoad="OnLoad"
+                    Items=Items>
+            <RowItemTemplate>
+                <div>
+                    @context.FirstName @context.LastName
+                </div>
+                <div class="is-italic is-size-7">
+                    @context.Email
+                </div>
+            </RowItemTemplate>
+            <SelectedItemTemplate>
+                <span title="@context.Email">@context.FirstName @context.LastName.FirstOrDefault()</span>
+            </SelectedItemTemplate>
+        </RfDropDown>
+    </div>
+
 </div>
+
+<div>
+    <RfDropDown TItem="UserRowData"
+                Items="Items"
+                @bind-SelectedItem="SelectedItem4"
+                OnLoad="OnLoad">
+        @context.Id - @context.FirstName <a href="https://google.com">Go away</a>
+    </RfDropDown>
+</div>
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+
+<div class="fixed-grid has-2-cols">
+    <div class="grid">
+        <div class="cell has-text-right">
+            <RfDropDown TItem="UserRowData"
+                        PlaceholderText="@RfDropDownPosition.RightUp.ToString()"
+                        Position="RfDropDownPosition.RightUp"
+                        OnLoad="OnLoad">
+                @context.FirstName (Right Up)
+            </RfDropDown>
+        </div>
+        <div class="cell  is-half">
+            <RfDropDown TItem="UserRowData"
+                        PlaceholderText="@RfDropDownPosition.LeftUp.ToString()"
+                        Position="RfDropDownPosition.LeftUp"
+                        OnLoad="OnLoad">
+                @context.FirstName (Left Up)
+            </RfDropDown>
+        </div>
+        <div class="cell has-text-right">
+            <RfDropDown TItem="UserRowData"
+                        PlaceholderText="@RfDropDownPosition.RightDown.ToString()"
+                        Position="RfDropDownPosition.RightDown"
+                        OnLoad="OnLoad">
+                @context.FirstName (Right Down)
+            </RfDropDown>
+        </div>
+        <div class="cell is-half">
+            <RfDropDown TItem="UserRowData"
+                        PlaceholderText="@RfDropDownPosition.LeftDown.ToString()"
+                        Position="RfDropDownPosition.LeftDown"
+                        OnLoad="OnLoad">
+                @context.FirstName (Left Down)
+            </RfDropDown>
+        </div>
+    </div>
+</div>
+
 
 @code {
 
     public UserRowData SelectedItem1 { get; set; }
     public UserRowData SelectedItem2 { get; set; }
+    public UserRowData SelectedItem3 { get; set; }
+    public UserRowData SelectedItem4 { get; set; }
     public List<UserRowData> Items { get; set; }
 
     public async Task OnLoad(string filter)
