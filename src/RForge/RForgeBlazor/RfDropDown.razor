@@ -28,10 +28,10 @@
 
             @if (ShowFilter == true)
             {
-                bool hasFilterIcon = string.IsNullOrWhiteSpace(FilterIcon) == false;
+                bool hasFilterIcon = string.IsNullOrWhiteSpace(FilterIcon) == false && IsLoading == false;
                 <div class="dropdown-item">
                     <div class="field">
-                        <div class="control @CssHelper.AddIf(hasFilterIcon, "has-icons-right")">
+                        <div class="control @CssHelper.AddIf(hasFilterIcon || IsLoading, "has-icons-right") @IsLoadingCss">
                             <input type="search" class="input" placeholder="@FilterPlaceholderText" @bind-value=Filter @oninput=@OnFilterChange />
 
                             @if (hasFilterIcon == true)

@@ -5,30 +5,33 @@
 
 <h3>DropDownPage</h3>
 
-<div>
-    <RfDropDown TItem="UserRowData"
-                OnLoad="OnLoad"
-                ItemComparer="(a, b) => a.Id == b.Id"
-                @bind-SelectedItem="SelectedItem1"
-                CloseOnSelect="true"
-                FilterPlaceholderText="First Name"
-                FilterIcon=""
-                Items=Items>
+<div class="columns">
 
-        <strong>@context.FirstName</strong> @context.LastName
+    <div class="column">
+        <RfDropDown TItem="UserRowData"
+                    OnLoad="OnLoad"
+                    ItemComparer="(a, b) => a.Id == b.Id"
+                    @bind-SelectedItem="SelectedItem1"
+                    CloseOnSelect="true"
+                    FilterPlaceholderText="First Name"
+                    FilterIcon=""
+                    Items=Items>
 
-    </RfDropDown>
-</div>
+            <strong>@context.FirstName</strong> @context.LastName
 
-<div>
-    <RfDropDown TItem="UserRowData" 
-                @bind-SelectedItem="SelectedItem2"
-                OnLoad="OnLoad" 
-                Items=Items>
+        </RfDropDown>
+    </div>
 
-        @context.LastName - @context.Email
-    
-    </RfDropDown>
+    <div class="column">
+        <RfDropDown TItem="UserRowData"
+                    @bind-SelectedItem="SelectedItem2"
+                    OnLoad="OnLoad"
+                    Items=Items>
+
+            @context.LastName - @context.Email
+
+        </RfDropDown>
+    </div>
 </div>
 
 @code {
