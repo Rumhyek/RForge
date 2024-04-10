@@ -5,6 +5,17 @@
     overflow-y: auto;
 }
 
+    .dropdown-content.has-filter {
+        padding-top: 0;
+        position: relative;
+    }
+
+        .dropdown-content.has-filter .dropdown-item.is-filter {
+            position: sticky;
+            top: 0;
+            padding: 0;
+        }
+
 .place-holder {
     opacity: .75;
 }

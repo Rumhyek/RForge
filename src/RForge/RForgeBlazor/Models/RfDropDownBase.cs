@@ -32,7 +32,10 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     public string FilterPlaceholderText { get; set; } = "Filter...";
     
     [Parameter]
-    public int FilterRateLimit { get; set; } = 400;
+    public int FilterRateLimit { get; set; } = 250;
+
+    [Parameter]
+    public bool FilterClearOnClose { get; set; } = true;
 
     [Parameter]
     public List<TItem> Items { get; set; }
@@ -149,6 +152,11 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
         
         _filterChanges.Clear();
         _filterHandler = null;
+        if (FilterClearOnClose == true)
+        {
+            Filter = null;
+            await FilterChanged.InvokeAsync(Filter);
+        }
 
         await OnClose.InvokeAsync(Filter);
 

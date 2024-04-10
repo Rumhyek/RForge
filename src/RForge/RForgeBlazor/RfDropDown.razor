@@ -24,12 +24,12 @@
         </button>
     </div>
     <div class="dropdown-menu" id="dropdown-menu" role="menu">
-        <div class="dropdown-content">
+        <div class="dropdown-content @CssHelper.AddIf(ShowFilter,"has-filter")">
 
             @if (ShowFilter == true)
             {
                 bool hasFilterIcon = string.IsNullOrWhiteSpace(FilterIcon) == false && IsLoading == false;
-                <div class="dropdown-item">
+                <div class="dropdown-item is-filter">
                     <div class="field">
                         <div class="control @CssHelper.AddIf(hasFilterIcon || IsLoading, "has-icons-right") @IsLoadingCss">
                             <input type="search" class="input" placeholder="@FilterPlaceholderText" @bind-value=Filter @oninput=@OnFilterChange />
@@ -58,7 +58,11 @@
                     string rowCss = null;
                     CssHelper.AddIfTrue(ref rowCss, IsSelected(item), "is-selected");
 
-                    <a class="dropdown-item @rowCss" @onclick=@(async () => await OnItemClick(item))>
+                    <a class="dropdown-item @rowCss"
+                       @onclick=@(async () => await OnItemClick(item))
+                       @onkeydown=@(async (e) => await OnItemKeyDown(e, item))
+                       tabindex="0">
+
                         @ChildContent(item)
                     </a>
                 }
@@ -99,6 +103,21 @@
 
 
         StateHasChanged();
+    }
+
+    private async Task OnItemKeyDown(KeyboardEventArgs e, TItem item)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            await OnItemClick(item);
+            return;
+        }
+
+        if (e.Code == "Escape")
+        {
+            await CloseDropDown();
+        }
+
     }
 
 }

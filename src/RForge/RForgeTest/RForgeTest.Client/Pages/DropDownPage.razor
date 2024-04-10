@@ -47,7 +47,7 @@
         if (string.IsNullOrWhiteSpace(filter) == false)
             users = users.Where(u => u.FirstName.Contains(filter));
 
-        await Task.Delay(1000);
+        await Task.Delay(100);
 
         Items = users.ToList();
         StateHasChanged();
