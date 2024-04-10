@@ -1,0 +1,53 @@
+﻿@page "/dropdown"
+
+@inject IGetFakeUsers getFakeUsers
+@rendermode InteractiveAuto
+
+<h3>DropDownPage</h3>
+
+<div>
+    <RfDropDown TItem="UserRowData"
+                OnLoad="OnLoad"
+                ItemComparer="(a, b) => a.Id == b.Id"
+                @bind-SelectedItem="SelectedItem1"
+                CloseOnSelect="true"
+                FilterPlaceholderText="First Name"
+                FilterIcon=""
+                Items=Items>
+
+        <strong>@context.FirstName</strong> @context.LastName
+
+    </RfDropDown>
+</div>
+
+<div>
+    <RfDropDown TItem="UserRowData" 
+                @bind-SelectedItem="SelectedItem2"
+                OnLoad="OnLoad" 
+                Items=Items>
+
+        @context.LastName - @context.Email
+    
+    </RfDropDown>
+</div>
+
+@code {
+
+    public UserRowData SelectedItem1 { get; set; }
+    public UserRowData SelectedItem2 { get; set; }
+    public List<UserRowData> Items { get; set; }
+
+    public async Task OnLoad(string filter)
+    {
+        var users = getFakeUsers.Get();
+
+        if (string.IsNullOrWhiteSpace(filter) == false)
+            users = users.Where(u => u.FirstName.Contains(filter));
+
+        await Task.Delay(1000);
+
+        Items = users.ToList();
+        StateHasChanged();
+    }
+
+}

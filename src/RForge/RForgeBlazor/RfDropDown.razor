@@ -1,0 +1,104 @@
+@using RForge.Abstractions.DropDowns
+@using RForgeBlazor.Services
+@typeparam TItem
+
+@inherits RfDropDownBase<TItem>
+
+<div class="dropdown @DropdownCss">
+    <div class="dropdown-trigger">
+        <button class="button" type="button" aria-haspopup="true" aria-controls="dropdown-menu" @onclick="@OnDropDownClick">
+            <span>
+                @if (SelectedItem == null)
+                {
+                    <span class="place-holder">@PlaceholderText</span>
+                }
+                else
+                {
+                    @ChildContent(SelectedItem)
+                }
+            </span>
+            <span class="rf-icon icon is-small @IsLoadingCss">
+                <i class="fa-solid fa-angle-down" aria-hidden="true"></i>
+                <span class="loader"></span>
+            </span>
+        </button>
+    </div>
+    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+        <div class="dropdown-content">
+
+            @if (ShowFilter == true)
+            {
+                bool hasFilterIcon = string.IsNullOrWhiteSpace(FilterIcon) == false;
+                <div class="dropdown-item">
+                    <div class="field">
+                        <div class="control @CssHelper.AddIf(hasFilterIcon, "has-icons-right")">
+                            <input type="search" class="input" placeholder="@FilterPlaceholderText" @bind-value=Filter @oninput=@OnFilterChange />
+
+                            @if (hasFilterIcon == true)
+                            {
+                                <span class="icon is-small is-right">
+                                    <i class="@FilterIcon"></i>
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Items == null || Items.Count == 0)
+            {
+                <a class="dropdown-item">
+                    @EmptyContentText
+                </a>
+            }
+            else
+            {
+                @foreach (var item in Items)
+                {
+                    string rowCss = null;
+                    CssHelper.AddIfTrue(ref rowCss, IsSelected(item), "is-selected");
+
+                    <a class="dropdown-item @rowCss" @onclick=@(async () => await OnItemClick(item))>
+                        @ChildContent(item)
+                    </a>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public TItem SelectedItem { get; set; }
+    [Parameter]
+    public EventCallback<TItem> SelectedItemChanged { get; set; }
+
+    protected bool IsSelected(TItem item)
+    {
+        if (SelectedItem == null) return false;
+
+        return ItemComparer(SelectedItem, item);
+    }
+
+    private async Task OnItemClick(TItem item)
+    {
+        bool isSelected = IsSelected(item);
+
+        if (isSelected == true)
+        {
+            await SelectedItemChanged.InvokeAsync();
+        }
+        else
+        {
+            await SelectedItemChanged.InvokeAsync(item);
+        }
+
+        if (CloseOnSelect == true && IsOpen == true)
+            await CloseDropDown();
+
+
+        StateHasChanged();
+    }
+
+}
