@@ -7,20 +7,39 @@
 <div class="dropdown @DropdownCss">
     <div class="dropdown-trigger">
         <button class="button" type="button" aria-haspopup="true" aria-controls="dropdown-menu" @onclick="@OnDropDownClick">
-            @if (SelectedItem == null)
+            @if (SelectedItems == null || SelectedItems.Count == 0)
             {
                 <span class="place-holder">@PlaceholderText</span>
             }
             else
             {
-                <span class="@CssSelectedClass">
-                    @if (SelectedItemTemplate != null)
+                <span class="field is-grouped is-grouped-multiline mb-0">
+
+                    @foreach (var selectedItem in SelectedItems)
                     {
-                        @SelectedItemTemplate(SelectedItem)
-                    }
-                    else
-                    {
-                        @ChildContent(SelectedItem)
+                        <span class="control">
+                            <span class="tags has-addons">
+                                <span class="tag @CssSelectedClass">
+
+                                    @if (SelectedItemTemplate != null)
+                                    {
+                                        @SelectedItemTemplate(selectedItem)
+                                    }
+                                    else
+                                    {
+                                        @ChildContent(selectedItem)
+                                    }
+                                </span>
+                                @if (IsReadonly == false)
+                                {
+                                    <a class="tag is-delete"
+                                       tabindex="0"
+                                       @onclick="@(async () => await OnDeselectClick(selectedItem))"
+                                       @onclick:preventDefault="true"
+                                       @onclick:stopPropagation="true"></a>
+                                }
+                            </span>
+                        </span>
                     }
                 </span>
             }
@@ -78,7 +97,6 @@
                         {
                             @ChildContent(item)
                         }
-
                     </a>
                 }
             }
@@ -89,15 +107,21 @@
 @code {
 
     [Parameter]
-    public TItem SelectedItem { get; set; }
+    public List<TItem> SelectedItems { get; set; }
     [Parameter]
-    public EventCallback<TItem> SelectedItemChanged { get; set; }
+    public EventCallback<List<TItem>> SelectedItemsChanged { get; set; }
+
+    [Parameter]
+    public int? MaxSelectableItems { get; set; }
+
+    [Parameter]
+    public RfKeepRule MaxSelectionKeepRule { get; set; } = RfKeepRule.FirstInFirstOut;
 
     protected bool IsSelected(TItem item)
     {
-        if (SelectedItem == null) return false;
+        if (SelectedItems == null || SelectedItems.Count == 0) return false;
 
-        return ItemComparer(SelectedItem, item);
+        return SelectedItems.Any(i => ItemComparer(i, item) == true);
     }
 
     private async Task OnItemClick(TItem item)
@@ -107,17 +131,33 @@
         bool isSelected = IsSelected(item);
 
         if (isSelected == true)
+            SelectedItems.Remove(item);
+
+        else if (MaxSelectableItems.HasValue == false
+            || MaxSelectableItems <= 0
+            || SelectedItems.Count < MaxSelectableItems)
         {
-            await SelectedItemChanged.InvokeAsync();
+            SelectedItems.Add(item);
         }
         else
         {
-            await SelectedItemChanged.InvokeAsync(item);
+            switch (MaxSelectionKeepRule)
+            {
+                case RfKeepRule.FirstInFirstOut:
+                    SelectedItems.RemoveAt(0);
+                    break;
+                case RfKeepRule.FirstInLastOut:
+                    SelectedItems.RemoveAt(SelectedItems.Count - 1);
+                    break;
+                case RfKeepRule.ForceDeselection:
+                    return;
+            }
         }
+
+        await SelectedItemsChanged.InvokeAsync(SelectedItems);
 
         if (CloseOnSelect == true && IsOpen == true)
             await CloseDropDown();
-
 
         StateHasChanged();
     }
@@ -135,6 +175,16 @@
             await CloseDropDown();
         }
 
+    }
+
+    private async Task OnDeselectClick(TItem item)
+    {
+        if (IsReadonly == true) return;
+
+        if (SelectedItems.Remove(item) == false) return;
+
+        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+        StateHasChanged();
     }
 
 }

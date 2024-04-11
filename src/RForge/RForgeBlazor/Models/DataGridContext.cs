@@ -32,13 +32,6 @@ public class DataGridContext
     }
 }
 
-public enum RfDialogType
-{
-    Alert,
-    Confirm,
-    Prompt
-}
-
 public abstract class RfDialogOption
 {
     public RenderFragment Message { get; set; }

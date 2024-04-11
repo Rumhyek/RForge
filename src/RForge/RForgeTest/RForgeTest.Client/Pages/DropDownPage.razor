@@ -4,11 +4,12 @@
 @inject IGetFakeUsers getFakeUsers
 @rendermode InteractiveAuto
 
-<h3>DropDownPage</h3>
+<h3 class="is-size-3">Single Select</h3>
 
 <div class="columns">
 
     <div class="column">
+        <label class="label">Simple example with comparer</label>
         <RfDropDown TItem="UserRowData"
                     OnLoad="OnLoad"
                     ItemComparer="(a, b) => a.Id == b.Id"
@@ -24,6 +25,7 @@
     </div>
 
     <div class="column">
+        <label class="label">Simple Example</label>
         <RfDropDown TItem="UserRowData"
                     @bind-SelectedItem="SelectedItem2"
                     OnLoad="OnLoad"
@@ -35,6 +37,7 @@
     </div>
 
     <div class="column">
+        <label class="label">Different template example</label>
         <RfDropDown TItem="UserRowData"
                     @bind-SelectedItem="SelectedItem3"
                     OnLoad="OnLoad"
@@ -52,18 +55,29 @@
             </SelectedItemTemplate>
         </RfDropDown>
     </div>
+    <div class="column">
+        <label class="label">Link example</label>
+        <RfDropDown TItem="UserRowData"
+                    Items="Items"
+                    @bind-SelectedItem="SelectedItem4"
+                    OnLoad="OnLoad">
+            @context.Id - @context.FirstName <a href="https://google.com">Go away</a>
+        </RfDropDown>
 
+    </div>
+    <div class="column">
+        <label class="label">Readonly</label>
+        <RfDropDown TItem="UserRowData"
+                    Items="Items"
+                    IsReadonly="true"
+                    @bind-SelectedItem="SelectedItem1"
+                    OnLoad="OnLoad">
+            @context.LastName - @context.Email
+        </RfDropDown>
+
+    </div>
 </div>
 
-<div>
-    <RfDropDown TItem="UserRowData"
-                Items="Items"
-                @bind-SelectedItem="SelectedItem4"
-                OnLoad="OnLoad">
-        @context.Id - @context.FirstName <a href="https://google.com">Go away</a>
-    </RfDropDown>
-</div>
-
 <br />
 <br />
 <br />
@@ -73,6 +87,7 @@
 <br />
 <br />
 
+<h4 class="is-size-4">Positions</h4>
 <div class="fixed-grid has-2-cols">
     <div class="grid">
         <div class="cell has-text-right">
@@ -110,6 +125,51 @@
     </div>
 </div>
 
+<h3 class="is-size-3">Multi Selects</h3>
+
+<div class="columns">
+    <div class="column">
+        <label class="label">Simple example</label>
+        <RfDropDownMulti TItem="UserRowData"
+                         @bind-SelectedItems="SelectedItems1"
+                         Items="Items"
+                         OnLoad="OnLoad">
+
+            @context.FirstName @context.LastName
+
+        </RfDropDownMulti>
+
+    </div>
+    <div class="column">
+        <label class="label">Readonly</label>
+        <RfDropDownMulti TItem="UserRowData"
+                         @bind-SelectedItems="SelectedItems1"
+                         IsReadonly="true"
+                         Items="Items"
+                         OnLoad="OnLoad">
+
+            @context.FirstName @context.LastName
+
+        </RfDropDownMulti>
+
+    </div>
+
+    <div class="column">
+        <label class="label">For size comparision</label>
+        <RfDropDown TItem="UserRowData"
+                    OnLoad="OnLoad"
+                    ItemComparer="(a, b) => a.Id == b.Id"
+                    @bind-SelectedItem="SelectedItem1"
+                    CloseOnSelect="true"
+                    FilterPlaceholderText="First Name"
+                    FilterIcon=""
+                    Items=Items>
+
+            <strong>@context.FirstName</strong> @context.LastName
+        </RfDropDown>
+    </div>
+</div>
+
 
 @code {
 
@@ -118,6 +178,9 @@
     public UserRowData SelectedItem3 { get; set; }
     public UserRowData SelectedItem4 { get; set; }
     public List<UserRowData> Items { get; set; }
+
+    // multi select
+    public List<UserRowData> SelectedItems1 { get; set; } = new List<UserRowData>();
 
     public async Task OnLoad(string filter)
     {
