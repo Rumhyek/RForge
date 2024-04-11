@@ -6,68 +6,145 @@ using RForgeBlazor.Models;
 namespace RForgeBlazor;
 public partial class RfDataGrid<TRowData>
 {
+    #region Parameters
+    /// <summary>
+    /// How many columns to render while showing the skeleton mode. Deafult = 4;
+    /// </summary>
     [Parameter]
     public int PreRenderColumnCount { get; set; } = 4;
+    
+    /// <summary>
+    /// How many rows to render while showing the skeleton mode. Default = null;
+    /// </summary>
     [Parameter]
     public int? PreRenderRowCount { get; set; }
 
+    
+    /// <summary>
+    /// If true shows the filter row.
+    /// </summary>
     [Parameter]
     public bool AllowFilters { get; set; }
+    
+    /// <summary>
+    /// If true adds support for <see cref="OnRowSelect"/> and <see cref="OnRowDeselect"/>
+    /// </summary>
     [Parameter]
     public bool AllowSelection { get; set; }
+    
+    /// <summary>
+    /// If set the tells the Data Grid what the maximum selected rows.
+    /// </summary>
     [Parameter]
     public int? MaxSelection { get; set; }
 
+    /// <summary>
+    /// The current sort key the grid is filtering with.
+    /// </summary>
     [Parameter]
     public string SortKey { get; set; }
     [Parameter]
     public EventCallback<string> SortKeyChanged { get; set; }
+
+    /// <summary>
+    /// THe current sort direction
+    /// </summary>
     [Parameter]
     public RfSortOrder SortOrder { get; set; }
     [Parameter]
     public EventCallback<RfSortOrder> SortOrderChanged { get; set; }
 
+    /// <summary>
+    /// The data rows to display within the data grid. If null the skeleton of the data grid will be shown. 
+    /// </summary>
     [Parameter]
     public IEnumerable<TRowData> Data { get; set; }
+
+    /// <summary>
+    /// The total row count. All rows not just the ones displayed for the current page.
+    /// </summary>
     [Parameter]
     public int TotalCount { get; set; }
+
+    /// <summary>
+    /// The current page index. 0 based.
+    /// </summary>
     [Parameter]
     public int CurrentPageIndex { get; set; }
     [Parameter]
     public EventCallback<int> CurrentPageIndexChanged { get; set; }
 
+    /// <summary>
+    /// 
+    /// </summary>
     [Parameter]
     public int? PageSize { get; set; }
     [Parameter]
     public EventCallback<int?> PageSizeChanged { get; set; }
 
+    /// <summary>
+    /// The max paging options to show in the bottom left. By default = 7
+    /// </summary>
     [Parameter]
     public int MaxPagingOptions { get; set; } = 7;
 
-    private List<TRowData> currentSelection { get; set; } = new List<TRowData>();
 
+    /// <summary>
+    /// Fires when a row is selected return the value of the row.
+    /// </summary>
     [Parameter]
     public EventCallback<TRowData> OnRowSelect { get; set; }
+    
+    /// <summary>
+    /// Fires when a row is deselected returning the value of the row.
+    /// </summary>
     [Parameter]
     public EventCallback<TRowData> OnRowDeselect { get; set; }
+    
+    /// <summary>
+    /// Called when the data grid believes new data should be shown.
+    /// </summary>
     [Parameter]
     public EventCallback OnLoadData { get; set; }
 
+    /// <summary>
+    /// The template section to add headers. Use <see cref="RfDgHeader"/>
+    /// </summary>
     [Parameter]
     public RenderFragment Headers { get; set; }
+    
+    /// <summary>
+    /// The template section to add filters. Use <see cref="RfDgFilterInput{TType}"/> or use <see cref="RfDgFilterNone"/> for blank spaces.
+    /// </summary>
     [Parameter]
     public RenderFragment Filters { get; set; }
+    
+    /// <summary>
+    /// The template section to create the table cells. Use <see cref="RfDgCell{TRowData}"/>
+    /// </summary>
     [Parameter]
     public RenderFragment<TRowData> Cells { get; set; }
 
+    /// <summary>
+    /// A Css class to add to the base table.
+    /// </summary>
     [Parameter]
     public string CssClass { get; set; }
 
+    /// <summary>
+    /// Should the table be compact or not.
+    /// </summary>
     [Parameter]
     public bool Compact { get; set; } = true;
 
+    /// <summary>
+    /// Should the table take up 100% of the space or not.
+    /// </summary>
     [Parameter]
     public bool IsFullWidth { get; set; } = true;
+    #endregion
+
+    private List<TRowData> currentSelection { get; set; } = new List<TRowData>();
 
     private DataGridContext GridContext { get; set; }
 

@@ -4,14 +4,25 @@ namespace RForgeBlazor;
 public partial class RfDgFilterInputLong
 {
 
+    #region Parameters
     [Parameter]
+    /// <summary>
+    /// The minimum value possible.
+    /// </summary>
     public long? MinValue { get; set; }
 
     [Parameter]
+    /// <summary>
+    /// The maximum value possible.
+    /// </summary>
     public long? MaxValue { get; set; }
 
     [Parameter]
+    /// <summary>
+    /// When using the input controls the step it takes.
+    /// </summary>
     public long Step { get; set; } = 1;
+    #endregion
 
     public override string DefaultAriaLabelValue => "Integer Filter";
 

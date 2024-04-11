@@ -3,12 +3,19 @@ using Microsoft.AspNetCore.Components;
 namespace RForgeBlazor;
 public partial class RfDgFilterInputDate
 {
-
+    #region Parameters
     [Parameter]
+    /// <summary>
+    /// The minimum value possible.
+    /// </summary>
     public DateTime? MinValue { get; set; }
 
     [Parameter]
+    /// <summary>
+    /// The maximum value possible.
+    /// </summary>
     public DateTime? MaxValue { get; set; }
+    #endregion
 
     public override string DefaultAriaLabelValue => "Date Filter";
 

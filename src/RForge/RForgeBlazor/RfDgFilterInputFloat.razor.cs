@@ -4,14 +4,25 @@ namespace RForgeBlazor;
 public partial class RfDgFilterInputFloat
 {
 
+    #region Parameters
     [Parameter]
+    /// <summary>
+    /// The minimum value possible.
+    /// </summary>
     public float? MinValue { get; set; }
 
     [Parameter]
+    /// <summary>
+    /// The maximum value possible.
+    /// </summary>
     public float? MaxValue { get; set; }
 
     [Parameter]
+    /// <summary>
+    /// When using the input controls the step it takes.
+    /// </summary>
     public float Step { get; set; } = 1;
+    #endregion
 
     public override string DefaultAriaLabelValue => "Number Filter";
 

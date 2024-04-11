@@ -4,12 +4,13 @@ using RForge.Abstractions;
 namespace RForgeBlazor;
 public partial class RfDgFilterInputText
 {
-
+    /// <summary>
+    /// How the filter handles triming of the text inputed. By default <see cref="RfTrimType.TrimBoth"/>
+    /// </summary>
     [Parameter]
     public RfTrimType TrimValue { get; set; } = RfTrimType.TrimBoth;
 
     public override string DefaultAriaLabelValue => "Text Filter";
-
 
     public override async Task OnChange(ChangeEventArgs args)
     {

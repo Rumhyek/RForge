@@ -3,15 +3,25 @@ using Microsoft.AspNetCore.Components;
 namespace RForgeBlazor;
 public partial class RfDgFilterInputInt
 {
-
+    #region Parameters
     [Parameter]
+    /// <summary>
+    /// The minimum value possible.
+    /// </summary>
     public int? MinValue { get; set; }
 
     [Parameter]
+    /// <summary>
+    /// The maximum value possible.
+    /// </summary>
     public int? MaxValue { get; set; }
 
     [Parameter]
+    /// <summary>
+    /// When using the input controls the step it takes.
+    /// </summary>
     public int Step { get; set; } = 1;
+    #endregion
 
     public override string DefaultAriaLabelValue => "Integer Filter";
 

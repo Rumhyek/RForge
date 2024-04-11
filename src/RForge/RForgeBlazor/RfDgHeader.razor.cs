@@ -7,56 +7,43 @@ namespace RForgeBlazor;
 
 public partial class RfDgHeader
 {
-
+    #region Parameters
     [CascadingParameter]
+    /// <summary>
+    /// The needed context to communicate between the data grid and the header for sorting.
+    /// </summary>
     public DataGridContext GridContext { get; set; }
 
     [Parameter]
+    /// <summary>
+    /// Allows this header to be clickable and send out <see cref="DataGridContext.OnSortChanged"/>.
+    /// </summary>
     public bool AllowSorting { get; set; } = true;
 
     [Parameter]
-    public string Css { get; set; }
+    /// <summary>
+    /// Any custom class to add to the header's <th>
+    /// </summary>
+    public string CssClass { get; set; }
 
     [Parameter]
+    /// <summary>
+    /// The sort key that reperesents this header.
+    /// </summary>
     public string SortKey { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    #endregion
 
     private RfSortOrder SortOrder { get; set; }
 
-    [Parameter]
-    public RenderFragment ChildContent { get; set; }
 
-    private string HeaderCss
-    {
-        get
-        {
-            string css = "";
-
-            if (string.IsNullOrWhiteSpace(Css) == false)
-                css += $"{css} ";
-
-            if (AllowSorting == true)
-                css += "sortable ";
-
-            switch (this.SortOrder)
-            {
-                case RfSortOrder.Ascending:
-                    css += "sort-asc ";
-                    break;
-                case RfSortOrder.Descending:
-                    css += "sort-desc ";
-                    break;
-            }
-
-            return css;
-        }
-    }
-
-    private static RfSortOrder[] ToggleOrder = new RfSortOrder[]
-    {
-    RfSortOrder.None,
-    RfSortOrder.Ascending,
-    RfSortOrder.Descending
-    };
+    private static RfSortOrder[] ToggleOrder =
+    [
+        RfSortOrder.None,
+        RfSortOrder.Ascending,
+        RfSortOrder.Descending
+    ];
 
     protected override void OnInitialized()
     {
@@ -117,4 +104,34 @@ public partial class RfDgHeader
             GridContext.OnSortChanged -= OnSortChangedCallback;
         }
     }
+
+    #region Computeds
+
+    private string HeaderCss
+    {
+        get
+        {
+            string css = "";
+
+            if (string.IsNullOrWhiteSpace(CssClass) == false)
+                css += $"{css} ";
+
+            if (AllowSorting == true)
+                css += "sortable ";
+
+            switch (this.SortOrder)
+            {
+                case RfSortOrder.Ascending:
+                    css += "sort-asc ";
+                    break;
+                case RfSortOrder.Descending:
+                    css += "sort-desc ";
+                    break;
+            }
+
+            return css;
+        }
+    }
+    #endregion
+
 }

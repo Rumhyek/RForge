@@ -3,12 +3,19 @@ using Microsoft.AspNetCore.Components;
 namespace RForgeBlazor;
 public partial class RfDgFilterInputTime
 {
-
+    #region Parameters
     [Parameter]
+    /// <summary>
+    /// The minimum allowed time.
+    /// </summary>
     public TimeOnly? MinValue { get; set; }
 
     [Parameter]
-    public TimeOnly? MaxValue { get; set; }
+    /// <summary>
+    /// The maximum allowed time.
+    /// </summary>
+    public TimeOnly? MaxValue { get; set; } 
+    #endregion
 
     public override string DefaultAriaLabelValue => "Time Filter";
 
