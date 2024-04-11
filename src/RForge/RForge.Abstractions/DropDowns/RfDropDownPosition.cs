@@ -12,10 +12,3 @@ public enum RfDropDownPosition
     LeftUp,
     RightUp,
 }
-
-public enum RfKeepRule
-{
-    FirstInFirstOut,
-    FirstInLastOut,
-    ForceDeselection
-}

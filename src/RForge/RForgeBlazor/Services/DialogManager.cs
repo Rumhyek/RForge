@@ -142,6 +142,4 @@ public class DialogManager : IDialogManager
     {
         _dialogManager = null;
     }
-
-  
 }

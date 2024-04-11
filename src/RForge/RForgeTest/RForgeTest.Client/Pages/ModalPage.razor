@@ -173,21 +173,21 @@
         ImageRatioExamples = new()
     {
             new ImageRatioExample(),
-            new ImageRatioExample(ImageRatio.Square),
-            new ImageRatioExample(ImageRatio.Is1By2),
-            new ImageRatioExample(ImageRatio.Is1By3),
-            new ImageRatioExample(ImageRatio.Is2By1),
-            new ImageRatioExample(ImageRatio.Is2By3),
-            new ImageRatioExample(ImageRatio.Is3By1),
-            new ImageRatioExample(ImageRatio.Is3By2),
-            new ImageRatioExample(ImageRatio.Is3By4),
-            new ImageRatioExample(ImageRatio.Is3By5),
-            new ImageRatioExample(ImageRatio.Is4By3),
-            new ImageRatioExample(ImageRatio.Is4By5),
-            new ImageRatioExample(ImageRatio.Is5By3),
-            new ImageRatioExample(ImageRatio.Is5By4),
-            new ImageRatioExample(ImageRatio.Is9By16),
-            new ImageRatioExample(ImageRatio.Is16By9)
+            new ImageRatioExample(AspectRatio.Square),
+            new ImageRatioExample(AspectRatio.Is1By2),
+            new ImageRatioExample(AspectRatio.Is1By3),
+            new ImageRatioExample(AspectRatio.Is2By1),
+            new ImageRatioExample(AspectRatio.Is2By3),
+            new ImageRatioExample(AspectRatio.Is3By1),
+            new ImageRatioExample(AspectRatio.Is3By2),
+            new ImageRatioExample(AspectRatio.Is3By4),
+            new ImageRatioExample(AspectRatio.Is3By5),
+            new ImageRatioExample(AspectRatio.Is4By3),
+            new ImageRatioExample(AspectRatio.Is4By5),
+            new ImageRatioExample(AspectRatio.Is5By3),
+            new ImageRatioExample(AspectRatio.Is5By4),
+            new ImageRatioExample(AspectRatio.Is9By16),
+            new ImageRatioExample(AspectRatio.Is16By9)
         };
         SelectedOption = ImageRatioExamples.First();
     }
@@ -204,12 +204,12 @@
         {
 
         }
-        public ImageRatioExample(ImageRatio ratio)
+        public ImageRatioExample(AspectRatio ratio)
         {
             ImageRatio = ratio;
         }
 
-        public ImageRatio? ImageRatio { get; set; }
+        public AspectRatio? ImageRatio { get; set; }
 
         public int Value
         {

@@ -5,9 +5,5 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="Constants\" />
-  </ItemGroup>
-
+	
 </Project>

@@ -2,35 +2,6 @@
 
 namespace RForge.Abstractions.Notifications;
 
-public enum RfNotificationColor
-{
-    Default,
-    Primary,
-    Link,
-    Info,
-    Success,
-    Warning,
-    Danger
-}
-
-public enum RfNotificationPosition
-{
-    TopCenter,
-    TopRight,
-    TopLeft,
-    BottomCenter,
-    BottomRight,
-    BottomLeft
-}
-
-public enum RfNotificationSeverity
-{
-    Info,
-    Success,
-    Warning,
-    Error,
-}
-
 public class NotificationOptions
 {
     /// <summary>
