@@ -28,7 +28,7 @@
     public string ImageCss { get; set; }
 
     [Parameter]
-    public AspectRatio? ImageRatio { get; set; }
+    public AspectRatio? AspectRatio { get; set; }
     [Parameter]
     public string ImageCaption { get; set; }
 
@@ -43,7 +43,7 @@
             if (IsVisible == false) return null;
 
             string styles = null;
-            CssHelper.AddIfTrue(ref styles, ImageRatio != null, () => $"aspect-ratio: {ImageRatio.Value.Width} / {ImageRatio.Value.Height};");
+            CssHelper.AddIfTrue(ref styles, AspectRatio != null, () => $"aspect-ratio: {AspectRatio.Value.Width} / {AspectRatio.Value.Height};");
 
             return styles;
         }

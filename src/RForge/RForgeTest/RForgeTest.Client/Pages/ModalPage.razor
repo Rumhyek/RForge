@@ -23,7 +23,7 @@
     <label class="label">Image Ratio</label>
     <div class="select">
         <InputSelect TValue="int" @bind-Value:get="SelectedImageOptionValue" @bind-Value:set="OnSelectImageChange">
-            @foreach (var option in ImageRatioExamples)
+            @foreach (var option in AspectRatioExamples)
             {
                 <option value="@option.Value">@option.Text</option>
             }
@@ -44,13 +44,13 @@
     I'm a basic Modal
 </RfModal>
 
-<RfImageModal ImageUrl="@SelectedOption.DefaultImageUrl"
-              ImageRatio="@SelectedOption.ImageRatio" 
+<RfModalImage ImageUrl="@SelectedOption.DefaultImageUrl"
+              AspectRatio="@SelectedOption.AspectRatio" 
               Width=@ImageCustomWidth 
               ImageCaption=@ImageCaption
               @bind-IsVisible=Example2IsVisible />
 
-<RfCardModal @bind-IsVisible="Example3IsVisible" ShowCloseButton="true">
+<RfModalCard @bind-IsVisible="Example3IsVisible" ShowCloseButton="true">
     <Head>
         <div class="modal-card-title">Card Title Header</div>
     </Head>
@@ -72,9 +72,9 @@
             <button class="button" @onclick=@(() => Example3IsVisible = false)>Close</button>
         </div>
     </Foot>
-</RfCardModal>
+</RfModalCard>
 
-<RfCardModal @bind-IsVisible="Example4IsVisible" ShowCloseButton="true">
+<RfModalCard @bind-IsVisible="Example4IsVisible" ShowCloseButton="true">
     <Body>
         <div class="image is-1by1 mb-3 mr-3" style="float: left; width: 150px;">
             <img src="https://placehold.co/150x150/" title="placeholder" />
@@ -93,9 +93,9 @@
             <button class="button" @onclick=@(() => Example4IsVisible = false)>Close</button>
         </div>
     </Foot>
-</RfCardModal>
+</RfModalCard>
 
-<RfCardModal @bind-IsVisible="Example5IsVisible" Title="Set By Attribute" ShowCloseButton="true">
+<RfModalCard @bind-IsVisible="Example5IsVisible" Title="Set By Attribute" ShowCloseButton="true">
     <Body>
         <div class="image is-1by1 mb-3 mr-3" style="float: left; width: 150px;">
             <img src="https://placehold.co/150x150/" title="placeholder" />
@@ -114,9 +114,9 @@
             <button class="button" @onclick=@(() => Example5IsVisible = false)>Close</button>
         </div>
     </Foot>
-</RfCardModal>
+</RfModalCard>
 
-<RfCardModal @bind-IsVisible="Example6IsVisible" ShowCloseButton="true">
+<RfModalCard @bind-IsVisible="Example6IsVisible" ShowCloseButton="true">
     <Head>
         <div class="modal-card-title">Card Title Header</div>
     </Head>
@@ -132,9 +132,9 @@
             <p>Varius duis at consectetur lorem donec massa sapien. Eu scelerisque felis imperdiet proin fermentum leo vel. In cursus turpis massa tincidunt dui. Sed arcu non odio euismod lacinia at. Ac placerat vestibulum lectus mauris ultrices. Duis ut diam quam nulla. Lectus mauris ultrices eros in cursus. Eros donec ac odio tempor orci dapibus. Non nisi est sit amet facilisis magna etiam tempor orci. Eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis. Malesuada proin libero nunc consequat. Pulvinar etiam non quam lacus. Quis eleifend quam adipiscing vitae proin. Sed augue lacus viverra vitae. Tellus molestie nunc non blandit massa enim.</p>
         </div>
     </Body>
-</RfCardModal>
+</RfModalCard>
 
-<RfCardModal @bind-IsVisible="Example7IsVisible" ShowCloseButton="true">
+<RfModalCard @bind-IsVisible="Example7IsVisible" ShowCloseButton="true">
     <Body>
         <div class="image is-1by1 mb-3 mr-3" style="float: left; width: 150px;">
             <img src="https://placehold.co/150x150/" title="placeholder" />
@@ -147,7 +147,7 @@
             <p>Varius duis at consectetur lorem donec massa sapien. Eu scelerisque felis imperdiet proin fermentum leo vel. In cursus turpis massa tincidunt dui. Sed arcu non odio euismod lacinia at. Ac placerat vestibulum lectus mauris ultrices. Duis ut diam quam nulla. Lectus mauris ultrices eros in cursus. Eros donec ac odio tempor orci dapibus. Non nisi est sit amet facilisis magna etiam tempor orci. Eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis. Malesuada proin libero nunc consequat. Pulvinar etiam non quam lacus. Quis eleifend quam adipiscing vitae proin. Sed augue lacus viverra vitae. Tellus molestie nunc non blandit massa enim.</p>
         </div>
     </Body>
-</RfCardModal>
+</RfModalCard>
 
 @code {
 
@@ -156,8 +156,8 @@
     //Image Modal Variables
     public bool Example2IsVisible { get; set; }
     public string ImageCustomWidth { get; set; }
-    private List<ImageRatioExample> ImageRatioExamples { get; set; }
-    private ImageRatioExample SelectedOption { get; set; }
+    private List<AspectRatioExample> AspectRatioExamples { get; set; }
+    private AspectRatioExample SelectedOption { get; set; }
     private int SelectedImageOptionValue { get; set; }
     private string ImageCaption { get; set; }
 
@@ -170,54 +170,54 @@
 
     protected override void OnInitialized()
     {
-        ImageRatioExamples = new()
+        AspectRatioExamples = new()
     {
-            new ImageRatioExample(),
-            new ImageRatioExample(AspectRatio.Square),
-            new ImageRatioExample(AspectRatio.Is1By2),
-            new ImageRatioExample(AspectRatio.Is1By3),
-            new ImageRatioExample(AspectRatio.Is2By1),
-            new ImageRatioExample(AspectRatio.Is2By3),
-            new ImageRatioExample(AspectRatio.Is3By1),
-            new ImageRatioExample(AspectRatio.Is3By2),
-            new ImageRatioExample(AspectRatio.Is3By4),
-            new ImageRatioExample(AspectRatio.Is3By5),
-            new ImageRatioExample(AspectRatio.Is4By3),
-            new ImageRatioExample(AspectRatio.Is4By5),
-            new ImageRatioExample(AspectRatio.Is5By3),
-            new ImageRatioExample(AspectRatio.Is5By4),
-            new ImageRatioExample(AspectRatio.Is9By16),
-            new ImageRatioExample(AspectRatio.Is16By9)
+            new AspectRatioExample(),
+            new AspectRatioExample(AspectRatio.Square),
+            new AspectRatioExample(AspectRatio.Is1By2),
+            new AspectRatioExample(AspectRatio.Is1By3),
+            new AspectRatioExample(AspectRatio.Is2By1),
+            new AspectRatioExample(AspectRatio.Is2By3),
+            new AspectRatioExample(AspectRatio.Is3By1),
+            new AspectRatioExample(AspectRatio.Is3By2),
+            new AspectRatioExample(AspectRatio.Is3By4),
+            new AspectRatioExample(AspectRatio.Is3By5),
+            new AspectRatioExample(AspectRatio.Is4By3),
+            new AspectRatioExample(AspectRatio.Is4By5),
+            new AspectRatioExample(AspectRatio.Is5By3),
+            new AspectRatioExample(AspectRatio.Is5By4),
+            new AspectRatioExample(AspectRatio.Is9By16),
+            new AspectRatioExample(AspectRatio.Is16By9)
         };
-        SelectedOption = ImageRatioExamples.First();
+        SelectedOption = AspectRatioExamples.First();
     }
 
     private void OnSelectImageChange(int value)
     {
         SelectedImageOptionValue = value;
-        SelectedOption = ImageRatioExamples.First(i => i.Value == value);
+        SelectedOption = AspectRatioExamples.First(i => i.Value == value);
     }
 
-    private class ImageRatioExample
+    private class AspectRatioExample
     {
-        public ImageRatioExample()
+        public AspectRatioExample()
         {
 
         }
-        public ImageRatioExample(AspectRatio ratio)
+        public AspectRatioExample(AspectRatio ratio)
         {
-            ImageRatio = ratio;
+            AspectRatio = ratio;
         }
 
-        public AspectRatio? ImageRatio { get; set; }
+        public AspectRatio? AspectRatio { get; set; }
 
         public int Value
         {
             get
             {
-                if (ImageRatio == null) return 0;
+                if (AspectRatio == null) return 0;
 
-                return ImageRatio.Value.Width * 10000 + ImageRatio.Value.Height;
+                return AspectRatio.Value.Width * 10000 + AspectRatio.Value.Height;
             }
         }
 
@@ -225,9 +225,9 @@
         {
             get
             {
-                if (ImageRatio == null) return "None";
+                if (AspectRatio == null) return "None";
 
-                return $"{ImageRatio.Value.Width} By {ImageRatio.Value.Height}";
+                return $"{AspectRatio.Value.Width} By {AspectRatio.Value.Height}";
             }
         }
 
@@ -235,10 +235,10 @@
         {
             get
             {
-                if (ImageRatio == null)
+                if (AspectRatio == null)
                     return "https://placehold.co/600x400/";
 
-                return $"https://placehold.co/{ImageRatio.Value.Width * 100}x{ImageRatio.Value.Height * 100}/";
+                return $"https://placehold.co/{AspectRatio.Value.Width * 100}x{AspectRatio.Value.Height * 100}/";
             }
         }
     }
