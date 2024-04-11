@@ -1,4 +1,5 @@
-﻿namespace RForgeBlazor.Models;
+﻿using RForge.Abstractions;
+namespace RForgeBlazor.Models;
 
 public class RfDialogOptionConfirm : RfDialogOption
 {

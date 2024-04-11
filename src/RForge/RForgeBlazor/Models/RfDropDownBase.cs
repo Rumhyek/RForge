@@ -7,82 +7,155 @@ namespace RForgeBlazor.Models;
 
 public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 {
-
+    #region Parameters
+    /// <summary>
+    /// How to render a <see cref="TItem"/> within the dropdown and select input.
+    /// </summary>
     [Parameter]
     public RenderFragment<TItem> ChildContent { get; set; }
 
+    /// <summary>
+    /// The template to render a item in the dropdown. By default uses <see cref="ChildContent"/>
+    /// </summary>
     [Parameter]
     public RenderFragment<TItem> RowItemTemplate { get; set; }
 
+    /// <summary>
+    /// The template to render a selected item. By default uses <see cref="ChildContent"/>
+    /// </summary>
     [Parameter]
     public RenderFragment<TItem> SelectedItemTemplate { get; set; }
 
-
-
+    /// <summary>
+    /// Used to compare two items within the list to determine if it is selected or not. By default uses <see cref="TItem.Equals(object?)"/>
+    /// </summary>
     [Parameter]
     public Func<TItem, TItem, bool> ItemComparer { get; set; }
 
+    /// <summary>
+    /// The css class added to the dropdown itself.
+    /// </summary>
     [Parameter]
     public string CssClass { get; set; }
 
+    /// <summary>
+    /// The css class to add to the selected items.
+    /// </summary>
     [Parameter]
     public string CssSelectedClass { get; set; }
 
+    /// <summary>
+    /// The css class to add to the row items in the drop down.
+    /// </summary>
     [Parameter]
     public string CssRowItemClass { get; set; }
 
+    /// <summary>
+    /// The css class to add to the filter input.
+    /// </summary>
     [Parameter]
     public string CssFilterClass { get; set; }
 
+    /// <summary>
+    /// If true the filter textbox will be shown. By default = true
+    /// </summary>
     [Parameter]
     public bool ShowFilter { get; set; } = true;
 
+    /// <summary>
+    /// The current filter text. Is a two way binding.
+    /// </summary>
     [Parameter]
     public string Filter { get; set; }
     [Parameter]
     public EventCallback<string> FilterChanged { get; set; }
 
+    /// <summary>
+    /// The filter icon to show in the input.
+    /// </summary>
     [Parameter]
     public string FilterIcon { get; set; } = "fa-solid fa-magnifying-glass";
 
+    /// <summary>
+    /// The placeholder text to show in the fitler input.
+    /// </summary>
     [Parameter]
     public string FilterPlaceholderText { get; set; } = "Filter...";
-    
+
+    /// <summary>
+    /// The rate in milliseconds that the search filter will wait before attempting to call OnLoad.
+    /// </summary>
     [Parameter]
     public int FilterRateLimit { get; set; } = 250;
 
+    /// <summary>
+    /// If true the filter text will reset to null on close.
+    /// </summary>
     [Parameter]
     public bool FilterClearOnClose { get; set; } = true;
 
+    /// <summary>
+    /// The items to show in the dropdown.
+    /// </summary>
     [Parameter]
     public List<TItem> Items { get; set; }
 
+    /// <summary>
+    /// When <code>Items == null || Items.Count == 0</code> This text is shown in the dropdown.
+    /// </summary>
     [Parameter]
     public string EmptyContentText { get; set; } = "No Items Found";
 
+    /// <summary>
+    /// The placeholder text for when no selection has been made.
+    /// </summary>
     [Parameter]
     public string PlaceholderText { get; set; } = "No Items";
 
+    /// <summary>
+    /// If set to true the dropdown will open. Is two way binding.
+    /// </summary>
     [Parameter]
     public bool IsOpen { get; set; }
     [Parameter]
     public EventCallback<bool> IsOpenChanged { get; set; }
 
+    /// <summary>
+    /// If true on selection the dropdown will close.
+    /// </summary>
     [Parameter]
     public bool CloseOnSelect { get; set; }
 
+    /// <summary>
+    /// Called when the drop down is opening. Passing the current filter value. This is called after the OnLoad.
+    /// </summary>
     [Parameter]
     public EventCallback<string> OnOpen { get; set; }
+
+    /// <summary>
+    /// Called when the drop down is closed. Passing the current filter value.
+    /// </summary>
     [Parameter]
     public EventCallback<string> OnClose { get; set; }
+
+    /// <summary>
+    /// Called when the drop down believes data needs to be loaded. Should set <see cref="Items"/>.
+    /// </summary>
     [Parameter]
     public EventCallback<string> OnLoad { get; set; }
 
+    /// <summary>
+    /// The direction to open the drop down.
+    /// </summary>
     [Parameter]
     public RfDropDownPosition Position { get; set; } = RfDropDownPosition.LeftDown;
 
+    /// <summary>
+    /// If true the items within the dropdown cannot be modified within.
+    /// </summary>
     [Parameter]
-    public bool IsReadonly { get; set; }
+    public bool IsReadonly { get; set; } 
+    #endregion
 
     protected bool IsLoading { get; set; }
 

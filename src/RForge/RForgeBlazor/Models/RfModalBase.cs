@@ -9,21 +9,35 @@ using System.Threading.Tasks;
 namespace RForgeBlazor.Models;
 public class RfModalBase : ComponentBase
 {
-
+    /// <summary>
+    /// Any css classes to add to the base modal div.
+    /// </summary>
     [Parameter]
     public string ModalCss { get; set; }
 
+    /// <summary>
+    /// Any css classes to add to .modal-content div.
+    /// </summary>
     [Parameter]
     public string ModalContentCss { get; set; }
 
+    /// <summary>
+    /// An override of the width of the modal. Can be any type of css expression.
+    /// </summary>
     [Parameter]
     public string Width { get; set; }
 
+    /// <summary>
+    /// If true the modal is shown otherise the modal is hidden. two way binding.
+    /// </summary>
     [Parameter]
     public bool IsVisible { get; set; }
     [Parameter]
     public EventCallback<bool> IsVisibleChanged { get; set; }
 
+    /// <summary>
+    /// Should the default close button be shown. By default = true
+    /// </summary>
     [Parameter]
     public bool ShowCloseButton { get; set; } = true;
 
