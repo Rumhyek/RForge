@@ -2,8 +2,6 @@
 
 @implements IDisposable
 
-
-
 @if (Messages != null)
 {
     <CascadingValue Value="this">
@@ -24,11 +22,19 @@
 
 @code {
 
+    /// <summary>
+    /// The default template for a message only notification.
+    /// </summary>
+    /// <param name="message">The message to show in the notification.</param>
     public static RenderFragment MessageOnly(string message) => __builder =>
     {
         @message
     };
 
+    /// <summary>
+    /// The default template for a notifcation with a message and title.
+    /// </summary>
+    /// <param name="notification">A tuple (message, title)</param>
     public static RenderFragment MessageAndTitle((string Message, string Title) notification) => __builder =>
     {
         <div class="block is-size-5"><strong>@notification.Title</strong></div>

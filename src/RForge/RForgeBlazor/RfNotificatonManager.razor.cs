@@ -4,6 +4,15 @@ using RForge.Abstractions;
 using RForgeBlazor.Services;
 
 namespace RForgeBlazor;
+
+/// <summary>
+/// Needed to render notifcations from <see cref="INotificationManager"/> or <see cref="INotificationManagerBackend"/>.
+/// </summary>
+/// <example>
+/// <code>
+/// &lt;RfNotificatonManager  /&gt;
+/// </code>
+/// </example>
 public partial class RfNotificatonManager : IDisposable
 {
     [Inject]
@@ -11,9 +20,9 @@ public partial class RfNotificatonManager : IDisposable
 
     #region Parameters
     [Parameter]
-    public RenderFragment ChildContent { get; set; }
-
-    [Parameter]
+    ///<summary>
+    /// The default <see cref="NotificationOptions"/> for a <see cref="RfNotificationSeverity.Error"/> notification.
+    ///</summary>
     public NotificationOptions DefaultErrorOptions { get; set; } = new NotificationOptions()
     {
         Color = RfNotificationColor.Danger,
@@ -23,6 +32,9 @@ public partial class RfNotificatonManager : IDisposable
     };
 
     [Parameter]
+    ///<summary>
+    /// The default <see cref="NotificationOptions"/> for a <see cref="RfNotificationSeverity.Warning"/> notification.
+    ///</summary>
     public NotificationOptions DefaultWarningOptions { get; set; } = new NotificationOptions()
     {
         Color = RfNotificationColor.Warning,
@@ -32,6 +44,9 @@ public partial class RfNotificatonManager : IDisposable
     };
 
     [Parameter]
+    ///<summary>
+    /// The default <see cref="NotificationOptions"/> for a <see cref="RfNotificationSeverity.Info"/> notification.
+    ///</summary>
     public NotificationOptions DefaultInfoOptions { get; set; } = new NotificationOptions()
     {
         Color = RfNotificationColor.Info,
@@ -42,6 +57,9 @@ public partial class RfNotificatonManager : IDisposable
     };
 
     [Parameter]
+    ///<summary>
+    /// The default <see cref="NotificationOptions"/> for a <see cref="RfNotificationSeverity.Success"/> notification.
+    ///</summary>
     public NotificationOptions DefaultSuccessOptions { get; set; } = new NotificationOptions()
     {
         Color = RfNotificationColor.Success,

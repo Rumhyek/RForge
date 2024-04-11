@@ -12,15 +12,3 @@
         <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
     }
 </div>
-
-
-@code {
-
-    [Parameter]
-    public RenderFragment ChildContent { get; set; }
-
-    private async Task OnCloseClick()
-    {
-        await IsVisibleChanged.InvokeAsync(false);
-    }
-}

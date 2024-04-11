@@ -1,7 +1,6 @@
 @using RForgeBlazor.Services
 @using System.ComponentModel.DataAnnotations
 
-@inject IDialogManager dm
 @implements IDisposable
 
 @if (ActiveDialog != null)
@@ -56,29 +55,10 @@
                 </EditForm>
             </RfModal>
             break;
-
     }
-
-
 }
 
 @code {
-    private Queue<RfDialogOption> pendingDialogs { get; set; } = new Queue<RfDialogOption>();
-    private RfDialogOption ActiveDialog { get; set; }
-
-    private EditContext EditContext { get; set; }
-    private PromptDialogForm PromptFormData { get; set; } = new();
-    private bool IsLoading { get; set; }
-
-    private string IsLoadingCss
-    {
-        get
-        {
-            if (IsLoading == true) return "is-loading";
-
-            return null;
-        }
-    }
 
     public static RenderFragment MessageOnly(string message) => __builder =>
     {
@@ -90,150 +70,4 @@
         <div class="block is-size-4"><strong>@notification.Title</strong></div>
         @notification.Message
     };
-
-    protected override void OnInitialized()
-    {
-        dm.RegisterDm(this);
-
-        EditContext = new EditContext(PromptFormData);
-        EditContext.SetFieldCssClassProvider(new CustomFieldClassProvider());
-    }
-
-    public void Show(RfDialogOption options)
-    {
-        if (ActiveDialog != null)
-        {
-            pendingDialogs.Enqueue(options);
-        }
-        else
-        {
-            ActiveDialog = options;
-            StateHasChanged();
-        }
-    }
-
-    private async Task OnConfirmClick()
-    {
-        if (IsLoading == true) return;
-
-        IsLoading = true;
-        StateHasChanged();
-        try
-        {
-            switch (ActiveDialog.DialogType)
-            {
-                case RfDialogType.Alert:
-                    await OnAlertTypeConfirm(ActiveDialog as RfDialogOptionAlert);
-                    break;
-                case RfDialogType.Confirm:
-                    await OnConfirmTypeConfirm(ActiveDialog as RfDialogOptionConfirm);
-                    break;
-                case RfDialogType.Prompt:
-                    await OnPromptTypeConfirm(ActiveDialog as RfDialogOptionPrompt);
-                    break;
-            }
-        }
-        catch
-        {
-
-        }
-
-        if (pendingDialogs.Count > 0)
-            ActiveDialog = pendingDialogs.Dequeue();
-        else
-            ActiveDialog = null;
-
-        IsLoading = false;
-
-        StateHasChanged();
-    }
-
-    private async Task OnCancelClick()
-    {
-        if (IsLoading == true) return;
-        IsLoading = true;
-        StateHasChanged();
-        try
-        {
-            switch (ActiveDialog.DialogType)
-            {
-                case RfDialogType.Alert:
-                    await OnAlertTypeCancel(ActiveDialog as RfDialogOptionAlert);
-                    break;
-                case RfDialogType.Confirm:
-                    await OnConfirmTypeCancel(ActiveDialog as RfDialogOptionConfirm);
-                    break;
-                case RfDialogType.Prompt:
-                    await OnPromptTypeCancel(ActiveDialog as RfDialogOptionPrompt);
-                    break;
-            }
-        }
-        catch
-        {
-
-        }
-
-        if (pendingDialogs.Count > 0)
-            ActiveDialog = pendingDialogs.Dequeue();
-        else
-            ActiveDialog = null;
-
-        IsLoading = false;
-
-        StateHasChanged();
-    }
-
-    private async Task OnAlertTypeConfirm(RfDialogOptionAlert options) => await options.OnAlert();
-    private Task OnAlertTypeCancel(RfDialogOptionAlert options) => Task.CompletedTask;
-
-    private async Task OnConfirmTypeConfirm(RfDialogOptionConfirm options) => await options.OnConfirm(true);
-    private async Task OnConfirmTypeCancel(RfDialogOptionConfirm options) => await options.OnConfirm(false);
-
-    private async Task OnPromptTypeConfirm(RfDialogOptionPrompt options)
-    {
-        await options.OnPrompt(PromptFormData.Input);
-        PromptFormData = new PromptDialogForm();
-        EditContext = new EditContext(PromptFormData);
-        EditContext.SetFieldCssClassProvider(new CustomFieldClassProvider());
-    }
-    private async Task OnPromptTypeCancel(RfDialogOptionPrompt options)
-    {
-        await options.OnPrompt(null);
-        PromptFormData = new PromptDialogForm();
-        EditContext = new EditContext(PromptFormData);
-        EditContext.SetFieldCssClassProvider(new CustomFieldClassProvider());
-    }
-
-    public void Dispose()
-    {
-        dm.Unregister();
-    }
-
-    private class PromptDialogForm
-    {
-        [Required]
-        public string Input { get; set; }
-    }
-
-    private class CustomFieldClassProvider : FieldCssClassProvider
-    {
-        public override string GetFieldCssClass(EditContext editContext, in FieldIdentifier fieldIdentifier)
-        {
-
-            var isValid = editContext.GetValidationMessages(fieldIdentifier).Any() == false;
-
-            if (editContext.IsModified(fieldIdentifier) == true)
-            {
-                if (isValid == true)
-                    return "modified valid";
-
-                return "modified invalid";
-            }
-
-            if (isValid == true)
-                return "valid";
-
-            return "invalid";
-        }
-    }
 }

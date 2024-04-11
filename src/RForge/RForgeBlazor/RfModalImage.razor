@@ -5,7 +5,7 @@
 <div class="modal @modalCss" style="@modalStyles">
     <div class="modal-background"></div>
     <div class="modal-content @modalContentCss">
-        <div class="image" style="@imageContainerStyles">
+        <div class="image @ImageCss" style="@imageContainerStyles">
             <img src="@ImageUrl" title="@ImageCaption" />
         </div>
         @if (string.IsNullOrWhiteSpace(ImageCaption) == false)
@@ -20,37 +20,3 @@
         <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
     }
 </div>
-
-
-@code {
-
-    [Parameter]
-    public string ImageCss { get; set; }
-
-    [Parameter]
-    public AspectRatio? AspectRatio { get; set; }
-    [Parameter]
-    public string ImageCaption { get; set; }
-
-
-    [Parameter]
-    public string ImageUrl { get; set; }
-
-    private string imageContainerStyles
-    {
-        get
-        {
-            if (IsVisible == false) return null;
-
-            string styles = null;
-            CssHelper.AddIfTrue(ref styles, AspectRatio != null, () => $"aspect-ratio: {AspectRatio.Value.Width} / {AspectRatio.Value.Height};");
-
-            return styles;
-        }
-    }
-
-    private async Task OnCloseClick()
-    {
-        await IsVisibleChanged.InvokeAsync(false);
-    }
-}

@@ -1,5 +1,3 @@
-@using RForge.Abstractions.Notifications
-@using static RForgeBlazor.RfNotificatonManager
 
 @if (Details == null)
 {
@@ -34,54 +32,4 @@ else
             @Details.DisplayFragment
         }
     </div>
-}
-
-@code {
-
-    [CascadingParameter]
-    public RfNotificatonManager NotificatonManager { get; set; }
-
-    [Parameter]
-    public NotificationDetails Details { get; set; }
-
-    private async void OnCloseClick()
-    {
-        NotificatonManager.OnRemoveNotification(Details);
-    }
-
-    private void OnTimerElapsed()
-    {
-        NotificatonManager.OnRemoveNotification(Details);
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        // if(Details.Timer != null)
-        // {
-        //     Details.Timer.OnElapsed(OnTimerElapsed);
-        //     await Details.Timer.StartAsync();
-        // }
-    }
-
-    private string ColorCssClass
-    {
-        get
-        {
-            if (Details == null)
-                return null;
-
-            switch (Details.Options.Color)
-            {
-                case RfNotificationColor.Danger: return "is-danger";
-                case RfNotificationColor.Primary: return "is-primary";
-                case RfNotificationColor.Link: return "is-link";
-                case RfNotificationColor.Info: return "is-info";
-                case RfNotificationColor.Success: return "is-success";
-                case RfNotificationColor.Warning: return "is-warning";
-            }
-
-            return null;
-        }
-    }
-
 }
