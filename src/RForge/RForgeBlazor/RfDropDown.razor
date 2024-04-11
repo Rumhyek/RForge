@@ -7,13 +7,13 @@
 <div class="dropdown @DropdownCss">
     <div class="dropdown-trigger">
         <button class="button" type="button" aria-haspopup="true" aria-controls="dropdown-menu" @onclick="@OnDropDownClick">
-            <span>
-                @if (SelectedItem == null)
-                {
-                    <span class="place-holder">@PlaceholderText</span>
-                }
-                else
-                {
+            @if (SelectedItem == null)
+            {
+                <span class="place-holder">@PlaceholderText</span>
+            }
+            else
+            {
+                <span class="@CssSelectedClass">
                     @if (SelectedItemTemplate != null)
                     {
                         @SelectedItemTemplate(SelectedItem)
@@ -22,8 +22,8 @@
                     {
                         @ChildContent(SelectedItem)
                     }
-                }
-            </span>
+                </span>
+            }
             <span class="rf-icon icon is-small @IsLoadingCss">
                 <i class="fa-solid fa-angle-down" aria-hidden="true"></i>
                 <span class="loader"></span>
@@ -65,12 +65,12 @@
                     string rowCss = null;
                     CssHelper.AddIfTrue(ref rowCss, IsSelected(item), "is-selected");
 
-                    <a class="dropdown-item @rowCss"
+                    <a class="dropdown-item @CssRowItemClass @rowCss"
                        @onclick=@(async () => await OnItemClick(item))
                        @onkeydown=@(async (e) => await OnItemKeyDown(e, item))
                        tabindex="0">
 
-                        @if(RowItemTemplate != null)
+                        @if (RowItemTemplate != null)
                         {
                             @RowItemTemplate(item)
                         }

@@ -26,6 +26,15 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     public string CssClass { get; set; }
 
     [Parameter]
+    public string CssSelectedClass { get; set; }
+
+    [Parameter]
+    public string CssRowItemClass { get; set; }
+
+    [Parameter]
+    public string CssFilterClass { get; set; }
+
+    [Parameter]
     public bool ShowFilter { get; set; } = true;
 
     [Parameter]
