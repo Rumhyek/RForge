@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RForge.Abstractions;
+﻿namespace RForge.Abstractions;
 
 /// <summary>
 /// Used to help render an image by the correct aspect ratio.

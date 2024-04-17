@@ -1,0 +1,98 @@
+@charset "utf-8";
+
+
+$scheme-h: 23;
+$scheme-s: 14%;
+$dark-l: 20%;
+$light-l: 90%;
+
+// Colors
+
+$black: hsl($scheme-h, 14%, 4%);
+$black-bis: hsl($scheme-h, 14%, 9%);
+$black-ter: hsl($scheme-h, 14%, 14%);
+
+$grey-darker: hsl($scheme-h, 14%, 21%);
+$grey-dark: hsl($scheme-h, 14%, 29%);
+$grey: hsl($scheme-h, 14%, 48%);
+$grey-light: hsl($scheme-h, 14%, 71%);
+$grey-lighter: hsl($scheme-h, 14%, 86%);
+$grey-lightest: hsl($scheme-h, 14%, 93%);
+
+$white-ter: hsl($scheme-h, 14%, 96%);
+$white-bis: hsl($scheme-h, 14%, 98%);
+$white: hsl($scheme-h, 14%, 100%);
+
+$orange: hsl(36, 100%, 48%);
+$yellow: hsl(53, 100%, 48%);
+$green: hsl(134, 60%, 41%);
+$turquoise: hsl(160, 100%, 43%);
+$cyan: hsl(206, 100%, 60%);
+$blue: hsl(237, 67%, 57%);
+$purple: hsl(274, 100%, 48%);
+$red: hsl(10, 100%, 56%);
+
+// Typography
+
+$family-sans-serif: "Inter", "SF Pro", "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+$family-monospace: "Inconsolata", "Hack", "SF Mono", "Roboto Mono", "Source Code Pro", "Ubuntu Mono", monospace;
+$render-mode: optimizeLegibility;
+
+$size-1: 3rem;
+$size-2: 2.5rem;
+$size-3: 2rem;
+$size-4: 1.5rem;
+$size-5: 1.25rem;
+$size-6: 1rem;
+$size-7: 0.75rem;
+
+// Scheme colors
+
+$scheme-main: $white;
+$scheme-main-bis: $white-bis;
+$scheme-main-ter: $white-ter;
+$scheme-invert: $black;
+$scheme-invert-bis: $black-bis;
+$scheme-invert-ter: $black-ter;
+
+// Status colors
+
+$primary: $orange;
+$info: $cyan;
+$success: $green;
+$warning: $yellow;
+$danger: $red;
+$light: $white-ter;
+$dark: $grey-darker;
+
+// Link colors
+
+$link: $blue;
+
+// Decorative colors
+
+$background: $white-ter;
+$border: $grey-lighter;
+$border-weak: $grey-lightest;
+
+// Code colors
+
+$code: $red;
+$code-background: $background;
+
+// Typography
+
+$family-primary: $family-sans-serif;
+$family-secondary: $family-sans-serif;
+$family-code: $family-monospace;
+
+$size-small: $size-7;
+$size-normal: $size-6;
+$size-medium: $size-5;
+$size-large: $size-4;
+
+
+
+/*! bulma.io v1.0.0 | MIT License | github.com/jgthms/bulma */
+@use "sass";
+

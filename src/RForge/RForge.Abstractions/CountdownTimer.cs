@@ -13,7 +13,7 @@ public class CountdownTimer : IDisposable
     /// The current status of this countdown timer.
     /// </summary>
     public TimerStatus Status { get; private set; } = TimerStatus.Stopped;
-    
+
     public CountdownTimer(int timeout, CancellationToken cancellationToken = default)
     {
         _ticksToTimeout = 100;

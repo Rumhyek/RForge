@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace RForge.Abstractions.Notifications;
+﻿namespace RForge.Abstractions.Notifications;
 
 /// <summary>
 /// Configuration for a notification.

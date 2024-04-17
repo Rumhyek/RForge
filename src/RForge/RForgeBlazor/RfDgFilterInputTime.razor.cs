@@ -14,7 +14,7 @@ public partial class RfDgFilterInputTime
     /// <summary>
     /// The maximum allowed time.
     /// </summary>
-    public TimeOnly? MaxValue { get; set; } 
+    public TimeOnly? MaxValue { get; set; }
     #endregion
 
     public override string DefaultAriaLabelValue => "Time Filter";

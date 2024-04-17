@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using RForgeBlazor.Models;
-using System.Runtime.InteropServices;
 
 namespace RForgeBlazor.Services;
 public class DialogManager : IDialogManager
@@ -125,13 +124,13 @@ public class DialogManager : IDialogManager
     public void Prompt(string message, string title, Func<string, Task> onPrompt, string confirmText = "Ok", string cancelText = "Cancel")
     {
         Prompt(RfDialogManager.MessageAndTitle((message, title)), onPrompt, confirmText, cancelText);
-    } 
+    }
     #endregion
 
     public void RegisterDm(RfDialogManager dialogManager)
     {
         _dialogManager = dialogManager;
-        while(_dialogOptions.Count > 0)
+        while (_dialogOptions.Count > 0)
         {
             var dialog = _dialogOptions.Dequeue();
             _dialogManager.Show(dialog);

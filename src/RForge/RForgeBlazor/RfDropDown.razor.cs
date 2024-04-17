@@ -8,7 +8,7 @@ namespace RForgeBlazor;
 /// A dropdown that supports a single selection.
 /// </summary>
 /// <typeparam name="TItem">The data type of a item within the dropdown.</typeparam>
-public partial class RfDropDown<TItem> : RfDropDownBase<TItem>  
+public partial class RfDropDown<TItem> : RfDropDownBase<TItem>
 {
     #region Parameters
     /// <summary>

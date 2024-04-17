@@ -2,9 +2,5 @@
   "version": "1.0",
   "defaultProvider": "cdnjs",
   "libraries": [
-    {
-      "library": "bulma@1.0.0",
-      "destination": "wwwroot/lib/bulma/"
-    }
   ]
 }

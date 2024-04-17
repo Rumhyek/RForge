@@ -154,7 +154,7 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     /// If true the items within the dropdown cannot be modified within.
     /// </summary>
     [Parameter]
-    public bool IsReadonly { get; set; } 
+    public bool IsReadonly { get; set; }
     #endregion
 
     protected bool IsLoading { get; set; }
@@ -235,11 +235,11 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 
     protected async Task CloseDropDown()
     {
-        if(IsOpen == false) return;
+        if (IsOpen == false) return;
 
         IsOpen = false;
         await IsOpenChanged.InvokeAsync(false);
-        
+
         _filterChanges.Clear();
         _filterHandler = null;
         if (FilterClearOnClose == true)
@@ -310,7 +310,7 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
             return css;
         }
     }
-    
+
     #endregion
 
     internal class FilterEventArgs

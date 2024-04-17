@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using RForge.Abstractions.Notifications;
 using RForge.Abstractions;
+using RForge.Abstractions.Notifications;
 using RForgeBlazor.Services;
 
 namespace RForgeBlazor;
@@ -161,14 +161,14 @@ public partial class RfNotificatonManager : IDisposable
             Options = baseOptions,
         };
 
-        if(baseOptions.ShowFor.HasValue && baseOptions.ShowFor > 0)
+        if (baseOptions.ShowFor.HasValue && baseOptions.ShowFor > 0)
         {
             notification.Timer = new CountdownTimer(baseOptions.ShowFor.Value)
                 .OnElapsed(() => OnRemoveNotification(notification));
 
             _ = notification.Timer.StartAsync();
         }
-        
+
         Messages[baseOptions.Position].Add(notification);
 
         StateHasChanged();
@@ -197,10 +197,10 @@ public partial class RfNotificatonManager : IDisposable
         notification.Timer?.Dispose();
         notification.Timer = null;
 
-        foreach(var location in Messages.Keys)
+        foreach (var location in Messages.Keys)
         {
             var notifications = Messages[location];
-            if(notifications.RemoveAll(n => n.Id == notification.Id) > 0)
+            if (notifications.RemoveAll(n => n.Id == notification.Id) > 0)
             {
                 StateHasChanged();
                 return;
@@ -218,9 +218,9 @@ public partial class RfNotificatonManager : IDisposable
             _notificationManager.OnClearBySeverity -= NotificationManager_OnClearBySeverity;
         }
 
-        foreach(var position in Messages.Values)
+        foreach (var position in Messages.Values)
         {
-            foreach(var notification in position)
+            foreach (var notification in position)
             {
                 notification.Timer?.Dispose();
                 notification.Timer = null;
@@ -237,6 +237,6 @@ public partial class RfNotificatonManager : IDisposable
         public RenderFragment DisplayFragment { get; set; }
 
         internal CountdownTimer Timer { get; set; }
-        
+
     }
 }

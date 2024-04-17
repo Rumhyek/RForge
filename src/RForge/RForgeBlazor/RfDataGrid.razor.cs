@@ -12,26 +12,26 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public int PreRenderColumnCount { get; set; } = 4;
-    
+
     /// <summary>
     /// How many rows to render while showing the skeleton mode. Default = null;
     /// </summary>
     [Parameter]
     public int? PreRenderRowCount { get; set; }
 
-    
+
     /// <summary>
     /// If true shows the filter row.
     /// </summary>
     [Parameter]
     public bool AllowFilters { get; set; }
-    
+
     /// <summary>
     /// If true adds support for <see cref="OnRowSelect"/> and <see cref="OnRowDeselect"/>
     /// </summary>
     [Parameter]
     public bool AllowSelection { get; set; }
-    
+
     /// <summary>
     /// If set the tells the Data Grid what the maximum selected rows.
     /// </summary>
@@ -94,13 +94,13 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public EventCallback<TRowData> OnRowSelect { get; set; }
-    
+
     /// <summary>
     /// Fires when a row is deselected returning the value of the row.
     /// </summary>
     [Parameter]
     public EventCallback<TRowData> OnRowDeselect { get; set; }
-    
+
     /// <summary>
     /// Called when the data grid believes new data should be shown.
     /// </summary>
@@ -112,13 +112,13 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public RenderFragment Headers { get; set; }
-    
+
     /// <summary>
     /// The template section to add filters. Use <see cref="RfDgFilterInput{TType}"/> or use <see cref="RfDgFilterNone"/> for blank spaces.
     /// </summary>
     [Parameter]
     public RenderFragment Filters { get; set; }
-    
+
     /// <summary>
     /// The template section to create the table cells. Use <see cref="RfDgCell{TRowData}"/>
     /// </summary>

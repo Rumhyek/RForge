@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RForge.Abstractions.Modal;
+﻿namespace RForge.Abstractions.Modal;
 /// <summary>
 /// A way for Interactive Server blazor apps to communicate with the frontend to push dialogs.
 /// </summary>
