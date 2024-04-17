@@ -1,5 +1,42 @@
 ﻿@inherits LayoutComponentBase
 
+<nav class="navbar is-danger is-position-sticky" style="top: 0;">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/">
+                RForge
+            </a>
+            <span class="navbar-burger burger" data-target="navbarMenuHero2">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+        </div>
+        <div id="navbarMenuHero2" class="navbar-menu">
+            <div class="navbar-start">
+                <NavLink class="navbar-item" href="component-listing">
+                    Components
+                </NavLink><NavLink class="navbar-item" href="bulma-test">
+                    Bulma Test
+                </NavLink>
+                <NavLink class="navbar-item" href="https://bulma.io/" target="_blank">
+                    <span>Bulma</span>
+                    <span class="icon">
+                        <small class="fas fa-up-right-from-square"></small>
+                    </span>
+                </NavLink>
+                <NavLink class="navbar-item" href="https://github.com/Rumhyek/RForge" target="_blank">
+                    <span>RForge Repo</span>
+                    <span class="icon">
+                        <small class="fas fa-up-right-from-square"></small>
+                    </span>
+                </NavLink>
+                
+            </div>
+        </div>
+    </div>
+</nav>
+
 @Body
 
 <div id="blazor-error-ui">
