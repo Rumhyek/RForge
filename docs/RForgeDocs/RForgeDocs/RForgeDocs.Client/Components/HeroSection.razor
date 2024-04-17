@@ -1,0 +1,60 @@
+﻿@using RForgeDocs.Abstractions
+
+<section class="hero is-dark @heroCssClass">
+    <div class="container @ContainerCssClass">
+        <div class="hero-body">
+            <h1 class="title is-size-2 @titleCssClass">@Title</h1>
+            @if (string.IsNullOrWhiteSpace(SubTitle) == false)
+            {
+                <p class="subtitle">@SubTitle</p>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+
+    [Parameter]
+    public string Title { get; set; }
+    [Parameter]
+    public string SubTitle { get; set; }
+
+    [Parameter]
+    public bool SpaceTitle { get; set; }
+
+    [Parameter]
+    public string ContainerCssClass { get; set; }
+
+    [Parameter]
+    public HeroSectionSize Size { get; set; } = HeroSectionSize.Default;
+
+    private string heroCssClass
+    {
+        get
+        {
+            switch (Size)
+            {
+                case HeroSectionSize.Small: return "is-small";
+                case HeroSectionSize.Medium: return "is-medium";
+                case HeroSectionSize.Large: return "is-large";
+                case HeroSectionSize.HalfHeight: return "is-halfheight";
+                case HeroSectionSize.FullHeight: return "is-fullheight";
+            }
+
+            return null;
+        }
+
+    }
+
+    private string titleCssClass
+    {
+        get
+        {
+            if (SpaceTitle == true)
+                return "is-spaced";
+
+            return null;
+        }
+    }
+
+}

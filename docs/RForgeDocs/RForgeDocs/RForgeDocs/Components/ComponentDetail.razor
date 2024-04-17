@@ -1,0 +1,121 @@
+﻿
+
+<HeroSection Title="@Title" SubTitle="@SubTitle" />
+
+
+<div class="container">
+    <div class="breadcrumb mt-2" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="/">RForge</a></li>
+            <li><a href="/component-listing">Components</a></li>
+            <li class="is-active"><a href="#" aria-current="page">@Title</a></li>
+        </ul>
+    </div>
+
+    <div class="columns">
+
+        <div class="column is-3-desktop is-4-tablet">
+
+            <section class="section">
+
+                <div class="buttons">
+
+                    @if (PlaygroundUrl != null)
+                    {
+                        <a class="button is-fullwidth is-primary is-outlined" href="@PlaygroundUrl">Playground</a>
+                    }
+
+                </div>
+
+
+                @if (RepoLinks != null)
+                {
+                    <div class="menu">
+                        <p class="menu-label">Repository Links</p>
+                        <ul class="menu-list">
+                            @RepoLinks
+                        </ul>
+
+                    </div>
+                }
+
+                @if (Examples != null)
+                {
+                    <div class="menu">
+                        <p class="menu-label">Examples</p>
+                        <ul class="menu-list">
+                            @Examples
+                        </ul>
+
+                    </div>
+                }
+
+            </section>
+
+        </div>
+
+        <div class="column">
+
+
+            @if (Purpose != null)
+            {
+                <section class="section">
+                    @Purpose
+                </section>
+            }
+
+            @if (BasicExample != null)
+            {
+                <section class="section">
+                    <h2 class="title">Basic Example</h2>
+                    @Setup
+                </section>
+            }
+            @if (Setup != null)
+            {
+                <section class="section">
+                    <h2 class="title">How to Setup</h2>
+                    @Setup
+                </section>
+            }
+        </div>
+    </div>
+
+</div>
+
+
+@code {
+
+    [Parameter]
+    public RenderFragment HeroBanner { get; set; }
+
+    [Parameter]
+    public RenderFragment Examples { get; set; }
+
+    [Parameter]
+    public RenderFragment Setup { get; set; }
+
+    [Parameter]
+    public RenderFragment BasicExample { get; set; }
+
+    [Parameter]
+    public RenderFragment Purpose { get; set; }
+
+    [Parameter]
+    public RenderFragment RepoLinks { get; set; }
+
+    [Parameter]
+    public string PlaygroundUrl { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+    [Parameter]
+    public string SubTitle { get; set; }
+
+
+    public static RenderFragment SideLink((string title, string url) link) => __builder =>
+    {
+        <li><a href="@link.url">@link.title</a></li>
+    };
+
+}

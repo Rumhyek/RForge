@@ -1,16 +1,16 @@
 ﻿@page "/component-listing"
 
 
-<section class="hero is-dark">
-    <div class="container">
-        <div class="hero-body">
-            <h1 class="title is-size-2">RForge Component List</h1>
-            <p class="subtitle">A list of all components within the library</p>
-        </div>
-    </div>
-</section>
-<div class="container">
+<HeroSection Title="RForge Component List"
+             SubTitle="A list of all components within the library" />
 
+<div class="container">
+    <div class="breadcrumb mt-2" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="/">RForge</a></li>
+            <li class="is-active"><a href="/component-listing" aria-current="page">Components</a></li>
+        </ul>
+    </div>
 
     <div class="columns">
 
@@ -31,7 +31,7 @@
                             </ul>
                             <p class="menu-label mt-5">Modals</p>
                             <ul class="menu-list">
-                                <li><a href="/">Basic Modal</a></li>
+                                <li><a href="/basic-modal/details">Basic Modal</a></li>
                                 <li><a href="/">Image Modal</a></li>
                                 <li><a href="/">Card Modal</a></li>
                             </ul>

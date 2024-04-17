@@ -1,0 +1,46 @@
+﻿@page "/basic-modal/details"
+
+<ComponentDetail Title="Modal (Basic)"
+                 PlaygroundUrl="/basic-modal/playground"
+                 SubTitle="Minimal modal implementation">
+
+    <Examples>
+        @ComponentDetail.SideLink(("Basic example", "/basic-modal/details/example/basic-example"))
+
+    </Examples>
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("RfModal.razor", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfModal.razor"))
+        @ComponentDetail.SideLink(("RfModal.razor.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfModal.razor.cs"))
+        @ComponentDetail.SideLink(("RfModalBase.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfModalBase.cs"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                <code>RfModal</code> creates a basic modal that supports the minimum required setup.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                Use <code>RfModal</code> when you need to create a custom modal but don't need to recreate the <code>IsVisible</code> code again.<a href="#"></a>
+            </p>
+
+            <h4>When not to Use</h4>
+            <p>
+                Don't use <code>RfModal</code> when dealing with forms.
+                Instead use <a href="/card-modal/details"><code>RfCardModal</code></a>.
+            </p>
+        </div>
+    </Purpose>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+
+</ComponentDetail>
+
+@code {
+
+}
