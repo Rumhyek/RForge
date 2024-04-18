@@ -1,0 +1,27 @@
+﻿
+<div class="field">
+    @if(Label != null)
+    {
+        <label class="label">@Label</label>
+    }
+    <div class="control">
+        @ChildContent
+    </div>
+    @if(HelpText != null)
+    {
+        <p class="help">@HelpText</p>
+    }
+</div>
+
+
+@code {
+
+    [Parameter]
+    public string Label { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string HelpText { get; set; }
+}

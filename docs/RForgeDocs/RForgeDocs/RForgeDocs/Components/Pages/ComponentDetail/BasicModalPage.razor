@@ -38,7 +38,7 @@
                     Dealing with images. Instead use <a href="/image-modal/details"><code>RfImageModal</code></a>.
                 </li>
                 <li>
-                    Creating confirmation, alerts, or prompt dialogs. 
+                    Creating confirmation, alerts, or prompt dialogs.
                     Instead use <a href="/dialog-manager/details"><code>RfDialogManager</code></a>.
                 </li>
             </ul>
@@ -48,6 +48,34 @@
     <Setup>
         <BasicSetupDetails />
     </Setup>
+
+
+    <BasicUsage>
+
+        <div class="content">
+
+            <p>
+                <code>RfModal</code> works by making use of <code>IsVisible</code> parameter.
+                It supports two way binding allowing the modal itself to close it. 
+                The <code>ChildContent</code> is then used to render the contents of the modal.
+
+            </p>
+
+            <p>Below show a basic example of <code>RfModal</code>.</p>
+
+            <pre><xmp><RfModal @@bind-IsVisible="ModalIsVisible" />
+<a class="button" @@onclick="OnShowModalClick">Show Modal</a>
+
+@@code {
+    public bool ModalIsVisible { get; set; }
+
+    public void OnShowModalClick() => ModalIsVisible = true;
+}</xmp></pre>
+
+        </div>
+
+    </BasicUsage>
+
 
 </ComponentDetail>
 

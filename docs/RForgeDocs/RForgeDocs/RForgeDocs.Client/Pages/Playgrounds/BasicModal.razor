@@ -1,0 +1,153 @@
+﻿@page "/basic-modal/playground"
+@rendermode InteractiveAuto
+
+<PlaygroundDetails @ref="Logger"
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/BasicModal.razor")"
+                   HasEvents=false
+                   SubTitle="Basic Modal"
+                   ComponentName="Basic Modal"
+                   Title="Playground"
+                   ComponentDetailsUrl="/basic-modal/details">
+
+    <Parameters>
+
+        <BulmaInput Label="ModelCss"
+                    HelpText="Any css classes to add to the base modal div.">
+            <InputText type="text" @bind-Value=@ModalCss class="input" />
+        </BulmaInput>
+        <BulmaInput Label="ModalContentCss"
+                    HelpText="Any css classes to add to .modal-content div.">
+            <InputText type="text" @bind-Value=@ModalContentCss class="input" />
+        </BulmaInput>
+        <BulmaInput Label="Width"
+                    HelpText="An override of the width of the modal. Can be any type of css expression.">
+            <InputText type="text" @bind-Value=@Width class="input" />
+        </BulmaInput>
+        <BulmaCheckbox Label="IsVisible"
+                       HelpText="If true the modal is shown otherise the modal is hidden. two way binding.">
+            <InputCheckbox @bind-Value=IsVisible class="checkbox" />
+        </BulmaCheckbox>
+        <BulmaCheckbox Label="ShowCloseButton"
+                       HelpText="Should the default close button be shown. By default = true.">
+            <InputCheckbox @bind-Value=ShowCloseButton class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaInput Label="Content Option"
+                    HelpText="Changes out the content of the modal.">
+            <div class="select is-primary">
+                <select @bind=ContentOption>
+                    @foreach (var opt in Enum.GetValues(typeof(BasicModalContent)))
+                    {
+                        <option value="@opt">@opt</option>
+                    }
+                </select>
+            </div>
+        </BulmaInput>
+
+    </Parameters>
+
+    <Display>
+
+        <a class="button is-primary" @onclick=@(() => IsVisible = true)>Show Modal</a>
+
+    </Display>
+
+</PlaygroundDetails>
+
+<RfModal @bind-IsVisible=@IsVisible
+         ModalCss="@ModalCss"
+         ModalContentCss="@ModalContentCss"
+         ShowCloseButton="@ShowCloseButton"
+         Width="@Width">
+
+    @if (ContentOption == BasicModalContent.Simple)
+    {
+        <p>I'm something simple to add as content.</p>
+    }
+    else if (ContentOption == BasicModalContent.Complex)
+    {
+        <article class="media">
+            <div class="media-left">
+                <figure class="image is-64x64">
+                    <img src="https://placehold.co/128x128/" alt="Image">
+                </figure>
+            </div>
+            <div class="media-content">
+                <div class="content">
+                    <p>
+                        <strong>John Smith</strong> <small>@@johnsmith</small> <small>31m</small>
+                        <br>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean efficitur sit amet massa fringilla
+                        egestas. Nullam condimentum luctus turpis.
+                    </p>
+                </div>
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="retweet">
+                            <span class="icon is-small">
+                                <i class="fas fa-retweet" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                        <a class="level-item" aria-label="like">
+                            <span class="icon is-small">
+                                <i class="fas fa-heart" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </article>
+    }
+
+    @if (ShowCloseButton == false)
+    {
+        <div class="buttons is-right">
+            <a class="button"
+               @onclick=@(() => IsVisible = false)
+               title="We need some way to close this -_-.">
+                Close
+            </a>
+        </div>
+    }
+
+</RfModal>
+
+@code {
+
+    public PlaygroundDetails Logger { get; set; }
+
+    /// <summary>
+    /// Any css classes to add to the base modal div.
+    /// </summary>
+    public string ModalCss { get; set; }
+
+    /// <summary>
+    /// Any css classes to add to .modal-content div.
+    /// </summary>
+    public string ModalContentCss { get; set; }
+
+    /// <summary>
+    /// An override of the width of the modal. Can be any type of css expression.
+    /// </summary>
+    public string Width { get; set; }
+
+    /// <summary>
+    /// If true the modal is shown otherise the modal is hidden. two way binding.
+    /// </summary>
+    public bool IsVisible { get; set; }
+
+    /// <summary>
+    /// Should the default close button be shown. By default = true
+    /// </summary>
+    public bool ShowCloseButton { get; set; } = true;
+
+    public BasicModalContent ContentOption { get; set; } = BasicModalContent.Complex;
+
+    public enum BasicModalContent
+    {
+        Empty,
+        Simple,
+        Complex
+    }
+
+}

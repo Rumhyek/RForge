@@ -1,0 +1,29 @@
+﻿
+<div class="field">
+
+    <div class="control">
+        <label class="checkbox">
+            @ChildContent
+            
+            @Label
+
+        </label>
+    </div>
+    @if (HelpText != null)
+    {
+        <p class="help">@HelpText</p>
+    }
+</div>
+
+
+@code {
+
+    [Parameter]
+    public string Label { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string HelpText { get; set; }
+}
