@@ -1,0 +1,54 @@
+﻿@page "/image-modal/details/example/basic-example"
+@rendermode InteractiveAuto
+
+@using RForgeDocs.Abstractions
+<ExampleDetail Title="Basic Example"
+               SubTitle="Image Modal"
+               ComponentName="Modal (Image)"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/ImageModal/ImageExamplePage.razor")"
+               ComponentDetailsUrl="/image-modal/details" />
+
+<div class="container">
+    <article class="section">
+
+        <div class="content">
+            <p>
+                <code>RfModalImage</code> makes use of Bulma 
+                <a href="https://bulma.io/documentation/components/modal/#image-modal" target="_blank">modal</a>.
+            </p>
+
+            <p>
+                Below showcases an minimal image modal example.
+            </p>
+            <div class="block">
+                <a class="button is-primary" @onclick="@(() => ImageModalIsVisible = true)">Open Modal</a>
+            </div>
+
+            <p>
+                Below showcases the same modal now with a caption.
+            </p>
+            <div class="block">
+                <a class="button is-primary" @onclick="@(() => ImageWithCaptionModalIsVisible = true)">Open With Caption</a>
+            </div>
+
+            <p>
+                Below showcases the a modal with an extra large image.
+            </p>
+            <div class="block">
+                <a class="button is-primary" @onclick="@(() => LargeImageModalIsVisible = true)">Open Large Image</a>
+            </div>
+
+        </div>
+    </article>
+</div>
+
+<RfModalImage @bind-IsVisible="ImageModalIsVisible" ImageUrl="https://placehold.co/600/" />
+<RfModalImage @bind-IsVisible="ImageWithCaptionModalIsVisible" ImageUrl="https://placehold.co/600/" ImageCaption="An Image Caption >_<" />
+<RfModalImage @bind-IsVisible="LargeImageModalIsVisible" Width="1920px" ImageUrl="https://placehold.co/1920x1080/" />
+
+@code {
+
+    private bool ImageModalIsVisible { get; set; }
+    private bool ImageWithCaptionModalIsVisible { get; set; }
+    private bool LargeImageModalIsVisible { get; set; }
+}

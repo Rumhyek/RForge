@@ -62,5 +62,19 @@ public partial class RfModalImage : RfModalBase
             return styles;
         }
     }
+
+    private string imageContainerCss
+    {
+        get
+        {
+            if (IsVisible == false) return null;
+
+            string css = null;
+            CssHelper.AddIfTrue(ref css, AspectRatio != null, "custom-ratio");
+            CssHelper.AddIfTrue(ref css, string.IsNullOrWhiteSpace(ImageCss) == false, ImageCss);
+            return css;
+        }
+    }
+
     #endregion
 }

@@ -1,0 +1,144 @@
+﻿@page "/image-modal/playground"
+@using RForge.Abstractions
+@rendermode InteractiveAuto
+
+<PlaygroundDetails @ref="Logger"
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/ImageModal.razor")"
+                   HasEvents=false
+                   SubTitle="Image Modal"
+                   ComponentName="Modal (Image)"
+                   Title="Playground"
+                   ComponentDetailsUrl="/image-modal/details">
+
+    <Parameters>
+
+        <h3 class="title is-size-5">RfModalBase</h3>
+
+        <BulmaInput Label="ModelCss"
+                    HelpText="Any css classes to add to the base modal div.">
+            <InputText type="text" @bind-Value=@ModalCss class="input" />
+        </BulmaInput>
+        <BulmaInput Label="ModalContentCss"
+                    HelpText="Any css classes to add to .modal-content div.">
+            <InputText type="text" @bind-Value=@ModalContentCss class="input" />
+        </BulmaInput>
+        <BulmaInput Label="Width"
+                    HelpText="An override of the width of the modal. Can be any type of css expression.">
+            <InputText type="text" @bind-Value=@Width class="input" />
+        </BulmaInput>
+        <BulmaCheckbox Label="IsVisible"
+                       HelpText="If true the modal is shown otherise the modal is hidden. two way binding.">
+            <InputCheckbox @bind-Value=IsVisible class="checkbox" />
+        </BulmaCheckbox>
+        <BulmaCheckbox Label="ShowCloseButton"
+                       HelpText="Should the default close button be shown. By default = true.">
+            <InputCheckbox @bind-Value=ShowCloseButton class="checkbox" />
+        </BulmaCheckbox>
+
+        <h3 class="title mt-6 is-size-5">RfModalImage</h3>
+        <BulmaInput Label="ImageCss"
+                    HelpText="Any classes to apply to the wrapping div.">
+            <InputText type="text" @bind-Value=@ImageCss class="input" />
+        </BulmaInput>
+        <BulmaInput Label="ImageCaption"
+                    HelpText="Text to add to the image title and below the image.">
+            <InputText type="text" @bind-Value=@ImageCaption class="input" />
+        </BulmaInput>
+        <BulmaInput Label="ImageUrl"
+                    HelpText="The url use to show the image.">
+            <InputText type="text" @bind-Value=@ImageUrl class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="AspectRatio X"
+                    HelpText="If set the image will set the aspect ratio given.">
+            <InputNumber class="input" @bind-Value=@AspectRatioX />
+        </BulmaInput>
+
+        <BulmaInput Label="AspectRatio Y"
+                    HelpText="If set the image will set the aspect ratio given.">
+            <InputNumber class="input" @bind-Value=@AspectRatioY />
+        </BulmaInput>
+    </Parameters>
+
+    <Display>
+
+        <a class="button is-primary" @onclick=@(() => IsVisible = true)>Show Modal</a>
+
+    </Display>
+
+</PlaygroundDetails>
+
+<RfModalImage @bind-IsVisible=@IsVisible
+              ModalCss="@ModalCss"
+              ModalContentCss="@ModalContentCss"
+              ShowCloseButton="@ShowCloseButton"
+              ImageCss="@ImageCss"
+              AspectRatio="@CurrentAspectRatio"
+              ImageCaption="@ImageCaption"
+              ImageUrl="@ImageUrl"
+              Width="@Width" />
+
+@code {
+
+    public PlaygroundDetails Logger { get; set; }
+
+    /// <summary>
+    /// Any css classes to add to the base modal div.
+    /// </summary>
+    public string ModalCss { get; set; }
+
+    /// <summary>
+    /// Any css classes to add to .modal-content div.
+    /// </summary>
+    public string ModalContentCss { get; set; }
+
+    /// <summary>
+    /// An override of the width of the modal. Can be any type of css expression.
+    /// </summary>
+    public string Width { get; set; }
+
+    /// <summary>
+    /// If true the modal is shown otherise the modal is hidden. two way binding.
+    /// </summary>
+    public bool IsVisible { get; set; }
+
+    /// <summary>
+    /// Should the default close button be shown. By default = true
+    /// </summary>
+    public bool ShowCloseButton { get; set; } = true;
+
+
+    ///<summary>
+    /// Any classes to apply to the wrapping div
+    ///</summary>
+    public string ImageCss { get; set; }
+
+    public int? AspectRatioX { get; set; }
+    public int? AspectRatioY { get; set; }
+
+    ///<summary>
+    /// If set the image will set the aspect ratio given.
+    ///</summary>
+    public AspectRatio? CurrentAspectRatio
+    {
+        get
+        {
+            if (AspectRatioX.HasValue == false || AspectRatioY.HasValue == false)
+                return null;
+
+            return AspectRatio.Custom(Math.Max(1, AspectRatioX.GetValueOrDefault()), Math.Max(1, AspectRatioY.GetValueOrDefault()));
+        }
+    }
+
+    ///<summary>
+    /// Text to add to the image title and below the image.
+    ///</summary>
+    public string ImageCaption { get; set; }
+
+
+    ///<summary>
+    /// The url use to show the image.
+    ///</summary>
+    public string ImageUrl { get; set; } = "https://placehold.co/600x600/";
+
+}

@@ -1,0 +1,76 @@
+﻿@page "/image-modal/details"
+
+<ComponentDetail Title="Modal (Image)"
+                 PlaygroundUrl="/image-modal/playground"
+                 SubTitle="Minimal modal implementation">
+
+    <Examples>
+        @ComponentDetail.SideLink(("Basic example", "/image-modal/details/example/basic-example"))
+
+    </Examples>
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("RfModalImage.razor", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfModalImage.razor"))
+        @ComponentDetail.SideLink(("RfModalImage.razor.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfModalImage.razor.cs"))
+        @ComponentDetail.SideLink(("RfModalBase.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfModalBase.cs"))
+        @ComponentDetail.SideLink(("AspectRatio.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/AspectRatio.cs"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                <code>RfModalImage</code> creates a modal designed to show an image.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                Use <code>RfModalImage</code> when you need to display a large view of an image.
+            </p>
+
+            <h4>When not to Use</h4>
+            <p>Don't use <code>RfModalImage</code> when:</p>
+            <ul>
+                <li>
+                    Dealing with editing / uploading of an image. Instead use <code>RfCardModal</code>.
+                </li>
+            </ul>
+        </div>
+    </Purpose>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+
+
+    <BasicUsage>
+
+        <div class="content">
+
+            <p>
+                <code>RfModalImage</code> works by making use of <code>IsVisible</code> and <code>ImageUrl</code> parameters.
+                It supports two way binding allowing the modal itself to close it. 
+                You may also supply it with an caption and aspect ratio via <code>ImageCaption</code> and <code>AspectRatio</code>.
+            </p>
+
+            <p>Below show a basic example of <code>RfModalImage</code>.</p>
+
+            <pre><xmp><RfModalImage @@bind-IsVisible="ModalIsVisible" ImageUrl="https//placehold.co/600/" />
+<a class="button" @@onclick="OnShowModalClick">Show Modal</a>
+
+@@code {
+    public bool ModalIsVisible { get; set; }
+
+    public void OnShowModalClick() => ModalIsVisible = true;
+}</xmp></pre>
+
+        </div>
+
+    </BasicUsage>
+
+
+</ComponentDetail>
+
+@code {
+
+}
