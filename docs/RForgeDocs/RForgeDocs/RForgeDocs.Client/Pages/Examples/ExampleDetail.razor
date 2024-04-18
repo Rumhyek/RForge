@@ -1,0 +1,53 @@
+﻿@using RForgeDocs.Client.Components
+
+@if (PageSourceUrl != null)
+{
+    <HeroSection Title="@Title" SubTitle="@SubTitle">
+
+        <HeroFooter>
+            <div class="container has-text-right">
+                <a class="button is-primary mb-3" href="@PageSourceUrl">
+                    <span>Page Source Code</span>
+                    <span class="icon">
+                        <i class="fas fa-up-right-from-square"></i>
+                    </span>
+                </a>
+            </div>
+        </HeroFooter>
+
+    </HeroSection>
+}
+else
+{
+    <HeroSection Title="@Title" SubTitle="@SubTitle" />
+}
+
+<div class="container">
+    <div class="breadcrumb mt-2" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="/">RForge</a></li>
+            <li><a href="/component-listing">Components</a></li>
+            <li><a href="@ComponentDetailsUrl">@ComponentName</a></li>
+            <li class="is-active"><a href="#" aria-current="page">@Title</a></li>
+        </ul>
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public string Title { get; set; }
+    [Parameter]
+    public string SubTitle { get; set; }
+
+    [Parameter]
+    public string PageSourceUrl { get; set; }
+
+    [Parameter]
+    public string ComponentDetailsUrl { get; set; }
+
+    [Parameter]
+    public string ComponentName { get; set; }
+
+}

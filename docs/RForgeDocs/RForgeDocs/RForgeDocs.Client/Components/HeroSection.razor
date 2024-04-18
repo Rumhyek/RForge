@@ -1,6 +1,14 @@
 ﻿@using RForgeDocs.Abstractions
 
 <section class="hero is-dark @heroCssClass">
+
+    @if (HeroHead != null)
+    {
+        <div class="hero-head">
+            @HeroHead
+        </div>
+    }
+
     <div class="container @ContainerCssClass">
         <div class="hero-body">
             <h1 class="title is-size-2 @titleCssClass">@Title</h1>
@@ -10,6 +18,13 @@
             }
         </div>
     </div>
+    @if(HeroFooter != null)
+    {
+        <div class="hero-footer">
+            @HeroFooter
+        </div>    
+    }
+    
 </section>
 
 @code {
@@ -27,6 +42,12 @@
 
     [Parameter]
     public HeroSectionSize Size { get; set; } = HeroSectionSize.Default;
+
+    [Parameter]
+    public RenderFragment HeroFooter { get; set; }
+
+    [Parameter]
+    public RenderFragment HeroHead { get; set; }
 
     private string heroCssClass
     {

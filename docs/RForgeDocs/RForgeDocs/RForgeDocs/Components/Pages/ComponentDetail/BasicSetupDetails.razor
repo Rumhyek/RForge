@@ -9,10 +9,106 @@
     <ol>
         <li>Install the Nuget package</li>
         <li>Import the namespaces (optional)</li>
+        <li>Register RForge services</li>
         <li>Include Bulma CSS</li>
     </ol>
 
+    <h2>Install the Nuget Package</h2>
 
+    <p>
+        RForge Blazor components are installed via Nuget.
+        There are two packages. One for the blazor app and one for the library if any.
+    </p>
+
+    <h3>Blazor Project Installation</h3>
+
+    <h6>Command Line</h6>
+    <pre><code>dotnet add package RForge.Blazor</code></pre>
+
+    <h6>Package Manager Console</h6>
+    <pre><code>Install-Package RForge.Blazor</code></pre>
+
+    <h3>Library Project Installation</h3>
+    <p>
+        This is optional but may be useful if you want to use common enums across the backend and frontend.
+    </p>
+
+    <h6>Command Line</h6>
+    <pre><code>dotnet add package RForge.Abstractions</code></pre>
+
+    <h6>Package Manager Console</h6>
+    <pre><code>Install-Package RForge.Abstractions</code></pre>
+
+    <h2>Import the namespaces</h2>
+
+    <p>
+        To simplify namespacing while using RForge,
+        the package is designed with most all components sitting within the root <code>RForge</code> namespace.
+    </p>
+
+    <p>You may want to include the following namespaces in your <code>_import.razor</code> for ease of use.</p>
+    <pre><code>
+@@using RForgeBlazor
+@@using RForgeBlazor.Services
+@@using RForge.Abstractions
+</code></pre>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Namespace</th>
+                <th>Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>RForgeBlaozr</code></td>
+                <td>Houses all of the blazor components.</td>
+            </tr>
+            <tr>
+                <td><code>RForgeBlaozr.Services</code></td>
+                <td>Houses interfaces you may need to communicate with certain components.</td>
+            </tr>
+            <tr>
+                <td><code>RForgeBlaozr.Abstractions</code></td>
+                <td>Common enums used through out the components.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Register RForge Services</h2>
+
+    <p>
+        In order for some components to work they must first have their services registered.
+    </p>
+
+    <p>Open up <code>Program.cs</code> and add the following line before the <code>var app = builder.Build();</code>.</p>
+
+    <div class="message is-warning">
+        <div class="message-header">
+            Heads Up!
+        </div>
+        <div class="message-body">
+            If your project is using the multi project solution where one project is server and the other is client.
+            You will need to register the services in both projects.
+        </div>
+    </div>
+
+    <pre><code>
+//...
+RForge.Blazor.Services.Register(builder.Services);
+//...
+var app = builder.Build();
+    </code></pre>
+
+    <h2>Include Bulma CSS</h2>
+    <p>
+        RForge makes use of Bulma CSS to stylize the components. 
+        Add / install Bulma and add the CSS file to the head. 
+
+        Link to download: <a href="https://github.com/jgthms/bulma/releases/" target="_blank">Bulma releases</a>.
+
+    </p>
 
 </div>
 
