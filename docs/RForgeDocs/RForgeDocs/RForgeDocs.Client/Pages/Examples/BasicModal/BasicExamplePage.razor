@@ -1,4 +1,6 @@
 ﻿@page "/basic-modal/details/example/basic-example"
+@rendermode InteractiveAuto
+
 @using RForgeDocs.Abstractions
 <ExampleDetail Title="Basic Example"
                SubTitle="Basic Modal"
@@ -7,8 +9,85 @@
                ComponentDetailsUrl="/basic-modal/details" />
 
 <div class="container">
+    <article class="section">
 
+        <div class="content">
+            <p>
+                <code>RfModal</code> makes use of Bulma 
+                <a href="https://bulma.io/documentation/components/modal/" target="_blank">modal</a>.
+            </p>
+
+            <p>
+                Below showcases an empty modal example.
+            </p>
+            <div class="block">
+                <a class="button is-primary" @onclick="@(() => EmptyModalIsVisible = true)">Open Empty Modal</a>
+            </div>
+
+            <p>
+                Below showcases an modal with a simple message within. However, the use of <code>IDialogManager</code> would better
+                suited for this usecase.
+            </p>
+            <div class="block">
+                <a class="button is-primary" @onclick="@(() => SimpleMessageModalIsVisible = true)">Open Simple Message</a>
+            </div>
+
+            <p>
+                Below shows an example with complex content within.
+            </p>
+
+            <div class="block">
+                <a class="button is-primary" @onclick="@(() => ComplexContentModalIsVisible = true)">Open Complex Content</a>
+            </div>
+
+        </div>
+    </article>
 </div>
+
+<RfModal @bind-IsVisible="EmptyModalIsVisible" />
+
+<RfModal @bind-IsVisible="SimpleMessageModalIsVisible">
+    <p>Hello there I'm a <code>RfModal</code> with a simple message inside.</p>
+</RfModal>
+
+<RfModal @bind-IsVisible="ComplexContentModalIsVisible">
+    <article class="media">
+        <div class="media-left">
+            <figure class="image is-64x64">
+                <img src="https://placehold.co/128x128/" alt="Image">
+            </figure>
+        </div>
+        <div class="media-content">
+            <div class="content">
+                <p>
+                    <strong>John Smith</strong> <small>@@johnsmith</small> <small>31m</small>
+                    <br>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean efficitur sit amet massa fringilla
+                    egestas. Nullam condimentum luctus turpis.
+                </p>
+            </div>
+            <nav class="level is-mobile">
+                <div class="level-left">
+                    <a class="level-item" aria-label="retweet">
+                        <span class="icon is-small">
+                            <i class="fas fa-retweet" aria-hidden="true"></i>
+                        </span>
+                    </a>
+                    <a class="level-item" aria-label="like">
+                        <span class="icon is-small">
+                            <i class="fas fa-heart" aria-hidden="true"></i>
+                        </span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </article>
+</RfModal>
+
 @code {
+
+    private bool EmptyModalIsVisible { get; set; }
+    private bool SimpleMessageModalIsVisible { get; set; }
+    private bool ComplexContentModalIsVisible { get; set; }
 
 }
