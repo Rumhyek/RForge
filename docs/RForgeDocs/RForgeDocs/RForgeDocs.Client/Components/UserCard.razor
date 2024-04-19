@@ -1,0 +1,111 @@
+﻿@if (User == null)
+{
+    <article class="media" style="max-width: 600px;">
+        <figure class="media-left">
+            <p class="image is-64x64 is-skeleton">
+                <img src="https://bulma.io/assets/images/placeholders/128x128.png" />
+            </p>
+        </figure>
+        <div class="media-content">
+            <div class="content is-skeleton">
+                <p>
+                    <strong>#### #####</strong> <small>#####</small>
+                </p>
+                <p></p>
+                <p></p>
+                <p></p>
+            </div>
+            <nav class="level is-mobile">
+                <div class="level-left">
+                    <a class="level-item">
+                        <span class="icon is-small is-skeleton"><i class="fas fa-reply"></i></span>
+                    </a>
+                    <a class="level-item">
+                        <span class="icon is-small is-skeleton"><i class="fas fa-retweet"></i></span>
+                    </a>
+                    <a class="level-item">
+                        <span class="icon is-small is-skeleton"><i class="fas fa-heart"></i></span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+        @if (ShowEditButton == true)
+        {
+            <div class="media-right">
+                <a class="icon is-small is-skeleton"><i class="fas fa-pencil"></i></a>
+            </div>
+        }
+    </article>
+}
+else
+{
+    <article class="media" style="max-width: 600px;">
+        <figure class="media-left">
+            <p class="image is-64x64">
+                <img src="https://bulma.io/assets/images/placeholders/128x128.png" />
+            </p>
+        </figure>
+        <div class="media-content">
+            <div class="content">
+                <p>
+                    <strong>@User.FirstName @User.LastName</strong> <small>@@@User.Username</small>
+                </p>
+                @if (string.IsNullOrWhiteSpace(User.Bio) == true)
+                {
+                    <p class="pb-3 has-text-weight-bold has-text-grey">No Bio to Display</p>
+                }
+                else
+                {
+                    <p class="has-text-grey">@User.Bio</p>
+                }
+            </div>
+            <nav class="level is-mobile">
+                <div class="level-left">
+                    <a class="level-item">
+                        <span class="icon is-small"><i class="fas fa-reply"></i></span>
+                    </a>
+                    <a class="level-item">
+                        <span class="icon is-small"><i class="fas fa-retweet"></i></span>
+                    </a>
+                    <a class="level-item">
+                        <span class="icon is-small"><i class="fas fa-heart"></i></span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+        @if (ShowEditButton == true)
+        {
+            <div class="media-right">
+                <a class="icon is-small" @onclick=@OnEditClick><i class="fas fa-pencil"></i></a>
+            </div>
+        }
+    </article>
+}
+
+@code {
+
+    /// <summary>
+    /// The user data to show within the card. If null the skeleton card will be shown.
+    /// </summary>
+    [Parameter]
+    public UserData User { get; set; }
+
+    /// <summary>
+    /// If true the card will show the edit button.
+    /// </summary>
+    [Parameter]
+    public bool ShowEditButton { get; set; }
+
+    /// <summary>
+    /// Called when a user clicks Edit passing the currently assigned user.
+    /// </summary>
+    [Parameter]
+    public EventCallback<UserData> OnEdit { get; set; }
+
+    public async Task OnEditClick()
+    {
+        if (User == null) return;
+
+        await OnEdit.InvokeAsync(User);
+    }
+}

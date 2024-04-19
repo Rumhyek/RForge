@@ -1,0 +1,20 @@
+
+.input.valid.modified, .textarea.valid.modified {
+    --bulma-input-h: var(--bulma-success-h);
+    --bulma-input-s: var(--bulma-success-s);
+    --bulma-input-l: var(--bulma-success-l);
+    --bulma-input-focus-h: var(--bulma-success-h);
+    --bulma-input-focus-s: var(--bulma-success-s);
+    --bulma-input-focus-l: var(--bulma-success-l);
+    --bulma-input-border-l: var(--bulma-success-l)
+}
+
+.input.invalid.modified, .textarea.invalid.modified {
+    --bulma-input-h: var(--bulma-danger-h);
+    --bulma-input-s: var(--bulma-danger-s);
+    --bulma-input-l: var(--bulma-danger-l);
+    --bulma-input-focus-h: var(--bulma-danger-h);
+    --bulma-input-focus-s: var(--bulma-danger-s);
+    --bulma-input-focus-l: var(--bulma-danger-l);
+    --bulma-input-border-l: var(--bulma-danger-l)
+}
