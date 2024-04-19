@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\RForge\RForgeBlazor\RForgeBlazor.csproj" />
     <ProjectReference Include="..\..\RForgeDocs.Abstractions\RForgeDocs.Abstractions.csproj" />
+    <ProjectReference Include="..\..\RForgeDocsLibrary\RForgeDocsLibrary.csproj" />
     <ProjectReference Include="..\RForgeDocs.Client\RForgeDocs.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.3" />
   </ItemGroup>

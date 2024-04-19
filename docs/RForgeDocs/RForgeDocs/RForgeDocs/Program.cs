@@ -1,3 +1,4 @@
+using RForgeDocs;
 using RForgeDocs.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+IocConfig.Register(builder.Configuration, builder.Services);
 
 var app = builder.Build();
 

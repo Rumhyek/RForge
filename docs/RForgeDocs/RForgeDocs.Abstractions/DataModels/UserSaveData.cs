@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace RForgeDocs.Abstractions.DataModels;
 
-namespace RForgeDocs.Abstractions;
-public class UserData
+public class UserSaveData
 {
     public int Id { get; set; }
     public string FirstName { get; set; }
@@ -14,6 +9,4 @@ public class UserData
     public string Email { get; set; }
 
     public string Bio { get; set; }
-
-    public DateTime DateCreated { get; set; }   
 }
