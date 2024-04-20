@@ -1,5 +1,7 @@
 using RForgeDocs;
 using RForgeDocs.Components;
+using RForgeDocs.EndPoints;
+using RForgeBlazor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddRfForgeBlazorServices();
 
 IocConfig.Register(builder.Configuration, builder.Services);
 
@@ -33,5 +37,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(RForgeDocs.Client._Imports).Assembly);
+
+app.MapUserApi();
 
 app.Run();

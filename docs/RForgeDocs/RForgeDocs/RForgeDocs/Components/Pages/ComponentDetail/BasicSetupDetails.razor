@@ -95,8 +95,9 @@
     </div>
 
     <pre><code>
+using RForgeBlazor;
 //...
-RForge.Blazor.Services.Register(builder.Services);
+builder.Services.AddRfForgeBlazorServices();
 //...
 var app = builder.Build();
     </code></pre>

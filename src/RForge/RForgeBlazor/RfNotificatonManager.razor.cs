@@ -63,7 +63,7 @@ public partial class RfNotificatonManager : IDisposable
     public NotificationOptions DefaultSuccessOptions { get; set; } = new NotificationOptions()
     {
         Color = RfNotificationColor.Success,
-        Position = RfNotificationPosition.TopCenter,
+        Position = RfNotificationPosition.BottomRight,
         ShowCloseButton = true,
         ShowFor = 4000,
         Icon = "fa-solid fa-circle-check",

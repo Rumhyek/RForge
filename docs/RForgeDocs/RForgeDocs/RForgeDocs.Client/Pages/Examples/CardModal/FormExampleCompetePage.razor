@@ -1,9 +1,16 @@
 ﻿@page "/card-modal/example/form-example-backend-1"
+@using RForgeBlazor.Services
 @using RForgeDocs.Abstractions.DataModels
 @using RForgeDocs.Abstractions
 @using System.ComponentModel.DataAnnotations
+@using RForgeDocs.Abstractions.Services
 
 @rendermode InteractiveAuto
+
+@inject IGetUserProcessor getUserProcessor
+@inject ISaveUserProcessor saveUserProcesor
+@inject NavigationManager navigationManager
+@inject INotificationManager notificationManager
 
 <ExampleDetail Title="Example Form (with Backend)"
                SubTitle="Card Modal"
@@ -150,31 +157,41 @@
     </Body>
     <Foot>
         <div class="buttons">
-            <button type="submit" class="button is-primary" form="edit-user-form">Save</button>
-            <a class="button" @onclick=OnCloseEditModalClick>Close</a>
+            <button type="submit" class="button is-primary @CssHelper.AddIf(IsSavingUser, "is-loading")" form="edit-user-form">Save</button>
+            <a class="button @CssHelper.AddIf(IsSavingUser, "is-loading")" @onclick=OnCloseEditModalClick>Close</a>
         </div>
     </Foot>
 </RfModalCard>
+
+<RfNotificatonManager />
 
 @code {
 
     private bool EditModalIsVisible { get; set; }
 
+    [SupplyParameterFromQuery]
+    public int? UserId { get; set; }
+
     private UserData CurrentUser { get; set; }
     private EditUserFormData EditUser { get; set; }
+    private bool IsSavingUser { get; set; }
 
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
-        CurrentUser = new UserData()
-            {
-                DateCreated = DateTime.Now,
-                Email = "placeholder@fake.com",
-                FirstName = "John",
-                LastName = "Doe",
-                Id = 1,
-                Username = "JDoe",
-                Bio = null
-            };
+        if (UserId == null)
+        {
+            Random ran = new Random();
+            navigationManager.NavigateTo(navigationManager.GetUriWithQueryParameter(nameof(UserId), ran.Next(1, 100)));
+            return;
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (UserId.HasValue == true)
+            CurrentUser = await getUserProcessor.GetUser(UserId.Value);
+            
     }
 
     protected async Task OnUserCardEditCallback(UserData user)
@@ -185,19 +202,48 @@
 
     protected void OnCloseEditModalClick()
     {
+        if (IsSavingUser == true) return;
+
         EditModalIsVisible = false;
         EditUser = null;
     }
 
-    protected void OnSaveUserClick()
+    protected async Task OnSaveUserClick()
     {
-        CurrentUser.Username = EditUser.Username;
-        CurrentUser.FirstName = EditUser.FirstName;
-        CurrentUser.LastName = EditUser.LastName;
-        CurrentUser.Email = EditUser.Email;
-        CurrentUser.Bio = EditUser.Bio;
+        if (IsSavingUser == true) return;
 
-        OnCloseEditModalClick();
+        IsSavingUser = true;
+        StateHasChanged();
+
+        bool saved = await saveUserProcesor.SaveUser(new UserSaveData()
+            {
+                Bio = EditUser.Bio,
+                Email = EditUser.Email,
+                FirstName = EditUser.FirstName,
+                LastName = EditUser.LastName,
+                Username = EditUser.Username,
+                Id = CurrentUser.Id
+            });
+
+        IsSavingUser = false;
+
+        if (saved == true)
+        {
+            CurrentUser.Username = EditUser.Username;
+            CurrentUser.FirstName = EditUser.FirstName;
+            CurrentUser.LastName = EditUser.LastName;
+            CurrentUser.Email = EditUser.Email;
+            CurrentUser.Bio = EditUser.Bio;
+            OnCloseEditModalClick();
+
+            notificationManager.AddSuccess($"{CurrentUser.FirstName} {CurrentUser.LastName} ({CurrentUser.Id}) was successfully updated.", "Successfully Saved!");
+        }
+        else
+        {
+            notificationManager.AddError($"Was unable to save user: {CurrentUser.FirstName} {CurrentUser.LastName} ({CurrentUser.Id}). Please contact support for help.", "Failed to Save");
+        }
+
+        StateHasChanged();
     }
 
     private class EditUserFormData

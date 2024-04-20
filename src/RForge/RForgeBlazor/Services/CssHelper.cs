@@ -1,6 +1,6 @@
 ﻿namespace RForgeBlazor.Services
 {
-    internal static class CssHelper
+    public static class CssHelper
     {
 
         /// <summary>
@@ -9,7 +9,7 @@
         /// <param name="css">The current css string.</param>
         /// <param name="shouldAdd">A true false value. On true add the add class to css.</param>
         /// <param name="addClass">The text to add.</param>
-        internal static void AddIfTrue(ref string css, bool shouldAdd, string addClass)
+        public static void AddIfTrue(ref string css, bool shouldAdd, string addClass)
         {
             if (shouldAdd == false) return;
 
@@ -25,7 +25,7 @@
         /// <param name="css">The current css string.</param>
         /// <param name="shouldAdd">A true false value. On true add the add class to css.</param>
         /// <param name="addClass">The text to add called only if shouldAdd == true.</param>
-        internal static void AddIfTrue(ref string css, bool shouldAdd, Func<string> classToAdd)
+        public static void AddIfTrue(ref string css, bool shouldAdd, Func<string> classToAdd)
         {
             if (shouldAdd == false) return;
 
@@ -41,7 +41,7 @@
         /// <param name="shouldAdd">If true returns <paramref name="addClass"/></param>
         /// <param name="addClass">The class to add.</param>
         /// <returns></returns>
-        internal static string AddIf(bool shouldAdd, string addClass)
+        public static string AddIf(bool shouldAdd, string addClass)
         {
             if (shouldAdd == false) return null;
 

@@ -1,12 +1,21 @@
 ﻿using RForgeDocs.Abstractions.DataModels;
 using RForgeDocs.Abstractions.Services;
+using System.Net.Http.Json;
 
 namespace RForgeDocs.Client.Implementation;
 
 public class ApiGetUserProcessor : IGetUserProcessor
 {
-    public Task<UserData> GetUser(int userId)
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public ApiGetUserProcessor(IHttpClientFactory httpClientFactory)
     {
-        throw new NotImplementedException();
+        _httpClientFactory = httpClientFactory;
+    }
+
+    public async Task<UserData> GetUser(int userId)
+    {
+        var httpClient = _httpClientFactory.CreateClient("api");
+        return await httpClient.GetFromJsonAsync<UserData>($"api/users/{userId}");
     }
 }
