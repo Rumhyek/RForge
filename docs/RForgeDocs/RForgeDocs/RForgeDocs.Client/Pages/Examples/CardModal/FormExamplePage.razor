@@ -1,0 +1,228 @@
+﻿@page "/card-modal/example/form-example-simple-1"
+@rendermode InteractiveAuto
+
+@using RForgeDocs.Abstractions.DataModels
+@using System.ComponentModel.DataAnnotations
+
+<ExampleDetail Title="Example Form (Simple)"
+               SubTitle="Card Modal"
+               ComponentName="Modal (Card)"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/CardModal/FormExamplePage.razor")"
+               ComponentDetailsUrl="/card-modal/details" />
+
+<div class="columns">
+    <div class="column is-5">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <h2>Example Explanation</h2>
+                    <p>
+                        <code>RfModalCard</code> makes use of Bulma
+                        <a href="https://bulma.io/documentation/components/modal/#card-modal" target="_blank">modal</a>.
+                    </p>
+
+                    <p>
+                        Below showcases a page that allows you to edit user data via a <code>RfModalCard</code>.
+                    </p>
+
+                    <h4>How the Code Flows</h4>
+                    <p>
+                        The page first loads the current user during the <code>OnInitialized</code>.
+                        The page then displays the current user in a component written to be reusable on multiple example pages (<code>UserCard</code>).
+                        The <code>UserCard</code> has an edit button built in with an event callback via <code>UserCard.OnEdit</code>.
+                    </p>
+
+                    <p>
+                        Once the edit button is clicked the page fires <code>OnUserCardEditCallback</code> instantiating a new instance of <code>EditUserFormData</code>
+                        and flipping the <code>EditModalIsVisible</code> boolean.
+                        This instance <code>EditUser</code>, is directly used within the <code>RfModalCard</code> edit form.
+                    </p>
+
+                    <article class="message">
+                        <div class="message-header">
+                            <span>Why not Use CurrentUser?</span>
+                        </div>
+                        <div class="message-body">
+                            There is two main reasons not to use the <code>UserData</code> property.
+                            <ul>
+                                <li>
+                                    First, the data coming from the backend isn't meant to be used as the edit form data. It might seem like it while initialy coding the edit modal but you will quickly find that
+                                    some things may be optional, may require helper functions to properly display, or require different requirement attributes that the backend model doesn't have to support.
+                                </li>
+                                <li>
+                                    Secondly, the user has the option to cancel out of the request to edit. If you were to pass in the original model the changes would be reflected on the page even if they pressed close.
+                                </li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <p>
+                        At this point the modal is open and the fields can be tweaked and <em>saved</em>.
+                        The code makes use of the form <code>OnValidSubmit</code> to ensure validation is correct.
+                        Since we have the save button in the <code>Foot</code> it is outside of the form requiring the
+                        <code>EditForm.id</code> to be set and the button's <code>form</code> attribute set to the same value.
+
+                        This allows the user to full power of the HTML form as well as Blazor code.
+                    </p>
+
+                    <p>
+                        Finally the user clicks save calling <code>OnValidSubmit=OnSaveUserClick</code> allowing the code
+                        to update <code>CurrentUser</code> from the values within <code>EditUser</code> and closing the form.
+                    </p>
+
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <h3 class="title">Click to Edit User</h3>
+
+            <UserCard User=CurrentUser ShowEditButton=true OnEdit=OnUserCardEditCallback />
+
+        </article>
+    </div>
+</div>
+
+<RfModalCard @bind-IsVisible="EditModalIsVisible" Title="Edit User">
+    <Body>
+        @if (EditUser != null)
+        {
+            <EditForm Model=EditUser id="edit-user-form" OnValidSubmit=OnSaveUserClick>
+
+                <DataAnnotationsValidator />
+
+                <div class="field">
+                    <label class="label">Username</label>
+                    <div class="control">
+                        <InputText @bind-Value=EditUser.Username class="input" autofocus />
+                    </div>
+                    <p class="help is-danger">
+                        <ValidationMessage For="@( () => EditUser.Username )"></ValidationMessage>
+                    </p>
+                </div>
+
+                <div class="field">
+                    <label class="label">First Name</label>
+                    <div class="control">
+                        <InputText @bind-Value=EditUser.FirstName class="input" />
+                    </div>
+                    <p class="help is-danger">
+                        <ValidationMessage For="@( () => EditUser.FirstName )"></ValidationMessage>
+                    </p>
+                </div>
+
+                <div class="field">
+                    <label class="label">Last Name</label>
+                    <div class="control">
+                        <InputText @bind-Value=EditUser.LastName class="input" />
+                    </div>
+                    <p class="help is-danger">
+                        <ValidationMessage For="@( () => EditUser.LastName )"></ValidationMessage>
+                    </p>
+                </div>
+
+                <div class="field">
+                    <label class="label">Email</label>
+                    <div class="control">
+                        <InputText @bind-Value=EditUser.Email class="input" />
+                    </div>
+                    <p class="help is-danger">
+                        <ValidationMessage For="@( () => EditUser.Email )"></ValidationMessage>
+                    </p>
+                </div>
+
+                <div class="field">
+                    <label class="label">Bio</label>
+                    <div class="control">
+                        <InputTextArea @bind-Value=EditUser.Bio class="textarea" rows="3" />
+
+                    </div>
+                    <p class="help is-danger">
+                        <ValidationMessage For="@( () => EditUser.Bio )"></ValidationMessage>
+                    </p>
+                </div>
+
+            </EditForm>
+        }
+    </Body>
+    <Foot>
+        <div class="buttons">
+            <button type="submit" class="button is-primary" form="edit-user-form">Save</button>
+            <a class="button" @onclick=OnCloseEditModalClick>Close</a>
+        </div>
+    </Foot>
+</RfModalCard>
+
+@code {
+
+    private bool EditModalIsVisible { get; set; }
+
+    private UserData CurrentUser { get; set; }
+    private EditUserFormData EditUser { get; set; }
+
+    protected override void OnInitialized()
+    {
+        CurrentUser = new UserData()
+            {
+                DateCreated = DateTime.Now,
+                Email = "placeholder@fake.com",
+                FirstName = "John",
+                LastName = "Doe",
+                Id = 1,
+                Username = "JDoe",
+                Bio = null
+            };
+    }
+
+    protected async Task OnUserCardEditCallback(UserData user)
+    {
+        EditUser = new EditUserFormData(user);
+        EditModalIsVisible = true;
+    }
+
+    protected void OnCloseEditModalClick()
+    {
+        EditModalIsVisible = false;
+        EditUser = null;
+    }
+
+    protected void OnSaveUserClick()
+    {
+        CurrentUser.Username = EditUser.Username;
+        CurrentUser.FirstName = EditUser.FirstName;
+        CurrentUser.LastName = EditUser.LastName;
+        CurrentUser.Email = EditUser.Email;
+        CurrentUser.Bio = EditUser.Bio;
+
+        OnCloseEditModalClick();
+    }
+
+    private class EditUserFormData
+    {
+        public EditUserFormData(UserData user)
+        {
+            FirstName = user.FirstName;
+            LastName = user.LastName;
+            Username = user.Username;
+            Email = user.Email;
+            Bio = user.Bio;
+        }
+
+        [Required]
+        public string FirstName { get; set; }
+
+        [Required]
+        public string LastName { get; set; }
+
+        [Required]
+        public string Username { get; set; }
+
+        [Required]
+        [RegularExpression(@"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$", ErrorMessage = "Invalid email.")]
+        public string Email { get; set; }
+
+        public string Bio { get; set; }
+    }
+}

@@ -1,0 +1,216 @@
+﻿@page "/card-modal/playground"
+@using RForge.Abstractions
+@rendermode InteractiveAuto
+
+<PlaygroundDetails @ref="Logger"
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/CardModalPage.razor")"
+                   HasEvents=false
+                   SubTitle="Card Modal"
+                   ComponentName="Modal (Card)"
+                   Title="Playground"
+                   ComponentDetailsUrl="/card-modal/details">
+
+    <Parameters>
+
+        <h3 class="title is-size-5">RfModalBase</h3>
+
+        <BulmaInput Label="ModelCss"
+                    HelpText="Any css classes to add to the base modal div.">
+            <InputText type="text" @bind-Value=@ModalCss class="input" />
+        </BulmaInput>
+        <BulmaInput Label="ModalContentCss"
+                    HelpText="Any css classes to add to .modal-content div.">
+            <InputText type="text" @bind-Value=@ModalContentCss class="input" />
+        </BulmaInput>
+        <BulmaInput Label="Width"
+                    HelpText="An override of the width of the modal. Can be any type of css expression.">
+            <InputText type="text" @bind-Value=@Width class="input" />
+        </BulmaInput>
+        <BulmaCheckbox Label="IsVisible"
+                       HelpText="If true the modal is shown otherise the modal is hidden. two way binding.">
+            <InputCheckbox @bind-Value=IsVisible class="checkbox" />
+        </BulmaCheckbox>
+        <BulmaCheckbox Label="ShowCloseButton"
+                       HelpText="Should the default close button be shown. By default = true.">
+            <InputCheckbox @bind-Value=ShowCloseButton class="checkbox" />
+        </BulmaCheckbox>
+
+        <h3 class="title mt-6 is-size-5">RfModalCard</h3>
+
+        <BulmaCheckbox Label="Show Head"
+                       HelpText="Should show the content to put within the header of the card modal.">
+            <InputCheckbox @bind-Value=ShowHead class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaCheckbox Label="Show Foot"
+                       HelpText="Should show the content to put within the footer of the card modal.">
+            <InputCheckbox @bind-Value=ShowFoot class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaInput Label="Title"
+                    HelpText="Sets the title of the card modal. Will be ignored if Head is used.">
+            <InputText type="text" @bind-Value=@Title class="input" readonly="@ShowHead" />
+        </BulmaInput>
+    </Parameters>
+
+    <Display>
+
+        <a class="button is-primary" @onclick=@(() => IsVisible = true)>Show Modal</a>
+
+    </Display>
+
+</PlaygroundDetails>
+
+
+@if (ShowHead == true && ShowFoot == true)
+{
+
+    <RfModalCard @bind-IsVisible=@IsVisible
+                 ModalCss="@ModalCss"
+                 ModalContentCss="@ModalContentCss"
+                 ShowCloseButton="@ShowCloseButton"
+                 Width="@Width"
+                 Title="@Title">
+        <Head>
+            <p class="modal-card-title">Head and Foot</p>
+        </Head>
+        <Body>
+            @bodyContent
+        </Body>
+        <Foot>
+            @footerContent
+        </Foot>
+    </RfModalCard>
+}
+else if (ShowHead == true && ShowFoot == false)
+{
+    <RfModalCard @bind-IsVisible=@IsVisible
+                 ModalCss="@ModalCss"
+                 ModalContentCss="@ModalContentCss"
+                 ShowCloseButton="@ShowCloseButton"
+                 Width="@Width"
+                 Title="@Title">
+        <Head>
+            <p class="modal-card-title">Head Only</p>
+        </Head>
+        <Body>
+            @bodyContent
+        </Body>
+    </RfModalCard>
+}
+else if (ShowHead == false && ShowFoot == true)
+{
+    <RfModalCard @bind-IsVisible=@IsVisible
+                 ModalCss="@ModalCss"
+                 ModalContentCss="@ModalContentCss"
+                 ShowCloseButton="@ShowCloseButton"
+                 Width="@Width"
+                 Title="@Title">
+        <Body>
+            @bodyContent
+        </Body>
+        <Foot>
+            @footerContent
+        </Foot>
+    </RfModalCard>
+}
+else
+{
+    <RfModalCard @bind-IsVisible=@IsVisible
+                 ModalCss="@ModalCss"
+                 ModalContentCss="@ModalContentCss"
+                 ShowCloseButton="@ShowCloseButton"
+                 Width="@Width"
+                 Title="@Title">
+        <Body>
+            @bodyContent
+        </Body>
+    </RfModalCard>
+}
+
+@code {
+
+    public PlaygroundDetails Logger { get; set; }
+
+    /// <summary>
+    /// Any css classes to add to the base modal div.
+    /// </summary>
+    public string ModalCss { get; set; }
+
+    /// <summary>
+    /// Any css classes to add to .modal-content div.
+    /// </summary>
+    public string ModalContentCss { get; set; }
+
+    /// <summary>
+    /// An override of the width of the modal. Can be any type of css expression.
+    /// </summary>
+    public string Width { get; set; }
+
+    /// <summary>
+    /// If true the modal is shown otherise the modal is hidden. two way binding.
+    /// </summary>
+    public bool IsVisible { get; set; }
+
+    /// <summary>
+    /// Should the default close button be shown. By default = true
+    /// </summary>
+    public bool ShowCloseButton { get; set; } = true;
+
+
+    ///<summary>
+    /// Sets the title of the card modal. Will be ignored if <see cref="RfModalCard.Head"/> is used.
+    ///</summary>
+    public string Title { get; set; }
+
+    public bool ShowHead { get; set; } = true;
+    public bool ShowFoot { get; set; } = true;
+
+    public RenderFragment bodyContent = __builder =>
+    {
+        <div class="content">
+            <h1>Hello World</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla accumsan, metus ultrices eleifend gravida, nulla nunc varius lectus, nec rutrum justo nibh eu lectus. Ut vulputate semper dui. Fusce erat odio, sollicitudin vel erat vel, interdum mattis neque.</p>
+            <h2>Second level</h2>
+            <p>Curabitur accumsan turpis pharetra <strong>augue tincidunt</strong> blandit. Quisque condimentum maximus mi, sit amet commodo arcu rutrum id. Proin pretium urna vel cursus venenatis. Suspendisse potenti. Etiam mattis sem rhoncus lacus dapibus facilisis. Donec at dignissim dui. Ut et neque nisl.</p>
+            <ul>
+                <li>In fermentum leo eu lectus mollis, quis dictum mi aliquet.</li>
+                <li>Morbi eu nulla lobortis, lobortis est in, fringilla felis.</li>
+                <li>Aliquam nec felis in sapien venenatis viverra fermentum nec lectus.</li>
+                <li>Ut non enim metus.</li>
+            </ul>
+            <h3>Third level</h3>
+            <p>Quisque ante lacus, malesuada ac auctor vitae, congue <a href="#">non ante</a>. Phasellus lacus ex, semper ac tortor nec, fringilla condimentum orci. Fusce eu rutrum tellus.</p>
+            <ol>
+                <li>Donec blandit a lorem id convallis.</li>
+                <li>Cras gravida arcu at diam gravida gravida.</li>
+                <li>Integer in volutpat libero.</li>
+                <li>Donec a diam tellus.</li>
+                <li>Aenean nec tortor orci.</li>
+                <li>Quisque aliquam cursus urna, non bibendum massa viverra eget.</li>
+                <li>Vivamus maximus ultricies pulvinar.</li>
+            </ol>
+            <blockquote>Ut venenatis, nisl scelerisque sollicitudin fermentum, quam libero hendrerit ipsum, ut blandit est tellus sit amet turpis.</blockquote>
+            <p>Quisque at semper enim, eu hendrerit odio. Etiam auctor nisl et <em>justo sodales</em> elementum. Maecenas ultrices lacus quis neque consectetur, et lobortis nisi molestie.</p>
+            <p>Sed sagittis enim ac tortor maximus rutrum. Nulla facilisi. Donec mattis vulputate risus in luctus. Maecenas vestibulum interdum commodo.</p>
+            <p>Suspendisse egestas sapien non felis placerat elementum. Morbi tortor nisl, suscipit sed mi sit amet, mollis malesuada nulla. Nulla facilisi. Nullam ac erat ante.</p>
+            <h4>Fourth level</h4>
+            <p>Nulla efficitur eleifend nisi, sit amet bibendum sapien fringilla ac. Mauris euismod metus a tellus laoreet, at elementum ex efficitur.</p>
+            <p>Maecenas eleifend sollicitudin dui, faucibus sollicitudin augue cursus non. Ut finibus eleifend arcu ut vehicula. Mauris eu est maximus est porta condimentum in eu justo. Nulla id iaculis sapien.</p>
+            <p>Phasellus porttitor enim id metus volutpat ultricies. Ut nisi nunc, blandit sed dapibus at, vestibulum in felis. Etiam iaculis lorem ac nibh bibendum rhoncus. Nam interdum efficitur ligula sit amet ullamcorper. Etiam tristique, leo vitae porta faucibus, mi lacus laoreet metus, at cursus leo est vel tellus. Sed ac posuere est. Nunc ultricies nunc neque, vitae ultricies ex sodales quis. Aliquam eu nibh in libero accumsan pulvinar. Nullam nec nisl placerat, pretium metus vel, euismod ipsum. Proin tempor cursus nisl vel condimentum. Nam pharetra varius metus non pellentesque.</p>
+            <h5>Fifth level</h5>
+            <p>Aliquam sagittis rhoncus vulputate. Cras non luctus sem, sed tincidunt ligula. Vestibulum at nunc elit. Praesent aliquet ligula mi, in luctus elit volutpat porta. Phasellus molestie diam vel nisi sodales, a eleifend augue laoreet. Sed nec eleifend justo. Nam et sollicitudin odio.</p>
+            <h6>Sixth level</h6>
+            <p>Cras in nibh lacinia, venenatis nisi et, auctor urna. Donec pulvinar lacus sed diam dignissim, ut eleifend eros accumsan. Phasellus non tortor eros. Ut sed rutrum lacus. Etiam purus nunc, scelerisque quis enim vitae, malesuada ultrices turpis. Nunc vitae maximus purus, nec consectetur dui. Suspendisse euismod, elit vel rutrum commodo, ipsum tortor maximus dui, sed varius sapien odio vitae est. Etiam at cursus metus.</p>
+
+        </div>
+    };
+
+    public RenderFragment footerContent = __builder =>
+    {
+        <div class="buttons">
+            <a class="button is-primary">Save</a>
+            <a class="button" title="does not work.">Close</a>
+        </div>
+    };
+}

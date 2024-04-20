@@ -1,0 +1,89 @@
+﻿@page "/card-modal/details"
+
+<ComponentDetail Title="Modal (Card)"
+                 PlaygroundUrl="/card-modal/playground"
+                 SubTitle="A classic modal implementation">
+
+    <Examples>
+        @ComponentDetail.SideLink(("Basic example", "/card-modal/example/basic-example"))
+        @ComponentDetail.SideLink(("Form example (simple)", "/card-modal/example/form-example-simple-1"))
+        @ComponentDetail.SideLink(("Form example (with backend)", "/card-modal/example/form-example-backend-1"))
+
+    </Examples>
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("RfModalCard.razor", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfModalCard.razor"))
+        @ComponentDetail.SideLink(("RfModalCard.razor.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfModalCard.razor.cs"))
+        @ComponentDetail.SideLink(("RfModalBase.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfModalBase.cs"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                <code>RfModalCard</code> creates a modal designed to show a complex modal.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                Use <code>RfModalCard</code> when you need to display a modal designed to for editing / forms.
+            </p>
+
+            <h4>When not to Use</h4>
+            <p>Don't use <code>RfModalCard</code> when:</p>
+            <ul>
+                <li>
+                    Not needing a header or footer. Instead use <code>RfModal</code>.
+                </li>
+            </ul>
+        </div>
+    </Purpose>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+
+
+    <BasicUsage>
+
+        <div class="content">
+
+            <p>
+                <code>RfModalCard</code> works by making use of <code>IsVisible</code> parameter.
+                It supports two way binding allowing the modal itself to close it. 
+                Unlike <code>RfModal</code>, <code>RfModalCard</code> makes use of three RenderFragments / sections <code>Body</code>, <code>Head</code>, and <code>Foot</code>.
+            </p>
+
+            <p>Below show a basic example of <code>RfModalCard</code>.</p>
+
+            <pre><xmp><RfModalCard @@bind-IsVisible="ModalIsVisible">
+    <Head>
+        <p class="modal-card-title">Modal Title</p>
+    </Head>
+    <Body>
+        <div>Some content within the modal.</div>
+    </Body>
+    <Foot>
+        <div class="buttons">
+            <a class="button">Some Buttons</a>
+        </div>
+    </Foot>
+</RfModalCard>
+<a class="button" @@onclick="OnShowModalClick">Show Modal</a>
+
+@@code {
+    public bool ModalIsVisible { get; set; }
+
+    public void OnShowModalClick() => ModalIsVisible = true;
+}</xmp></pre>
+
+        </div>
+
+    </BasicUsage>
+
+
+</ComponentDetail>
+
+@code {
+
+}
