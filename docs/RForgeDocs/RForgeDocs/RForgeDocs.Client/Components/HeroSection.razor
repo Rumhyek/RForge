@@ -18,13 +18,13 @@
             }
         </div>
     </div>
-    @if(HeroFooter != null)
+    @if (HeroFooter != null)
     {
         <div class="hero-footer">
             @HeroFooter
-        </div>    
+        </div>
     }
-    
+
 </section>
 
 @code {
@@ -33,6 +33,9 @@
     public string Title { get; set; }
     [Parameter]
     public string SubTitle { get; set; }
+
+    [Parameter]
+    public string HeroCss { get; set; }
 
     [Parameter]
     public bool SpaceTitle { get; set; }
@@ -53,16 +56,30 @@
     {
         get
         {
+            string css = "";
             switch (Size)
             {
-                case HeroSectionSize.Small: return "is-small";
-                case HeroSectionSize.Medium: return "is-medium";
-                case HeroSectionSize.Large: return "is-large";
-                case HeroSectionSize.HalfHeight: return "is-halfheight";
-                case HeroSectionSize.FullHeight: return "is-fullheight";
+                case HeroSectionSize.Small:
+                    css = "is-small";
+                    break;
+                case HeroSectionSize.Medium:
+                    css = "is-medium";
+                    break;
+                case HeroSectionSize.Large:
+                    css = "is-large";
+                    break;
+                case HeroSectionSize.HalfHeight:
+                    css = "is-halfheight";
+                    break;
+                case HeroSectionSize.FullHeight:
+                    css = "is-fullheight";
+                    break;
             }
 
-            return null;
+            if (string.IsNullOrWhiteSpace(HeroCss) == false)
+                css += $" {HeroCss}";
+
+            return css;
         }
 
     }

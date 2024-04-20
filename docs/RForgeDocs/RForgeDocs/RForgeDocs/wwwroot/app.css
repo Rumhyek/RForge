@@ -1,0 +1,14 @@
+
+
+.hero.hero-splash {
+    background-image: url(/img/hero-background.png);
+    background-position-x: center;
+    background-position-y: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+    box-shadow: 0px 0px 40px inset hsl(var(--bulma-hero-h), var(--bulma-hero-s), var(--bulma-hero-background-l));
+}
+
+    .hero.hero-splash .title, .hero.hero-splash .subtitle {
+        color: hsl(var(--bulma-black-h), var(--bulma-black-s), var(--bulma-black-l));
+    }
