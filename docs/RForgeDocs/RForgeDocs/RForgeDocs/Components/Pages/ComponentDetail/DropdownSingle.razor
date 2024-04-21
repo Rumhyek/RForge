@@ -1,0 +1,49 @@
+﻿@page "/dropdown-single/details"
+
+<ComponentDetail Title="Dropdown (Single)"
+                 PlaygroundUrl="/dropdown-single/playground"
+                 SubTitle="A searchable drop down with one selection">
+
+    <Examples>
+        @ComponentDetail.SideLink(("Basic example", "/dropdown-single/example/basic-example"))
+
+    </Examples>
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("RfDropDown.razor", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDropDown.razor"))
+        @ComponentDetail.SideLink(("RfDropDown.razor.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDropDown.razor.cs"))
+        @ComponentDetail.SideLink(("RfDropDownBase.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDropDownBase.cs"))
+        @ComponentDetail.SideLink(("RfDropDownPosition.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/DropDowns/RfDropDownPosition.cs"))
+    </RepoLinks>
+    
+    <Purpose>
+        <div class="content">
+
+            <p>
+                <code>RfDropDown</code> creates a Bulma dropdown that supports searching and dynamic options.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                Use <code>RfDropDown</code> when you need to create a custom modal but don't need to recreate
+                the visibility code again.
+            </p>
+
+            <h4>When not to Use</h4>
+            <p>Don't use <code>RfDropDown</code> when:</p>
+            <ul>
+                <li>
+                    When using static rendering mode. Instead use <code>InputSelect</code>.
+                </li>
+            </ul>
+        </div>
+    </Purpose>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+</ComponentDetail>
+
+@code {
+
+}
