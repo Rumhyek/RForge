@@ -113,7 +113,7 @@
         <RfDropDown TItem="UserData"
                     Items=@Items
                     @bind-SelectedItem=@SelectedItem
-                    @bind-SelectedItem:after=@(() => Logger.AddLog($"OnSelectedItem:after(SelectedItem: '{SelectedItem}')"))
+                    @bind-SelectedItem:after=@(() => Logger.AddLog($"OnSelectedItem:after(SelectedItem.Id: '{SelectedItem?.Id}')"))
                     ItemComparer=@((a,b) => a.Id == b.Id)
                     CssClass=@CssClass
                     CssSelectedClass=@CssSelectedClass
