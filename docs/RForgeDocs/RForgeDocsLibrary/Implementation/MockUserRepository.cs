@@ -110,6 +110,11 @@ public class MockUserRepository : IUserRepository
     #endregion
     ];
 
+    public IQueryable<User> GetAllUsers()
+    {
+        return userCollection.AsQueryable();
+    }
+
     public async Task<User> GetUser(int userId)
     {
         await Task.Delay(100);

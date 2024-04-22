@@ -9,5 +9,6 @@ public class IocConfig
     {
         services.AddScoped<IGetUserProcessor, ApiGetUserProcessor>();
         services.AddScoped<ISaveUserProcessor, ApiSaveUserProcessor>();
+        services.AddScoped<IFindUsersProcessor, ApiFindUsersProcessor>();
     }
 }

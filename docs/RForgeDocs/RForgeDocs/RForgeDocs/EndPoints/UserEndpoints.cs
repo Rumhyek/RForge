@@ -8,12 +8,14 @@ namespace RForgeDocs.EndPoints
     {
         public static void MapUserApi(this WebApplication app)
         {
+            //IGetUserProcessor
             app.MapGet("/api/users/{*userId}",
                 async ([FromServices] IGetUserProcessor processor, int userId) =>
                 {
                     return Results.Ok(await processor.GetUser(userId));
                 });
 
+            //ISaveUserProcessor
             app.MapPut("/api/users",
                 async ([FromServices] ISaveUserProcessor processor, [FromBody] UserAddSaveData user) =>
                 {
@@ -24,6 +26,13 @@ namespace RForgeDocs.EndPoints
                 async ([FromServices] ISaveUserProcessor processor, [FromBody] UserSaveData user) =>
                 {
                     return Results.Ok(await processor.SaveUser(user));
+                });
+
+            //IFindUserProcessor
+            app.MapGet("/api/users/find/",
+                async ([FromServices] IFindUsersProcessor processor, string searchText, int returnCount = 10) =>
+                {
+                    return Results.Ok(await processor.Find(searchText, returnCount));
                 });
         }
 

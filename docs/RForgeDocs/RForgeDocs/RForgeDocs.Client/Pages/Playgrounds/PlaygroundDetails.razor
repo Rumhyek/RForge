@@ -43,9 +43,21 @@ else
         </div>
 
         <div class="column">
-            <article class="seciton is-position-sticky" style="top: 80px;">
-                @Display
-            </article>
+
+            @if (MakeDisplaySticky == true)
+            {
+                <article class="seciton is-position-sticky" style="top: 80px;">
+                    @Display
+                </article>
+
+            }
+            else
+            {
+                <article class="seciton">
+                    @Display
+                </article>
+            }
+
 
             @if (HasEvents == true)
             {
@@ -93,6 +105,9 @@ else
 
     [Parameter]
     public RenderFragment Display { get; set; }
+
+    [Parameter]
+    public bool MakeDisplaySticky { get; set; } = true;
 
     [Parameter]
     public bool HasEvents { get; set; } = true;

@@ -1,22 +1,21 @@
 ﻿using RForgeDocs.Abstractions.DataModels;
 using RForgeDocs.Abstractions.Services;
 using System.Net.Http.Json;
-using System.Web;
 
 namespace RForgeDocs.Client.Implementation;
 
-public class ApiGetUserProcessor : IGetUserProcessor
+public class ApiFindUsersProcessor : IFindUsersProcessor
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public ApiGetUserProcessor(IHttpClientFactory httpClientFactory)
+    public ApiFindUsersProcessor(IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<UserData> GetUser(int userId)
+    public async Task<List<UserData>> Find(string searchText, int returnCount = 10)
     {
         var httpClient = _httpClientFactory.CreateClient("api");
-        return await httpClient.GetFromJsonAsync<UserData>($"api/users/{userId}");
+        return await httpClient.GetFromJsonAsync<List<UserData>>($"api/users/?searchText={searchText}&returnCount={returnCount}");
     }
 }

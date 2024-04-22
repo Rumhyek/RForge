@@ -10,4 +10,6 @@ public interface IUserRepository
 {
     Task<User> GetUser(int userId);
     Task<bool> HasUserWithUsername(string username);
+
+    IQueryable<User> GetAllUsers();
 }

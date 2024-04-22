@@ -1,0 +1,239 @@
+﻿@page "/dropdown-single/playground"
+@using RForge.Abstractions
+@using RForge.Abstractions.DropDowns
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+@rendermode InteractiveAuto
+
+@inject IFindUsersProcessor findUsersProcessor
+
+<PlaygroundDetails @ref="Logger"
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/DropDownSinglePage.razor")"
+                   HasEvents=true
+                   MakeDisplaySticky=false
+                   SubTitle="Dropdown (Single)"
+                   ComponentName="Dropdown (Single)"
+                   Title="Playground"
+                   ComponentDetailsUrl="/dropdown-single/details">
+
+    <Parameters>
+
+        <h3 class="title is-size-5">RfDropDownBase</h3>
+
+        <BulmaInput Label="CssClass"
+                    HelpText="The css class added to the dropdown itself.">
+            <InputText type="text" @bind-Value=@CssClass class="input" />
+        </BulmaInput>
+        <BulmaInput Label="CssSelectedClass"
+                    HelpText="The css class to add to the selected items.">
+            <InputText type="text" @bind-Value=@CssSelectedClass class="input" />
+        </BulmaInput>
+        <BulmaInput Label="CssRowItemClass"
+                    HelpText="The css class to add to the row items in the drop down.">
+            <InputText type="text" @bind-Value=@CssRowItemClass class="input" />
+        </BulmaInput>
+        <BulmaInput Label="CssFilterClass"
+                    HelpText="The css class to add to the filter input.">
+            <InputText type="text" @bind-Value=@CssFilterClass class="input" />
+        </BulmaInput>
+
+        <BulmaCheckbox Label="CssFilterClass"
+                       HelpText="If true the filter textbox will be shown. By default = true.">
+            <InputCheckbox @bind-Value=@ShowFilter class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaInput Label="Filter"
+                    HelpText="The current filter text. Is a two way binding.">
+            <InputText type="text" @bind-Value=@Filter class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="FilterIcon"
+                    HelpText="The filter icon to show in the input.">
+            <InputText type="text" @bind-Value=@FilterIcon class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="FilterPlaceholderText"
+                    HelpText="The placeholder text to show in the fitler input.">
+            <InputText type="text" @bind-Value=@FilterPlaceholderText class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="FilterRateLimit"
+                    HelpText="The rate in milliseconds that the search filter will wait before attempting to call OnLoad.">
+            <InputNumber @bind-Value=@FilterRateLimit class="input" />
+        </BulmaInput>
+
+        <BulmaCheckbox Label="FilterClearOnClose"
+                       HelpText="If true the filter text will reset to null on close.">
+            <InputCheckbox @bind-Value=@FilterClearOnClose class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaInput Label="EmptyContentText"
+                    HelpText="When <code>Items == null || Items.Count == 0</code> This text is shown in the dropdown.">
+            <InputText type="text" @bind-Value=@EmptyContentText class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="PlaceholderText"
+                    HelpText="The placeholder text for when no selection has been made.">
+            <InputText type="text" @bind-Value=@PlaceholderText class="input" />
+        </BulmaInput>
+
+        <BulmaCheckbox Label="IsOpen"
+                       HelpText="If set to true the dropdown will open. Is two way binding.">
+            <InputCheckbox @bind-Value=@IsOpen class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaCheckbox Label="CloseOnSelect"
+                       HelpText="If true on selection the dropdown will close.">
+            <InputCheckbox @bind-Value=@CloseOnSelect class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaInput Label="Position"
+                    HelpText="The direction to open the drop down.">
+            <div class="select is-primary">
+                <select @bind=Position>
+                    @foreach (var opt in Enum.GetValues(typeof(RfDropDownPosition)))
+                    {
+                        <option value="@opt">@opt</option>
+                    }
+                </select>
+            </div>
+        </BulmaInput>
+        <BulmaCheckbox Label="IsReadonly"
+                       HelpText="If true the items within the dropdown cannot be modified within.">
+            <InputCheckbox @bind-Value=@IsReadonly class="input" />
+        </BulmaCheckbox>
+
+
+        <h3 class="title mt-6 is-size-5">RfDropDown</h3>
+
+    </Parameters>
+
+    <Display>
+
+        <RfDropDown TItem="UserData"
+                    Items=@Items
+                    @bind-SelectedItem=@SelectedItem
+                    ItemComparer=@((a,b) => a.Id == b.Id)
+                    CssClass=@CssClass
+                    CssSelectedClass=@CssSelectedClass
+                    CssRowItemClass=@CssRowItemClass
+                    CssFilterClass=@CssFilterClass
+                    ShowFilter=@ShowFilter
+                    @bind-Filter=@Filter
+                    FilterIcon=@FilterIcon
+                    FilterPlaceholderText=@FilterPlaceholderText
+                    FilterRateLimit=@FilterRateLimit
+                    FilterClearOnClose=@FilterClearOnClose
+                    EmptyContentText=@EmptyContentText
+                    PlaceholderText=@PlaceholderText
+                    @bind-IsOpen=@IsOpen
+                    CloseOnSelect=@CloseOnSelect
+                    Position=@Position
+                    OnLoad=@OnLoad
+                    IsReadonly=@IsReadonly>
+
+            @context.FirstName @context.LastName (@context.Id)
+
+        </RfDropDown>
+
+    </Display>
+
+</PlaygroundDetails>
+
+
+@code {
+
+    public PlaygroundDetails Logger { get; set; }
+
+    public UserData SelectedItem { get; set; }
+
+    private async Task OnLoad(string filter)
+    {
+        Items = await findUsersProcessor.Find(filter);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// The css class added to the dropdown itself.
+    /// </summary>
+    public string CssClass { get; set; }
+
+    /// <summary>
+    /// The css class to add to the selected items.
+    /// </summary>
+    public string CssSelectedClass { get; set; }
+
+    /// <summary>
+    /// The css class to add to the row items in the drop down.
+    /// </summary>
+    public string CssRowItemClass { get; set; }
+
+    /// <summary>
+    /// The css class to add to the filter input.
+    /// </summary>
+    public string CssFilterClass { get; set; }
+
+    /// <summary>
+    /// If true the filter textbox will be shown. By default = true
+    /// </summary>
+    public bool ShowFilter { get; set; } = true;
+
+    /// <summary>
+    /// The current filter text. Is a two way binding.
+    /// </summary>
+    public string Filter { get; set; }
+    /// <summary>
+    /// The filter icon to show in the input.
+    /// </summary>
+    public string FilterIcon { get; set; } = "fa-solid fa-magnifying-glass";
+
+    /// <summary>
+    /// The placeholder text to show in the fitler input.
+    /// </summary>
+    public string FilterPlaceholderText { get; set; } = "Filter...";
+
+    /// <summary>
+    /// The rate in milliseconds that the search filter will wait before attempting to call OnLoad.
+    /// </summary>
+    public int FilterRateLimit { get; set; } = 250;
+
+    /// <summary>
+    /// If true the filter text will reset to null on close.
+    /// </summary>
+    public bool FilterClearOnClose { get; set; } = true;
+
+    /// <summary>
+    /// The items to show in the dropdown.
+    /// </summary>
+    public List<UserData> Items { get; set; }
+
+    /// <summary>
+    /// When <code>Items == null || Items.Count == 0</code> This text is shown in the dropdown.
+    /// </summary>
+    public string EmptyContentText { get; set; } = "No Items Found";
+
+    /// <summary>
+    /// The placeholder text for when no selection has been made.
+    /// </summary>
+    public string PlaceholderText { get; set; } = "No Items";
+
+    /// <summary>
+    /// If set to true the dropdown will open. Is two way binding.
+    /// </summary>
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// If true on selection the dropdown will close.
+    /// </summary>
+    public bool CloseOnSelect { get; set; }
+
+    /// <summary>
+    /// The direction to open the drop down.
+    /// </summary>
+    public RfDropDownPosition Position { get; set; } = RfDropDownPosition.LeftDown;
+    /// <summary>
+    /// If true the items within the dropdown cannot be modified within.
+    /// </summary>
+    public bool IsReadonly { get; set; }
+
+}
