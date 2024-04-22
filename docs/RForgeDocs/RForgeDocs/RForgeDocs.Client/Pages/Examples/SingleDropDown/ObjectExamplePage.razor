@@ -1,0 +1,210 @@
+﻿@page "/dropdown-single/example/object-example"
+@rendermode InteractiveAuto
+
+@using RForgeDocs.Abstractions
+
+<ExampleDetail Title="Drop Down of Objects"
+               SubTitle="Dropdown (Single)"
+               ComponentName="dropdown (single)"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/SingleDropDown/ObjectExamplePage.razor")"
+               ComponentDetailsUrl="/dropdown-single/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This example makes use of a fixed list of <code>OptionData</code> which has a single property called <code>Name</code>. These are filtered within the <code>OnLoad</code> callback.
+                    </p>
+                    <div class="message">
+                        <div class="message-header">Item Comparer</div>
+                        <div class="message-body">
+                            <div class="content">
+
+                                <p>
+                                    When dealing with objects it is a good practice to set the <code>RfDropDown.ItemComparer</code> parameter.
+                                    The <code>RfDropDown</code> uses this to determine if an item within <code>RfDropDown.Items</code> is selected.
+                                    By default the ItemComparer is set to: 
+                                </p>
+                                    <pre><code><xmp>(i1, i2) => i1?.Equals(i2)</xmp></code></pre>
+                                <p>
+                                    The only time the <code>ItemComparer</code> does not have to be set with an object is when the list of options
+                                    stays the same. That would then allow the equals reference check to come back as true.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <div class="field">
+
+                <label class="label">With Item Comparer set</label>
+                <RfDropDown TItem="OptionData"
+                            ItemComparer=@((a,b) => a.Name == b.Name)
+                            @bind-SelectedItem=@SelectedItem1
+                            Items=@ViewingOptions
+                            OnLoad=@OnLoad>
+                    @context.Name
+                </RfDropDown>
+            </div>
+
+            <div class="field">
+
+                <label class="label">No Item Comparer set</label>
+                <div class="control">
+                    <RfDropDown TItem="OptionData"
+                                @bind-SelectedItem=@SelectedItem2
+                                Items=@ViewingOptions
+                                OnLoad=@OnLoad>
+                        @context.Name
+                    </RfDropDown>
+                </div>
+                <p class="help">This still works because the value of SelectedItem and AllOptions are never changing and the compareison is a reference comparison.</p>
+            </div>
+        </article>
+    </div>
+</div>
+
+@code {
+
+    private OptionData SelectedItem1 { get; set; }
+    private OptionData SelectedItem2 { get; set; }
+
+    private List<OptionData> AllOptions { get; set; } =
+        [
+        #region Fake Input Data
+            new OptionData("Liam Smith"),
+        new OptionData("Noah Johnson"),
+        new OptionData("Oliver Williams"),
+        new OptionData("Elijah Brown"),
+        new OptionData("William Jones"),
+        new OptionData("James Miller"),
+        new OptionData("Benjamin Davis"),
+        new OptionData("Lucas Garcia"),
+        new OptionData("Henry Rodriguez"),
+        new OptionData("Alexander Martinez"),
+        new OptionData("Mason Hernandez"),
+        new OptionData("Michael Gonzalez"),
+        new OptionData("Ethan Wilson"),
+        new OptionData("Daniel Anderson"),
+        new OptionData("Jacob Thomas"),
+        new OptionData("Logan Taylor"),
+        new OptionData("Jackson Moore"),
+        new OptionData("Levi Jackson"),
+        new OptionData("Sebastian White"),
+        new OptionData("Mateo Lopez"),
+        new OptionData("Jack Lee"),
+        new OptionData("Owen Gonzalez"),
+        new OptionData("Theodore Harris"),
+        new OptionData("Aiden Clark"),
+        new OptionData("Samuel Lewis"),
+        new OptionData("Joseph Robinson"),
+        new OptionData("John Walker"),
+        new OptionData("David Perez"),
+        new OptionData("Wyatt Hall"),
+        new OptionData("Matthew Young"),
+        new OptionData("Luke Allen"),
+        new OptionData("Asher Sanchez"),
+        new OptionData("Carter Wright"),
+        new OptionData("Julian King"),
+        new OptionData("Grayson Scott"),
+        new OptionData("Leo Green"),
+        new OptionData("Jayden Baker"),
+        new OptionData("Gabriel Adams"),
+        new OptionData("Isaac Nelson"),
+        new OptionData("Lincoln Hill"),
+        new OptionData("Anthony Ramirez"),
+        new OptionData("Hudson Campbell"),
+        new OptionData("Dylan Mitchell"),
+        new OptionData("Ezra Roberts"),
+        new OptionData("Thomas Carter"),
+        new OptionData("Charles Gomez"),
+        new OptionData("Christopher Phillips"),
+        new OptionData("Jaxon Evans"),
+        new OptionData("Maverick Turner"),
+        new OptionData("Josiah Diaz"),
+        new OptionData("Isaiah Parker"),
+        new OptionData("Andrew Cruz"),
+        new OptionData("Elias Edwards"),
+        new OptionData("Joshua Collins"),
+        new OptionData("Nathan Stewart"),
+        new OptionData("Caleb Flores"),
+        new OptionData("Ryan Morris"),
+        new OptionData("Adrian Morales"),
+        new OptionData("Miles Murphy"),
+        new OptionData("Eli Cook"),
+        new OptionData("Nolan Rogers"),
+        new OptionData("Christian Gutierrez"),
+        new OptionData("Aaron Ortiz"),
+        new OptionData("Cameron Morgan"),
+        new OptionData("Ezekiel Cooper"),
+        new OptionData("Colton Peterson"),
+        new OptionData("Luca Bailey"),
+        new OptionData("Landon Reed"),
+        new OptionData("Hunter Kelly"),
+        new OptionData("Jonathan Howard"),
+        new OptionData("Santiago Ramos"),
+        new OptionData("Axel Cox"),
+        new OptionData("Easton Diaz"),
+        new OptionData("Cooper Richardson"),
+        new OptionData("Jeremiah Wood"),
+        new OptionData("Angel Watson"),
+        new OptionData("Roman Brooks"),
+        new OptionData("Connor Chavez"),
+        new OptionData("Jameson Castillo"),
+        new OptionData("Robert Sanders"),
+        new OptionData("Greyson Myers"),
+        new OptionData("Maxwell Gibson"),
+        new OptionData("Adam Fernandez"),
+        new OptionData("Ian Rivera"),
+        new OptionData("Carlos Weaver"),
+        new OptionData("Emmett Greene"),
+        new OptionData("Nicolás Bryant"),
+        new OptionData("Abram Hoffman"),
+        new OptionData("Thiago Carlson"),
+        new OptionData("Alejandro Flores"),
+        new OptionData("Mathias Herrera"),
+        new OptionData("Dante Mendoza"),
+        new OptionData("Jayce Rice"),
+        new OptionData("Damian Torres"),
+        new OptionData("Beau Welch"),
+        new OptionData("Donovan Butler"),
+        new OptionData("Shawn Porter"),
+        new OptionData("Gunner Gregory"),
+        new OptionData("Enzo Bowers"),
+        new OptionData("Finley Wilkinson")
+        #endregion
+        ];
+
+    private List<OptionData> ViewingOptions { get; set; }
+
+    public void OnLoad(string filter)
+    {
+        var options = AllOptions.AsEnumerable();
+
+        if (string.IsNullOrWhiteSpace(filter) == false)
+            options = options.Where(o => o.Name.Contains(filter) == true);
+
+        ViewingOptions = options.OrderBy(o => o.Name)
+            .Take(10)
+            .ToList();
+    }
+
+    private class OptionData
+    {
+
+        public OptionData(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; set; }
+    }
+
+}
