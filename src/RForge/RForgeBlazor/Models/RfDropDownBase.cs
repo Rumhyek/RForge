@@ -217,6 +217,7 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 
                 IsLoading = true;
                 StateHasChanged();
+                await FilterChanged.InvokeAsync(changes.Filter);
                 await OnLoad.InvokeAsync((string)changes.Filter);
                 IsLoading = false;
                 StateHasChanged();

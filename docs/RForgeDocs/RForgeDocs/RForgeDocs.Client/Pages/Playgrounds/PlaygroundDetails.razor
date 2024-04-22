@@ -1,4 +1,5 @@
 ﻿@using RForgeDocs.Client.Components
+@using System.Text
 
 @if (PageSourceUrl != null)
 {
@@ -68,10 +69,14 @@ else
                 <div class="field">
                     <label class="label">Event Log</label>
                     <div class="control">
-                        <textarea class="textarea"
+                        <textarea class="textarea is-family-monospace is-small"
                                   placeholder="Event Log"
                                   readonly="readonly"
-                                  rows="15">@log</textarea>
+                                  rows="15">
+                            @for(int i = log.Count - 1; i >= 0; i--)
+                            {
+                                @log[i]
+                            }</textarea>
                     </div>
                 </div>
             }
@@ -112,29 +117,22 @@ else
     [Parameter]
     public bool HasEvents { get; set; } = true;
 
-    private string log { get; set; }
 
-    public void ClearLog() => log = string.Empty;
+    private List<string> log { get; set; } = new List<string>();
+
+    public void ClearLog() => log.Clear();
 
     public void AddLog(string message, bool addTimeStamp = true)
     {
+        string line = "";
+
         if (addTimeStamp == true)
-        {
-            string dateStamp = $"[{DateTime.Now:T}]";
+            line = $"[{DateTime.Now:T}] ";
 
-            if (string.IsNullOrEmpty(log) == true)
-                log = dateStamp;
-            else
-                log += $"\n{dateStamp}";
-        }
+        line += $"{message}\n";
 
-        if (string.IsNullOrEmpty(log) == true)
-            log = message;
+        log.Add(line);
 
-        else if (message.StartsWith('\n') == true)
-            log += message;
-
-        else log += "\n" + message;
     }
 
 }
