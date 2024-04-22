@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using RForge.Abstractions.DropDowns;
 using RForgeBlazor.Models;
 
 namespace RForgeBlazor;
@@ -18,7 +19,14 @@ public partial class RfDropDown<TItem> : RfDropDownBase<TItem>
     public TItem SelectedItem { get; set; }
     [Parameter]
     public EventCallback<TItem> SelectedItemChanged { get; set; }
+
+    /// <summary>
+    /// Determines how to render the selected item within a drop down options. Does not affect the <see cref="RfDropDownBase{TItem}.Items"/> output.
+    /// </summary>
+    [Parameter]
+    public RfShowSelectionInDropDown ShowSelectedItemInDropDown { get; set; } = RfShowSelectionInDropDown.OnlyWhenNotInList;
     #endregion
+
 
     private bool IsSelected(TItem item)
     {

@@ -106,6 +106,17 @@
 
         <h3 class="title mt-6 is-size-5">RfDropDown</h3>
 
+        <BulmaInput Label="Position"
+                    HelpText="Determines how to render the selected item within a drop down options.">
+            <div class="select is-primary">
+                <select @bind=ShowSelectedItemInDropDown>
+                    @foreach (var opt in Enum.GetValues(typeof(RfShowSelectionInDropDown)))
+                    {
+                        <option value="@opt">@opt</option>
+                    }
+                </select>
+            </div>
+        </BulmaInput>
     </Parameters>
 
     <Display>
@@ -137,6 +148,7 @@
                     OnClose=@((filter) => Logger.AddLog($"OnClose(filter: '{filter}')"))
                     OnOpen=@((filter) => Logger.AddLog($"OnOpen(filter: '{filter}')"))
 
+                    ShowSelectedItemInDropDown=@ShowSelectedItemInDropDown
                     IsReadonly=@IsReadonly>
 
             @context.FirstName @context.LastName (@context.Id)
@@ -244,4 +256,10 @@
     /// </summary>
     public bool IsReadonly { get; set; }
 
+
+    /// <summary>
+    /// Determines how to render the selected item within a drop down options. Does not affect the <see cref="RForgeBlazor.Models.RfDropDownBase{TItem}.Items"/> output.
+    /// </summary>
+    [Parameter]
+    public RfShowSelectionInDropDown ShowSelectedItemInDropDown { get; set; } = RfShowSelectionInDropDown.OnlyWhenNotInList;
 }
