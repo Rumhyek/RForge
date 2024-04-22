@@ -130,6 +130,10 @@
                     CloseOnSelect=@CloseOnSelect
                     Position=@Position
                     OnLoad=@OnLoad
+
+                    OnClose=@((filter) => Logger.AddLog($"OnClose(filter: '{filter}')"))
+                    OnOpen=@((filter) => Logger.AddLog($"OnClose(filter: '{filter}')"))
+
                     IsReadonly=@IsReadonly>
 
             @context.FirstName @context.LastName (@context.Id)
@@ -149,6 +153,7 @@
 
     private async Task OnLoad(string filter)
     {
+        Logger.AddLog($"OnLoad(filter: '{filter}')");
         Items = await findUsersProcessor.Find(filter);
         StateHasChanged();
     }
