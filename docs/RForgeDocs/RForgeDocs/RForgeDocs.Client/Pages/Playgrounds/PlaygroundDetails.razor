@@ -47,14 +47,14 @@ else
 
             @if (MakeDisplaySticky == true)
             {
-                <article class="seciton is-position-sticky" style="top: 80px;">
+                <article class="section is-position-sticky" style="top: 80px;">
                     @Display
                 </article>
 
             }
             else
             {
-                <article class="seciton">
+                <article class="section">
                     @Display
                 </article>
             }
@@ -62,21 +62,30 @@ else
 
             @if (HasEvents == true)
             {
-                <div class="buttons is-right">
-                    <a class="button">Clear Logs</a>
-                </div>
-
-                <div class="field">
-                    <label class="label">Event Log</label>
-                    <div class="control">
-                        <textarea class="textarea is-family-monospace is-small"
-                                  placeholder="Event Log"
-                                  readonly="readonly"
-                                  rows="15">
-                            @for(int i = log.Count - 1; i >= 0; i--)
-                            {
-                                @log[i]
-                            }</textarea>
+                <div class="section">
+                    <div class="field">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <label class="label">Event Log</label>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <a class="button" @onclick=@ClearLog>Clear Logs</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="control">
+                            <textarea class="textarea is-family-monospace is-small"
+                                      placeholder="Event Log"
+                                      readonly="readonly"
+                                      rows="15">
+                                @for (int i = log.Count - 1; i >= 0; i--)
+                                {
+                                    @log[i]
+                                }</textarea>
+                        </div>
                     </div>
                 </div>
             }

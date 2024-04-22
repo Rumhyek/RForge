@@ -113,6 +113,7 @@
         <RfDropDown TItem="UserData"
                     Items=@Items
                     @bind-SelectedItem=@SelectedItem
+                    @bind-SelectedItem:after=@(() => Logger.AddLog($"OnSelectedItem(SelectedItem: '{SelectedItem}')"))
                     ItemComparer=@((a,b) => a.Id == b.Id)
                     CssClass=@CssClass
                     CssSelectedClass=@CssSelectedClass
@@ -120,6 +121,7 @@
                     CssFilterClass=@CssFilterClass
                     ShowFilter=@ShowFilter
                     @bind-Filter=@Filter
+                    @bind-Filter:after=@(() => Logger.AddLog($"OnFilter(Filter: '{Filter}')"))
                     FilterIcon=@FilterIcon
                     FilterPlaceholderText=@FilterPlaceholderText
                     FilterRateLimit=@FilterRateLimit
