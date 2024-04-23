@@ -45,6 +45,10 @@
     max-width: 750px;
 }
 
+.container.is-fluid {
+    max-width: 1920px !important;
+}
+
 .spacer-link {
     font-size: .5rem;
 }

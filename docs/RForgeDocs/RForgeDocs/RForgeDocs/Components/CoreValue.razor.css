@@ -1,0 +1,16 @@
+﻿
+
+
+.core-value {
+    
+    box-shadow: none;
+    border: 2px solid var(--bulma-primary);
+}
+
+
+.message-header {
+    border-radius: var(--bulma-radius) var(--bulma-radius) 0 0;
+    background-color: hsl(var(--bulma-message-h), var(--bulma-message-s), var(--bulma-message-background-l));
+    padding: .5rem;
+}
+
