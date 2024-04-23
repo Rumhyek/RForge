@@ -27,6 +27,12 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     public RenderFragment<TItem> SelectedItemTemplate { get; set; }
 
     /// <summary>
+    /// Determines how to render the selected item within a drop down options. Does not affect the <see cref="RfDropDownBase{TItem}.Items"/> output.
+    /// </summary>
+    [Parameter]
+    public RfShowSelectionInDropDown ShowSelectedItemInDropDown { get; set; } = RfShowSelectionInDropDown.OnlyWhenNotInList;
+
+    /// <summary>
     /// Used to compare two items within the list to determine if it is selected or not. By default uses <see cref="TItem.Equals(object?)"/>
     /// </summary>
     [Parameter]
@@ -101,10 +107,17 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     public List<TItem> Items { get; set; }
 
     /// <summary>
-    /// When <code>Items == null || Items.Count == 0</code> This text is shown in the dropdown.
+    /// When <code>Items == null || Items.Count == 0</code> This text is shown in the dropdown
+    /// unless <see cref="EmptyContentTemplate"/> is set.
     /// </summary>
     [Parameter]
     public string EmptyContentText { get; set; } = "No Items Found";
+
+    /// <summary>
+    /// When <code>Items == null || Items.Count == 0</code> This is rendered in place of EmptyContentText.
+    /// </summary>
+    [Parameter]
+    public RenderFragment EmptyContentTemplate { get; set; }
 
     /// <summary>
     /// The placeholder text for when no selection has been made.

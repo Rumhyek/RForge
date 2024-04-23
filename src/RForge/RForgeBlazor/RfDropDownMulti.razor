@@ -71,11 +71,56 @@
                 </div>
             }
 
+
+            @{
+                bool showAtTop = false;
+                if (SelectedItems != null && SelectedItems.Count > 0)
+                {
+                    switch (ShowSelectedItemInDropDown)
+                    {
+                        case RfShowSelectionInDropDown.Always:
+                            showAtTop = true;
+                            break;
+                        case RfShowSelectionInDropDown.OnlyWhenNotInList:
+                            showAtTop = Items.Any(i => IsSelected(i) == true) == false;
+                            break;
+                    }
+                }
+            }
+
+            @if (showAtTop == true)
+            {
+                foreach (var selectedItem in SelectedItems)
+                {
+                    <a class="dropdown-item @CssRowItemClass is-selected"
+                       @onclick=@(async () => await OnItemClick(selectedItem))
+                       @onkeydown=@(async (e) => await OnItemKeyDown(e, selectedItem))
+                       tabindex="0">
+
+                        @if (RowItemTemplate != null)
+                        {
+                            @RowItemTemplate(selectedItem)
+                        }
+                        else
+                        {
+                            @ChildContent(selectedItem)
+                        }
+                    </a>
+                }
+            }
+
             @if (Items == null || Items.Count == 0)
             {
-                <a class="dropdown-item">
-                    @EmptyContentText
-                </a>
+                <div class="dropdown-item">
+                    @if(EmptyContentTemplate != null)
+                    {
+                        @EmptyContentTemplate
+                    }
+                    else
+                    {
+                        @EmptyContentText
+                    }
+                </div>
             }
             else
             {
