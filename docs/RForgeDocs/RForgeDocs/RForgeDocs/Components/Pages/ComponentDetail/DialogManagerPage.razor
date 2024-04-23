@@ -1,0 +1,100 @@
+﻿@page "/dialog-manager/details"
+
+<ComponentDetail Title="Dialog Manager"
+                 PlaygroundUrl="/dialog-manager/playground"
+                 SubTitle="Modal support for common modal types">
+
+    <Examples>
+        @ComponentDetail.SideLink(("Alert example", "/dialog-manager/example/alert-example"))
+        @ComponentDetail.SideLink(("Confirm example", "/dialog-manager/example/confirm-example"))
+        @ComponentDetail.SideLink(("Prompt example", "/dialog-manager/example/prompt-example"))
+
+    </Examples>
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("RfDialogManager.razor", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDialogManager.razor"))
+        @ComponentDetail.SideLink(("RfDialogManager.razor.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDialogManager.razor.cs"))
+        @ComponentDetail.SideLink(("IDialogManager.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Services/IDialogManager.cs"))
+        @ComponentDetail.SideLink(("IDialogManagerBackend.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Modal/IDialogManagerBackend.cs"))
+        @ComponentDetail.SideLink(("RfDialogOption.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOption.cs"))
+        @ComponentDetail.SideLink(("RfDialogOptionAlert.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionAlert.cs"))
+        @ComponentDetail.SideLink(("RfDialogOptionConfirm.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionConfirm.cs"))
+        @ComponentDetail.SideLink(("RfDialogOptionPrompt.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionPrompt.cs"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                The <code>RfDialogManager</code> adds support to show common modals like those in JavaScript:
+                <code>window.alert</code>,
+                <code>window.confirm</code>, and
+                <code>window.prompt</code>.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                Use <code>RfDialogManager</code> when there is a need to ask or tell the user something straight forward.
+                For example:
+            </p>
+            <ul>
+                <li><strong>Confirm</strong> when confirming an item should be deleted.</li>
+                <li><strong>Prompt</strong> when asking the user for a simple comment in during a saving process.</li>
+                <li><strong>Alert</strong> when you want to make sure they read something and would like it to be confirmed before going forward.</li>
+            </ul>
+
+            <h4>When not to Use</h4>
+            <p>
+                <code>RfDialogManager</code> is a helpful and easy to use tool but there are several instances of when it would be better to create a custom modal.
+                Such cases as:
+            </p>
+            <ul>
+                <li>When you need validation beyond requirement.</li>
+                <li>Need an edit form.</li>
+            </ul>
+
+
+        </div>
+    </Purpose>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+
+
+    <BasicUsage>
+
+        <div class="content">
+
+            <p>
+                It takes two parts to use <code>RfDialogManager</code>.
+                First the page will need to have an <pre><code><xmp><RfDialogManager /></xmp></code></pre> registered somewhere that isn't inside of a overflow hidden element.
+                Pererrabley it should be as high up the DOM tree to ensure some CSS rule doesn't affect it.
+            </p>
+            <p>
+                Secondly, the page will need to inject <code>RForgeBlazor.Services.IDialogManager.cs</code>. 
+                This interface is used to communicate between <code>RfDialogManager</code> and the page.
+                This interface supports several overloads for each alert, confirm, and prompt.
+            </p>
+
+            <div class="notification is-info">
+                <strong>NOTE:</strong> In projects that use <code class="has-text-info">rendermode: InteractiveServer</code>. 
+                The backend may take advantage of <code class="has-text-info">IDialogManagerBackend.cs</code>.
+                I caution on using this. This should only be done if you are sure the project won't switch over to WASM.
+            </div>
+
+            <h4>Standard Request Flow</h4>
+            <p>
+                The <code>RfDialogManager</code> works off calling <code>RForgeBlazor.Services.IDialogManager.cs</code> and providing the method a callback function when completed.
+            </p>
+
+        </div>
+
+    </BasicUsage>
+
+
+</ComponentDetail>
+
+@code {
+
+}
