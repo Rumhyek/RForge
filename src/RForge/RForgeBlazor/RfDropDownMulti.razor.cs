@@ -47,7 +47,7 @@ public partial class RfDropDownMulti<TItem> : RfDropDownBase<TItem>
         bool isSelected = IsSelected(item);
 
         if (isSelected == true)
-            SelectedItems.Remove(item);
+            SelectedItems.RemoveAll(i => ItemComparer(i, item) == true);
 
         else if (MaxSelectableItems.HasValue == false
             || MaxSelectableItems <= 0

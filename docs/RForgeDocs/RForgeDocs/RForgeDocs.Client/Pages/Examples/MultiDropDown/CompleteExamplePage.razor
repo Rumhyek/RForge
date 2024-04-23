@@ -1,0 +1,75 @@
+﻿@page "/dropdown-multi/example/complete-example"
+@rendermode InteractiveAuto
+
+@using RForgeDocs.Abstractions
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+
+@inject IFindUsersProcessor findUsersProcessor
+
+<ExampleDetail Title="Dynamic Object Support"
+               SubTitle="Dropdown (Multi)"
+               ComponentName="dropdown (multi)"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/MultiDropDown/CompleteExamplePage.razor")"
+               ComponentDetailsUrl="/dropdown-multi/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This example makes use of <code>IFindUsersProcessor</code> to filter a list of <code>UserData</code> users. 
+                    </p>
+
+                    <div class="message">
+                        <div class="message-header">Item Comparer</div>
+                        <div class="message-body">
+                            <div class="content">
+
+                                <p>
+                                    When dealing with objects it is a good practice to set the <code>RfDropDownMulti.ItemComparer</code> parameter.
+                                    The <code>RfDropDownMulti</code> uses this to determine if an item within <code>RfDropDownMulti.Items</code> is selected.
+                                    By default the ItemComparer is set to: 
+                                </p>
+                                    <pre><code><xmp>(i1, i2) => i1?.Equals(i2)</xmp></code></pre>
+                                <p>
+                                    The only time the <code>ItemComparer</code> does not have to be set with an object is when the list of options
+                                    stays the same. That would then allow the equals reference check to come back as true.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <div class="field">
+
+                <RfDropDownMulti TItem="UserData"
+                            ItemComparer=@((a,b) => a.Id == b.Id)
+                            @bind-SelectedItems=@SelectedItem
+                            Items=@ViewingOptions
+                            OnLoad=@OnLoad>
+
+                    @context.FirstName @context.LastName
+                </RfDropDownMulti>
+            </div>
+
+        </article>
+    </div>
+</div>
+
+@code {
+    private List<UserData> SelectedItem { get; set; } = new();
+
+    private List<UserData> ViewingOptions { get; set; }
+
+    public async Task OnLoad(string filter)
+    {
+        ViewingOptions = await findUsersProcessor.Find(filter);
+    }
+}

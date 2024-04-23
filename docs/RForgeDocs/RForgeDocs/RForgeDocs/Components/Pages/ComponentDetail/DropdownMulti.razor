@@ -1,22 +1,19 @@
-﻿@page "/dropdown-single/details"
+﻿@page "/dropdown-multi/details"
 
-<ComponentDetail Title="Dropdown (Single)"
-                 PlaygroundUrl="/dropdown-single/playground"
+<ComponentDetail Title="Dropdown (Multi)"
+                 PlaygroundUrl="/dropdown-multi/playground"
                  SubTitle="A searchable drop down with one selection">
 
     <Examples>
-        @ComponentDetail.SideLink(("String example", "/dropdown-single/example/string-example"))
-        @ComponentDetail.SideLink(("Object example", "/dropdown-single/example/object-example"))
-        @ComponentDetail.SideLink(("Dynamic example", "/dropdown-single/example/complete-example"))
-        @ComponentDetail.SideLink(("Custom rendering example", "/dropdown-single/example/selection-customization-example"))
-        @ComponentDetail.SideLink(("Dependant (nested)", "/dropdown-single/example/dependant-example-nested"))
-        @ComponentDetail.SideLink(("Dependant (separated)", "/dropdown-single/example/dependant-example-separated"))
-
+        @ComponentDetail.SideLink(("String example", "/dropdown-multi/example/string-example"))
+        @ComponentDetail.SideLink(("Object example", "/dropdown-multi/example/object-example"))
+        @ComponentDetail.SideLink(("Dynamic example", "/dropdown-multi/example/complete-example"))
+        @ComponentDetail.SideLink(("Custom rendering example", "/dropdown-multi/example/selection-customization-example"))
     </Examples>
 
     <RepoLinks>
-        @ComponentDetail.SideLink(("RfDropDown.razor", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDropDown.razor"))
-        @ComponentDetail.SideLink(("RfDropDown.razor.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDropDown.razor.cs"))
+        @ComponentDetail.SideLink(("RfDropDownMulti.razor", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDropDownMulti.razor"))
+        @ComponentDetail.SideLink(("RfDropDownMulti.razor.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDropDownMulti.razor.cs"))
         @ComponentDetail.SideLink(("RfDropDownBase.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDropDownBase.cs"))
         @ComponentDetail.SideLink(("RfDropDownPosition.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/DropDowns/RfDropDownPosition.cs"))
         @ComponentDetail.SideLink(("RfShowSelectionInDropDown.cs", "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/DropDowns/RfShowSelectionInDropDown.cs"))
@@ -26,11 +23,11 @@
         <div class="content">
 
             <p>
-                <code>RfDropDown</code> creates a Bulma dropdown that supports searching and manages the selection of an item.
+                <code>RfDropDownMulti</code> creates a Bulma dropdown that supports searching and manages the selection of an multiple items.
             </p>
-            
+
             <h4>When not to Use</h4>
-            <p>Don't use <code>RfDropDown</code> when:</p>
+            <p>Don't use <code>RfDropDownMulti</code> when:</p>
             <ul>
                 <li>
                     When using static rendering mode. Instead use <code>InputSelect</code>.
@@ -42,12 +39,12 @@
     <BasicUsage>
         <div class="content">
             <p>
-                The <code>RfDropDown</code> works primarily with two parameters: <code>SelectedItem</code> and <code>Items</code>.
+                The <code>RfDropDownMulti</code> works primarily with two parameters: <code>SelectedItems</code> and <code>Items</code>.
             </p>
 
             <h3>How are Items Render?</h3>
             <p>
-                The dropdown doesn't make any assumptions on how to render the items or selected item it is given. 
+                The dropdown doesn't make any assumptions on how to render the items or selected items it is given. 
                 Instead the drop down supports three <code>RenderFragement</code> to customize the way an item appears within the drop down.
                 All three <code>RenderFragement</code> have a context of <code>TItem</code> and are used to setup two sections.
                 The two sections of the drop down that can be custimized are <code>RowItemTemplate</code> and <code>SelectedItemTemplate</code>.
@@ -61,11 +58,11 @@
                 If <code>RowItemTemplate</code> isn't set the drop down will use <code>ChildContent</code>.
             </p>
 
-            <h5>Selected Item Template</h5>
+            <h5>Selected Items Template</h5>
             <p>
                 When the drop down has a selection it calls the <code>SelectedItemTemplate</code> to render the <code>TItem</code> within the input portion of the drop down. 
-                The selected item is wrapped in the following code:
-                <pre><code><xmp><span>@@SelectedItemTemplate(SelectedItem)</span></xmp></code></pre>
+                Each selected item is wrapped in the following code:
+                <pre><code><xmp><span class="tag @@CssSelectedClass">@@SelectedItemTemplate(selectedItem)</span></xmp></code></pre>
 
                 If <code>SelectedItemTemplate</code> isn't set the drop down will use <code>ChildContent</code>.
             </p>

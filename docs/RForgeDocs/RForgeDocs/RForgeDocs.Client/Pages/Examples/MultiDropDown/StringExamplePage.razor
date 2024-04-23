@@ -1,0 +1,77 @@
+﻿@page "/dropdown-multi/example/string-example"
+@rendermode InteractiveAuto
+
+@using RForgeDocs.Abstractions
+
+<ExampleDetail Title="Drop Down of Strings"
+               SubTitle="Dropdown (Multi)"
+               ComponentName="dropdown (multi)"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/MultiDropDown/StringExamplePage.razor")"
+               ComponentDetailsUrl="/dropdown-multi/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This example makes use of a fixed list of string names which are filtered within the <code>OnLoad</code> callback.
+                    </p>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <label class="label"></label>
+            <RfDropDownMulti TItem="string"
+                        @bind-SelectedItems=@SelectedItem
+                        Items=@ViewingOptions
+                        OnLoad=@OnLoad>
+                @context
+            </RfDropDownMulti>
+
+        </article>
+    </div>
+</div>
+
+@code {
+    public List<string> SelectedItem { get; set; } = new();
+
+    public List<string> AllOptions { get; set; } =
+        [
+        #region Fake Input Data
+            "Liam Smith", "Noah Johnson", "Oliver Williams", "Elijah Brown", "William Jones", "James Miller", "Benjamin Davis",
+    "Lucas Garcia", "Henry Rodriguez", "Alexander Martinez", "Mason Hernandez", "Michael Gonzalez", "Ethan Wilson",
+    "Daniel Anderson", "Jacob Thomas", "Logan Taylor", "Jackson Moore", "Levi Jackson", "Sebastian White", "Mateo Lopez",
+    "Jack Lee", "Owen Gonzalez", "Theodore Harris", "Aiden Clark", "Samuel Lewis", "Joseph Robinson", "John Walker",
+    "David Perez", "Wyatt Hall", "Matthew Young", "Luke Allen", "Asher Sanchez", "Carter Wright", "Julian King",
+    "Grayson Scott", "Leo Green", "Jayden Baker", "Gabriel Adams", "Isaac Nelson", "Lincoln Hill", "Anthony Ramirez",
+    "Hudson Campbell", "Dylan Mitchell", "Ezra Roberts", "Thomas Carter", "Charles Gomez", "Christopher Phillips",
+    "Jaxon Evans", "Maverick Turner", "Josiah Diaz", "Isaiah Parker", "Andrew Cruz", "Elias Edwards", "Joshua Collins",
+    "Nathan Stewart", "Caleb Flores", "Ryan Morris", "Adrian Morales", "Miles Murphy", "Eli Cook", "Nolan Rogers",
+    "Christian Gutierrez", "Aaron Ortiz", "Cameron Morgan", "Ezekiel Cooper", "Colton Peterson", "Luca Bailey",
+    "Landon Reed", "Hunter Kelly", "Jonathan Howard", "Santiago Ramos", "Axel Cox", "Easton Diaz", "Cooper Richardson",
+    "Jeremiah Wood", "Angel Watson", "Roman Brooks", "Connor Chavez", "Jameson Castillo", "Robert Sanders", "Greyson Myers",
+    "Maxwell Gibson", "Adam Fernandez", "Ian Rivera", "Carlos Weaver", "Emmett Greene", "Nicolás Bryant", "Abram Hoffman",
+    "Thiago Carlson", "Alejandro Flores", "Mathias Herrera", "Dante Mendoza", "Jayce Rice", "Damian Torres", "Beau Welch",
+    "Donovan Butler", "Shawn Porter", "Gunner Gregory", "Enzo Bowers", "Finley Wilkinson"
+        #endregion
+        ];
+
+    public List<string> ViewingOptions { get; set; }
+
+    public void OnLoad(string filter)
+    {
+        var options = AllOptions.AsEnumerable();
+
+        if (string.IsNullOrWhiteSpace(filter) == false)
+            options = options.Where(o => o.Contains(filter) == true);
+
+        ViewingOptions = options.OrderBy(o => o)
+            .Take(10)
+            .ToList();
+    }
+
+}
