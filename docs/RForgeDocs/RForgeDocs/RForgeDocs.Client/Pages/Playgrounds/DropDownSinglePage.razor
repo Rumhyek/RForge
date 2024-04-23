@@ -100,11 +100,8 @@
         </BulmaInput>
         <BulmaCheckbox Label="IsReadonly"
                        HelpText="If true the items within the dropdown cannot be modified within.">
-            <InputCheckbox @bind-Value=@IsReadonly class="input" />
+            <InputCheckbox @bind-Value=@IsReadonly class="checkbox" />
         </BulmaCheckbox>
-
-
-        <h3 class="title mt-6 is-size-5">RfDropDown</h3>
 
         <BulmaInput Label="Position"
                     HelpText="Determines how to render the selected item within a drop down options.">
@@ -117,6 +114,9 @@
                 </select>
             </div>
         </BulmaInput>
+
+        <h3 class="title mt-6 is-size-5">RfDropDown</h3>
+
     </Parameters>
 
     <Display>
