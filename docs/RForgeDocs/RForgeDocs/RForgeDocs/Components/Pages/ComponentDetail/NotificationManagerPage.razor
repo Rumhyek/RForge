@@ -1,0 +1,92 @@
+﻿@page "/notification-manager/details"
+
+<ComponentDetail Title="Notification Manager"
+                 PlaygroundUrl="/notification-manager/playground"
+                 SubTitle="Toast / notification support">
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("RfNotificationManager.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfNotificationManager.razor"))
+        @ComponentDetail.SideLink(("RfNotificationManager.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfNotificationManager.razor.cs"))
+        @ComponentDetail.SpacerLink()
+        @ComponentDetail.SideLink(("INotificationManager.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Services/INotificationManager.cs"))
+        @ComponentDetail.SideLink(("INotificationManagerBackend.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/INotificationManagerBackend.cs"))
+        @ComponentDetail.SpacerLink()
+        @ComponentDetail.SideLink(("NotificationOptions.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/NotificationOptions.cs"))
+        @ComponentDetail.SideLink(("RfNotificationColor.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/RfNotificationColor.cs"))
+        @ComponentDetail.SideLink(("RfNotificationSeverity.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/RfNotificationSeverity.cs"))
+        @ComponentDetail.SideLink(("RfNotificationPosition.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/RfNotificationPosition.cs"))
+        @ComponentDetail.SpacerLink()
+        @ComponentDetail.SideLink(("RfNotificationManagerNotification.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfNotificationManagerNotification.razor"))
+        @ComponentDetail.SideLink(("RfNotificationManagerNotification.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfNotificationManagerNotification.razor.cs"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                The <code>RfNotificationManager</code> add support to manage and show themed toast / notifications.
+                These notifications are built upon Bulma's <a href="https://bulma.io/documentation/elements/notification">notifications</a>.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                Use <code>RfNotificationManager</code> when there is a need to notify the user of some event
+                that happened be it good or bad.
+            </p>
+
+            <h4>When not to Use</h4>
+            <p>
+                <code>RfNotificationManager</code> shouldn't be used for:
+            </p>
+            <ul>
+                <li>Inline notifications. Instead recreate the Bulma notification on the page / component that needs it.</li>
+                <li>
+                    Notifications with forms. The <code>RfNotificationManager</code> is designed to inform the user not gather
+                    information. However, there is an overload to support custom content via a RenderFragement to support elements like buttons etc.
+                </li>
+            </ul>
+
+        </div>
+    </Purpose>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+
+
+    <BasicUsage>
+
+        <div class="content">
+            <p>
+                It takes two parts to use <code>RfNotificationManager</code>.
+                First the page will need to have an <pre><code><xmp><RfNotificationManager /></xmp></code></pre> registered somewhere that isn't inside of a overflow hidden element.
+                Pererrabley it should be as high up the DOM tree to ensure some CSS rule doesn't affect it.
+            </p>
+            <p>
+                Secondly, the page will need to inject <code>RForgeBlazor.Services.INotificationManager.cs</code>.
+                This interface is used to communicate between <code>RfNotificationManager</code> and the page.
+                This interface supports several overloads for each various notification options including: info, success, warning, and errors along with a custom option.
+            </p>
+
+            <div class="notification is-info">
+                <strong>NOTE:</strong> In projects that use <code class="has-text-info">rendermode: InteractiveServer</code>.
+                The backend may take advantage of <code class="has-text-info">INotificationManagerBackend.cs</code>.
+                I caution on using this. This should only be done if you are sure the project won't switch over to WASM.
+            </div>
+
+            <h4>Standard Request Flow</h4>
+            <p>
+                The <code>RfNotificationManager</code> works off calling <code>RForgeBlazor.Services.INotificationManager.cs</code> 
+                passing in the options for the notification 
+                or using the default on the <code>RfNotificationManager</code> for the severity type.
+            </p>
+        </div>
+
+    </BasicUsage>
+
+
+</ComponentDetail>
+
+@code {
+
+}

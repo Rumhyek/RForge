@@ -3,7 +3,7 @@
 <HeroSection Title="@Title" SubTitle="@SubTitle" />
 
 
-<div class="container">
+<div class="container is-fluid">
     <div class="breadcrumb mt-2" aria-label="breadcrumbs">
         <ul>
             <li><a href="/">RForge</a></li>
@@ -56,29 +56,31 @@
 
         <div class="column">
 
+            <div class="content-container">
 
-            @if (Purpose != null)
-            {
-                <section class="section">
-                    <h2 class="title">Purpose of Component</h2>
-                    @Purpose
-                </section>
-            }
+                @if (Purpose != null)
+                {
+                    <section class="section">
+                        <h2 class="title">Purpose of Component</h2>
+                        @Purpose
+                    </section>
+                }
 
-            @if (BasicUsage != null)
-            {
-                <section class="section">
-                    <h2 class="title is-size-1">Basic Usage</h2>
-                    @BasicUsage
-                </section>
-            }
-            @if (Setup != null)
-            {
-                <section class="section">
-                    <h2 class="title is-size-1">How to Setup</h2>
-                    @Setup
-                </section>
-            }
+                @if (BasicUsage != null)
+                {
+                    <section class="section">
+                        <h2 class="title is-size-1">Basic Usage</h2>
+                        @BasicUsage
+                    </section>
+                }
+                @if (Setup != null)
+                {
+                    <section class="section">
+                        <h2 class="title is-size-1">How to Setup</h2>
+                        @Setup
+                    </section>
+                }
+            </div>
         </div>
     </div>
 
@@ -114,9 +116,20 @@
     public string SubTitle { get; set; }
 
 
-    public static RenderFragment SideLink((string title, string url) link) => __builder =>
+    public static RenderFragment SideLink((string title, TagInfo tag, string url) link) => __builder =>
     {
-        <li><a href="@link.url">@link.title</a></li>
+        <li title="@link.tag.Text">
+            <a class="side-link is-family-monospace @link.tag.Color" href="@link.url">
+
+                <span>@link.title</span>
+
+            </a>
+        </li>
+    };
+
+    public static RenderFragment SpacerLink() => __builder =>
+    {
+        <li class="spacer-link">&nbsp;</li>
     };
 
 }

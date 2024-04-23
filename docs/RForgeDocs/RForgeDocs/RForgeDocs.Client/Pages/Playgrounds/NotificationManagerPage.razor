@@ -1,0 +1,251 @@
+﻿@page "/notification-manager/playground"
+@using RForge.Abstractions.Notifications
+@using RForgeBlazor.Services
+@rendermode InteractiveAuto
+
+@inject INotificationManager notificationManager
+
+<PlaygroundDetails PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/NotificationManagerPage.razor")"
+                   HasEvents=false
+                   SubTitle="Notification Manager"
+                   ComponentName="Notification Manager"
+                   Title="Playground"
+                   MakeDisplaySticky=false
+                   ComponentDetailsUrl="/notification-manager/details">
+
+    <Parameters>
+        <div class="content">
+
+            <p>
+                These are not parameters directly tied to <code>RfNotificationManager</code>
+                but instead give you a way to see the configuration of a individual notification.
+            </p>
+            <p>
+                However each notification type: info, success, warning, error all do support their own default settings which can
+                be overriden as parameters.
+            </p>
+        </div>
+
+        <BulmaInput Label="Title"
+                    HelpText="Text to display above the messsage on the notification.">
+            <InputText type="text" @bind-Value=@TitleText class="input" />
+        </BulmaInput>
+        <BulmaInput Label="Message"
+                    HelpText="Text to display on the notification.">
+            <InputText type="text" @bind-Value=@MessageText class="input" />
+        </BulmaInput>
+        <BulmaInput Label="Severity"
+                    HelpText="Used to set the severity of a notification. This will set the default style / behaviour of a notfication.">
+            <div class="select">
+                <InputSelect @bind-Value="@Severity">
+                    @foreach (var value in Enum.GetValues<RfNotificationSeverity>())
+                    {
+                        <option value="@value">@value</option>
+                    }
+                </InputSelect>
+            </div>
+        </BulmaInput>
+        <BulmaInput Label="Position"
+                    HelpText="The location to display the notification relative to the notification manager's parent.">
+            <div class="select">
+                <InputSelect @bind-Value="@Position">
+                    @foreach (var value in Enum.GetValues<RfNotificationPosition>())
+                    {
+                        <option value="@value">@value</option>
+                    }
+                </InputSelect>
+            </div>
+        </BulmaInput>
+    </Parameters>
+
+    <Display>
+
+        @* ----------- Alerts ------------- *@
+        <div class="content">
+
+            <div class="buttons">
+                <button class="button is-info" @onclick="OnAddCustomMessageClick">Add Custom</button>
+                <button class="button is-info" @onclick="OnAddMessageClick">Add Message Only</button>
+                <button class="button is-info" @onclick="OnAddMessageTitleClick">Add Message + Title</button>
+            </div>
+
+<pre><code>//INotificationManager&gt;cs
+/// &lt;summary>
+/// Shows a information notification 
+/// &lt;/summary>
+/// &lt;param name="content">RenderFragment to display on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddInfo(RenderFragment content, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a success notification 
+/// &lt;/summary>
+/// &lt;param name="content">RenderFragment to display on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddSuccess(RenderFragment content, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a warning notification 
+/// &lt;/summary>
+/// &lt;param name="content">RenderFragment to display on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddWarning(RenderFragment content, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a error notification 
+/// &lt;/summary>
+/// &lt;param name="content">RenderFragment to display on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddError(RenderFragment content, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a notification using the supplied options
+/// &lt;/summary>
+/// &lt;param name="content">RenderFragment to display inside the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance
+/// If null the system will use the default options&gt;&lt;/param>
+void AddNotification(RenderFragment content, NotificationOptions options);
+
+//INotificationManagerBackend&gt;cs
+/// &lt;summary>
+/// Shows a information notification 
+/// &lt;/summary>
+/// &lt;param name="message">Text to display on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddInfo(string message, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a success notification 
+/// &lt;/summary>
+/// &lt;param name="message">Text to display on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddSuccess(string message, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a warning notification 
+/// &lt;/summary>
+/// &lt;param name="message">Text to display on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddWarning(string message, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a error notification 
+/// &lt;/summary>
+/// &lt;param name="message">Text to display on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddError(string message, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a information notification 
+/// &lt;/summary>
+/// &lt;param name="message">Text to display on the notification&lt;/param>
+/// &lt;param name="title">Text to display above the messsage on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddInfo(string message, string title, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a success notification 
+/// &lt;/summary>
+/// &lt;param name="message">Text to display on the notification&lt;/param>
+/// &lt;param name="title">Text to display above the messsage on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddSuccess(string message, string title, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a warning notification 
+/// &lt;/summary>
+/// &lt;param name="message">Text to display on the notification&lt;/param>
+/// &lt;param name="title">Text to display above the messsage on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddWarning(string message, string title, Action&lt;NotificationOptions> options = null);
+
+/// &lt;summary>
+/// Shows a error notification 
+/// &lt;/summary>
+/// &lt;param name="message">Text to display on the notification&lt;/param>
+/// &lt;param name="title">Text to display above the messsage on the notification&lt;/param>
+/// &lt;param name="options">Options to configure the notification instance&lt;/param>
+void AddError(string message, string title, Action&lt;NotificationOptions> options = null);
+</code></pre>
+
+        </div>
+
+    </Display>
+
+</PlaygroundDetails>
+
+<RfNotificatonManager />
+
+@code {
+    private int currentCount = 0;
+
+    public string MessageText { get; set; }
+    public string TitleText { get; set; }
+    public RfNotificationSeverity Severity { get; set; }
+    public RfNotificationPosition Position { get; set; }
+
+    public static RenderFragment MessageTemplate(string message) => (__builder) =>
+    {
+        <div class="content">
+            <h1>CUSTOM</h1>
+            <p>@message</p>
+        </div>
+    };
+
+    private void OnAddCustomMessageClick()
+    {
+        switch (Severity)
+        {
+            case RfNotificationSeverity.Info:
+                notificationManager.AddInfo(MessageTemplate(MessageText), options => options.Position = Position);
+                break;
+            case RfNotificationSeverity.Success:
+                notificationManager.AddSuccess(MessageTemplate(MessageText), options => options.Position = Position);
+                break;
+            case RfNotificationSeverity.Warning:
+                notificationManager.AddWarning(MessageTemplate(MessageText), options => options.Position = Position);
+                break;
+            case RfNotificationSeverity.Error:
+                notificationManager.AddError(MessageTemplate(MessageText), options => options.Position = Position);
+                break;
+        }
+    }
+    private void OnAddMessageClick()
+    {
+        switch (Severity)
+        {
+            case RfNotificationSeverity.Info:
+                notificationManager.AddInfo((MessageText), options => options.Position = Position);
+                break;
+            case RfNotificationSeverity.Success:
+                notificationManager.AddSuccess((MessageText), options => options.Position = Position);
+                break;
+            case RfNotificationSeverity.Warning:
+                notificationManager.AddWarning((MessageText), options => options.Position = Position);
+                break;
+            case RfNotificationSeverity.Error:
+                notificationManager.AddError((MessageText), options => options.Position = Position);
+                break;
+        }
+
+    }
+    private void OnAddMessageTitleClick()
+    {
+        switch (Severity)
+        {
+            case RfNotificationSeverity.Info:
+                notificationManager.AddInfo((MessageText), TitleText, options => options.Position = Position);
+                break;
+            case RfNotificationSeverity.Success:
+                notificationManager.AddSuccess((MessageText), TitleText, options => options.Position = Position);
+                break;
+            case RfNotificationSeverity.Warning:
+                notificationManager.AddWarning((MessageText), TitleText, options => options.Position = Position);
+                break;
+            case RfNotificationSeverity.Error:
+                notificationManager.AddError((MessageText), TitleText, options => options.Position = Position);
+                break;
+        }
+
+    }
+}

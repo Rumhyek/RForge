@@ -2,3 +2,49 @@
 .menu + .menu {
     margin-top: 1.5rem;
 }
+
+.side-link {
+    font-size: .75rem;
+    border-radius: 0;
+    margin-bottom: 3px;
+    border-left: 2px solid #00000000;
+    padding-left: calc(.75rem + 3px);
+}
+
+
+    .side-link.is-danger {
+        border-left: 2px solid var(--bulma-danger);
+    }
+
+    .side-link.is-primary {
+        border-left: 2px solid var(--bulma-primary);
+    }
+
+    .side-link.is-info {
+        border-left: 2px solid var(--bulma-info);
+    }
+
+    .side-link.is-link {
+        border-left: 2px solid var(--bulma-link);
+    }
+
+    .side-link.is-success {
+        border-left: 2px solid var(--bulma-success);
+    }
+
+    .side-link.is-warning {
+        border-left: 2px solid var(--bulma-warning);
+    }
+
+    .side-link:hover {
+        border-left-width: 5px;
+        padding-left: .75rem;
+    }
+
+.content-container {
+    max-width: 750px;
+}
+
+.spacer-link {
+    font-size: .5rem;
+}

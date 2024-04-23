@@ -20,7 +20,7 @@ public class ApiFindUsersProcessor : IFindUsersProcessor
             var httpClient = _httpClientFactory.CreateClient("api");
             return await httpClient.GetFromJsonAsync<List<UserData>>($"api/users/find/?searchText={searchText}&returnCount={returnCount}");
         }
-        catch (Exception ex)
+        catch
         {
 
         }
