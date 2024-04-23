@@ -1,0 +1,213 @@
+﻿@page "/dropdown-single/example/dependant-example-nested"
+@rendermode InteractiveAuto
+
+@using RForgeDocs.Abstractions
+
+<ExampleDetail Title="Dependant Drop downs (Nested)"
+               SubTitle="Dropdown (Single)"
+               ComponentName="dropdown (single)"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/SingleDropDown/DependantNestedExamplePage.razor")"
+               ComponentDetailsUrl="/dropdown-single/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This example show cases how to make one drop down change the contents of the other.
+                        It does this by listening to the <code>@@bind-SelectedItem:after</code> event to update
+                        the second drop down's <code>Items</code> from the inner list of <code>SelectedSpecies.Breed</code>.
+                    </p>
+
+                    <p>These examples showcases it with two different approaches.</p>
+                    <ol>
+                        <li>
+                            <strong>Separate Objects</strong> - This approach has two separate list. One for species and one for breeds.
+                            <a href="/dropdown-single/example/dependant-example-separated">Click to View</a>
+                        </li>
+                        <li>
+                            <strong>Nested Objects</strong> - This approach the first dropdown contains the options of the second list.
+                        </li>
+                    </ol>
+
+                    <div class="message">
+                        <div class="message-header">Which Method to Chose?</div>
+
+                        <div class="message-body">
+
+                            <div class="content">
+                                <p>
+                                    This is of course up to your data but I would only use <em>Nested Objects</em> if the data is more static and smaller nature.
+                                    You could also use <em>Nested Objects</em> if the API or data source already gives back the data in this format.
+                                </p>
+                                <p>
+                                    I would use <em>Separate Objects</em> if I was querying an relational database where the data is already distinct.
+                                    This approach increases network traffic but decreases the over memory footprint of the page.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <h3 class="is-size-4 block">Nested Object Example</h3>
+
+            <div class="columns">
+
+                <div class="column is-narrow">
+                    <div class="field">
+                        <label class="label">Species</label>
+                        <div class="control">
+                            <RfDropDown TItem="SpeciesData"
+                                        ItemComparer=@((a,b) => a.Id == b.Id)
+                                        @bind-SelectedItem=@SelectedSpecies
+                                        @bind-SelectedItem:after=@OnSpeciesChange
+                                        ShowFilter=false
+                                        CloseOnSelect=true
+                                        Items=@AllSpecies>
+
+                                @context.Name
+
+                            </RfDropDown>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column is-narrow">
+                    <div class="field">
+                        <label class="label">Breed</label>
+                        <div class="control">
+                            <RfDropDown TItem="BreedData"
+                                        ItemComparer=@((a,b) => a.Id == b.Id)
+                                        @bind-SelectedItem=@SelectedBreed
+                                        ShowFilter=false
+                                        CloseOnSelect=true
+                                        IsReadonly=@(SelectedSpecies == null)
+                                        Items=@SelectedSpecies?.Breeds>
+
+                                @context.Name
+
+                            </RfDropDown>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </article>
+    </div>
+</div>
+
+@code {
+    private List<BreedData> AllBreeds { get; set; } = new();
+    private List<SpeciesData> AllSpecies { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        //setup breeds
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 1, Name = " Labrador Retriever" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 2, Name = " German Shepherd" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 3, Name = " Golden Retriever" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 4, Name = " Bulldog" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 5, Name = " Beagle" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 6, Name = " Poodle" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 7, Name = " Rottweiler" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 8, Name = " Yorkshire Terrier" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 9, Name = " Boxer" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 1, Id = 10, Name = " French Bulldog " });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 11, Name = " Persian" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 12, Name = " Maine Coon" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 13, Name = " Siamese" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 14, Name = " Bengal" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 15, Name = " Ragdoll" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 16, Name = " British Shorthair" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 17, Name = " Sphynx" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 18, Name = " Scottish Fold" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 19, Name = " Abyssinian" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 2, Id = 20, Name = " Russian Blue " });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 21, Name = " Arabian" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 22, Name = " Appaloosa" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 23, Name = " Clydesdale" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 24, Name = " Friesian" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 25, Name = " Mustang" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 26, Name = " Quarter Horse" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 27, Name = " Andalusian" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 28, Name = " Lipizzaner" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 29, Name = " Palomino" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 3, Id = 30, Name = " Shetland Pony " });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 31, Name = " Rhode Island Red" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 32, Name = " Plymouth Rock" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 33, Name = " Orpington" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 34, Name = " Wyandotte" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 35, Name = " Australorp" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 36, Name = " Brahma" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 37, Name = " Cochin" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 38, Name = " Marans" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 39, Name = " Silkie" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 4, Id = 40, Name = " Bantam " });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 41, Name = " Merino" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 42, Name = " Suffolk" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 43, Name = " Dorset" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 44, Name = " Hampshire" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 45, Name = " Rambouillet" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 46, Name = " Shropshire" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 47, Name = " Southdown" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 48, Name = " Cheviot" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 49, Name = " Corriedale" });
+        AllBreeds.Add(new BreedData() { SpeciesId = 5, Id = 50, Name = " Shetland " });
+
+        AllBreeds.Sort((a, b) => a.Name.CompareTo(b.Name));
+
+        //setup species
+
+        AllSpecies.Add(new SpeciesData() { Id = 1, Name = "Dog" });
+        AllSpecies.Add(new SpeciesData() { Id = 2, Name = "Cat" });
+        AllSpecies.Add(new SpeciesData() { Id = 3, Name = "Horse" });
+        AllSpecies.Add(new SpeciesData() { Id = 4, Name = "Chicken" });
+        AllSpecies.Add(new SpeciesData() { Id = 5, Name = "Sheep" });
+
+        AllSpecies.Sort((a, b) => a.Name.CompareTo(b.Name));
+
+        //connect breeds to species
+        foreach(var species in AllSpecies)
+        {
+            species.Breeds = AllBreeds
+                .Where(b => b.SpeciesId == species.Id)
+                .ToList();
+        }
+
+    }
+
+
+    private SpeciesData SelectedSpecies { get; set; }
+    private BreedData SelectedBreed { get; set; }
+
+    private void OnSpeciesChange()
+    {
+        SelectedBreed = null;
+    }
+
+
+    private class SpeciesData
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        public List<BreedData> Breeds { get; set; } = new();
+    }
+
+    private class BreedData
+    {
+        public int Id { get; set; }
+        public int SpeciesId { get; set; }
+
+        public string Name { get; set; }
+    }
+
+}
