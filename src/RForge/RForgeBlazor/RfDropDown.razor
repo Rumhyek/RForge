@@ -89,7 +89,14 @@
             @if (Items == null || Items.Count == 0)
             {
                 <div class="dropdown-item">
-                    @EmptyContentText
+                    @if (EmptyContentTemplate != null)
+                    {
+                        @EmptyContentTemplate(EmptyContentText)
+                    }
+                    else
+                    {
+                        @EmptyContentText
+                    }
                 </div>
             }
             else

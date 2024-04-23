@@ -114,10 +114,11 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     public string EmptyContentText { get; set; } = "No Items Found";
 
     /// <summary>
-    /// When <code>Items == null || Items.Count == 0</code> This is rendered in place of EmptyContentText.
+    /// When <code>Items == null || Items.Count == 0</code>. If set this is called instead of using EmptyContentText and
+    /// instead passes in EmptyContentText as the context.
     /// </summary>
     [Parameter]
-    public RenderFragment EmptyContentTemplate { get; set; }
+    public RenderFragment<string> EmptyContentTemplate { get; set; }
 
     /// <summary>
     /// The placeholder text for when no selection has been made.

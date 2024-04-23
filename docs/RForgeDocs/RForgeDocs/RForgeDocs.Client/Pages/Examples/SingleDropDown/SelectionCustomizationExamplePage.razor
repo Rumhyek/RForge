@@ -1,0 +1,142 @@
+﻿@page "/dropdown-single/example/selection-customization-example"
+@rendermode InteractiveAuto
+
+@using RForgeBlazor.Services
+@using RForgeDocs.Abstractions
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+
+@inject IFindUsersProcessor findUsersProcessor
+@inject IDialogManager dialogManager
+
+<ExampleDetail Title="Custom Rendering"
+               SubTitle="Dropdown (Single)"
+               ComponentName="dropdown (single)"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/SingleDropDown/SelectionCustomizationExamplePage.razor")"
+               ComponentDetailsUrl="/dropdown-single/details" />
+
+
+<div class="container">
+
+    <article class="section">
+
+        <div class="columns">
+
+            <div class="column">
+                <div class="field">
+                    <label class="label">Basic Example</label>
+                    <div class="control">
+                        <RfDropDown TItem="UserData"
+                                    ItemComparer=@((a,b) => a.Id == b.Id)
+                                    @bind-SelectedItem=@SelectedItem1
+                                    CloseOnSelect=true
+                                    Items=@ViewingOptions1
+                                    OnLoad=@OnLoad1>
+
+                            @context.FirstName @context.LastName
+
+                        </RfDropDown>
+                    </div>
+                    <div class="help">Makes use of <code>ChildContent</code> to render both the selection and row.</div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="field">
+                    <label class="label">Custom Row / Selection</label>
+                    <div class="control">
+                        <RfDropDown TItem="UserData"
+                                    ItemComparer=@((a,b) => a.Id == b.Id)
+                                    @bind-SelectedItem=@SelectedItem2
+                                    Items=@ViewingOptions2
+                                    CloseOnSelect=true
+                                    OnLoad=@OnLoad2>
+
+                            <SelectedItemTemplate>
+                                <span title="@context.Bio">
+                                    @context.FirstName @context.LastName <small>@context.Email</small>
+                                </span>
+                            </SelectedItemTemplate>
+
+                            <RowItemTemplate>
+                                <div>
+                                    @context.Id - <strong>@context.LastName @context.FirstName</strong>
+                                </div>
+                                <div>
+                                    <small>@context.Email</small>
+                                </div>
+                            </RowItemTemplate>
+
+                        </RfDropDown>
+                    </div>
+                    <div class="help">Makes use of <code>SelectedItemTemplate</code> and <code>RowItemTemplate</code> to render both the selection and row.</div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="field">
+                    <label class="label">Custom Empty</label>
+                    <div class="control">
+                        <RfDropDown TItem="UserData"
+                                    ItemComparer=@((a,b) => a.Id == b.Id)
+                                    @bind-SelectedItem=@SelectedItem3
+                                    CloseOnSelect=true
+                                    FilterClearOnClose=false
+                                    Filter="Make Empty"
+                                    Items=@ViewingOptions3
+                                    OnLoad=@OnLoad3>
+
+                            <ChildContent>
+                                @context.FirstName @context.LastName
+                            </ChildContent>
+
+                            <EmptyContentTemplate>
+                                <div class="block has-text-centered">@context</div>
+                                <a class="button is-primary is-outlined is-fullwidth is-small"
+                                   @onclick=@(() => dialogManager.Alert("Add new user modal here..."))>Add User</a>
+                            </EmptyContentTemplate>
+
+                        </RfDropDown>
+                    </div>
+                    <div class="help">
+                        Makes use of <code>EmptyContentTemplate</code> to add a <code>Add User</code> button if there are no options.
+                        Also, uses <code>ChildContent</code> to render both the selection and row.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </article>
+</div>
+
+<RfDialogManager />
+
+@code {
+
+    private UserData SelectedItem1 { get; set; }
+    private List<UserData> ViewingOptions1 { get; set; }
+
+    public async Task OnLoad1(string filter)
+    {
+        ViewingOptions1 = await findUsersProcessor.Find(filter);
+    }
+
+
+    private UserData SelectedItem2 { get; set; }
+    private List<UserData> ViewingOptions2 { get; set; }
+
+    public async Task OnLoad2(string filter)
+    {
+        ViewingOptions2 = await findUsersProcessor.Find(filter);
+    }
+
+
+    private UserData SelectedItem3 { get; set; }
+    private List<UserData> ViewingOptions3 { get; set; }
+
+    public async Task OnLoad3(string filter)
+    {
+        ViewingOptions3 = await findUsersProcessor.Find(filter);
+    }
+
+}
