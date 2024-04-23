@@ -1,0 +1,247 @@
+﻿@page "/dialog-manager/playground"
+@using RForgeBlazor.Services
+@rendermode InteractiveAuto
+
+@inject IDialogManager dialogManager
+@inject INotificationManager notificationManager
+
+<PlaygroundDetails @ref="Logger"
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/DialogManagerPage.razor")"
+                   HasEvents=false
+                   SubTitle="Dialog Manager"
+                   ComponentName="Dialog Manager"
+                   Title="Playground"
+                   MakeDisplaySticky=false
+                   ComponentDetailsUrl="/dialog-manager/details">
+
+    <Parameters>
+        <div class="content">
+            <p>There are currently no parameters for <code>RfDialogManager</code>.</p>
+        </div>
+    </Parameters>
+
+    <Display>
+
+        @* ----------- Alerts ------------- *@
+        <div class="content">
+            <h2>Alerts</h2>
+            <p>Below shows all possible alerts. Note: <code>IDialogManager.cs</code> inherits from <code>IDialogManagerBackend.cs</code></p>
+
+            <h5>No Callbacks</h5>
+            <div class="buttons">
+                <a class="button" @onclick=@(() => ShowAlertNoCallback())>Messsage</a>
+                <a class="button" @onclick=@(() => ShowAlertNoCallback("message + title", "Alert Title"))>Messsage + Title</a>
+                <a class="button" @onclick=@(() => ShowAlertNoCallback("message + title + Custom Ok", "Alert Title", "Custom"))>Messsage + Title + Custom Ok</a>
+                <a class="button" @onclick=@(() => ShowAlertCustomNoCallback())>Custom Render</a>
+            </div>
+
+            <h5>With Callbacks</h5>
+            <div class="buttons">
+                <a class="button" @onclick=@(() => ShowAlertWithCallback())>Messsage</a>
+                <a class="button" @onclick=@(() => ShowAlertWithCallback("message + title", "Alert Title"))>Messsage + Title</a>
+                <a class="button" @onclick=@(() => ShowAlertWithCallback("message + title + Custom Ok", "Alert Title", "Custom"))>Messsage + Title + Custom Ok</a>
+                <a class="button" @onclick=@(() => ShowAlertCustomWithCallback())>Custom Render</a>
+            </div>
+
+<pre><code>//IDialogManager.cs
+void Alert(RfDialogOptionAlert options);
+void Alert(RenderFragment message, Func&lt;Task&gt; onAlert, string buttonText = "Ok");
+void Alert(RenderFragment message, string buttonText = "Ok");
+
+//IDialogManagerBackend.cs
+void Alert(string message, Func&lt;Task&gt; onAlert);
+void Alert(string message);
+void Alert(string message, string title, string confirmText = "Ok");
+void Alert(string message, string title, Func&lt;Task&gt; onAlert, string confirmText = "Ok");
+</code></pre>
+
+        </div>
+
+
+        @* ----------- Confirms ------------- *@
+        <div class="content">
+            <h2>Confirms</h2>
+            <p>Below shows all possible confirms. Note: <code>IDialogManager.cs</code> inherits from <code>IDialogManagerBackend.cs</code></p>
+            <div class="buttons">
+                <a class="button" @onclick=@(() => ShowConfirm())>Messsage</a>
+                <a class="button" @onclick=@(() => ShowConfirm("message + title. Are you sure?", "Confirm Title"))>Messsage + Title</a>
+                <a class="button" @onclick=@(() => ShowConfirm("message + title + Custom Ok. Are you sure?", "Confirm Title", "Yes", "No"))>Messsage + Title + Custom Ok</a>
+                <a class="button" @onclick=@(() => ShowConfirmCustomRender())>Custom Render</a>
+            </div>
+
+<pre><code>//IDialogManager.cs
+void Confirm(RfDialogOptionConfirm options);
+void Confirm(RenderFragment message, Func&lt;bool, Task&gt; onConfirm, string confirmText = "Ok", string cancelText = "Cancel");
+
+//IDialogManagerBackend.cs
+void Confirm(string message, Func&lt;bool, Task&gt; onConfirm);
+void Confirm(string message, string title, Func&lt;bool, Task&gt; onConfirm, string confirmText = "Ok", string cancelText = "Cancel");
+</code></pre>
+
+        </div>
+
+
+        @* ----------- Prompts ------------- *@
+        <div class="content">
+            <h2>Prompts</h2>
+            <p>Below shows all possible prompts. Note: <code>IDialogManager.cs</code> inherits from <code>IDialogManagerBackend.cs</code></p>
+            <div class="buttons">
+                <a class="button" @onclick=@(() => ShowPrompt())>Messsage</a>
+                <a class="button" @onclick=@(() => ShowPrompt("message + title. Are you sure?", "Confirm Title"))>Messsage + Title</a>
+                <a class="button" @onclick=@(() => ShowPrompt("message + title + Custom Ok. Are you sure?", "Confirm Title", "Yes", "No"))>Messsage + Title + Custom Ok</a>
+                <a class="button" @onclick=@(() => ShowPromptCustomRender())>Custom Render</a>
+            </div>
+
+<pre><code>//IDialogManager.cs
+void Prompt(RfDialogOptionPrompt options);
+void Prompt(RenderFragment message, Func&lt;string, Task&gt; onPrompt, string confirmText = "Ok", string cancelText = "Cancel");
+
+//IDialogManagerBackend.cs    
+void Prompt(string message, Func&lt;string, Task&gt; onPrompt);
+void Prompt(string message, string title, Func&lt;string, Task&gt; onPrompt, string confirmText = "Ok", string cancelText = "Cancel");
+</code></pre>
+
+        </div>
+    </Display>
+
+</PlaygroundDetails>
+
+
+<RfDialogManager />
+
+@* Included for prompt examples *@
+<RfNotificatonManager />
+
+@code {
+
+    public PlaygroundDetails Logger { get; set; }
+    public static RenderFragment CustomAlert => __builder =>
+    {
+    <article class="media">
+        <div class="media-left">
+            <figure class="image is-64x64">
+                <img src="https://placehold.co/100x100/" alt="Image">
+            </figure>
+        </div>
+        <div class="media-content">
+            <div class="content">
+                <p>
+                    <strong>John Smith</strong> <small>@@johnsmith</small> <small>31m</small>
+                    <br>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean efficitur sit amet massa fringilla
+                    egestas. Nullam condimentum luctus turpis.
+                </p>
+            </div>
+            <nav class="level is-mobile">
+                <div class="level-left">
+                    <a class="level-item" aria-label="retweet">
+                        <span class="icon is-small">
+                            <i class="fa-solid fa-retweet" aria-hidden="true"></i>
+                        </span>
+                    </a>
+                    <a class="level-item" aria-label="like">
+                        <span class="icon is-small">
+                            <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                        </span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </article>
+  };
+
+  #region Alerts
+    public void ShowAlertCustomNoCallback()
+    {
+        dialogManager.Alert(CustomAlert);
+    }
+
+    public void ShowAlertCustomWithCallback()
+    {
+        dialogManager.Alert(CustomAlert, OnAlertCallback);
+    }
+
+    public void ShowAlertNoCallback(string message = "An example message", string title = null, string confirmText = null)
+    {
+        if (confirmText != null)
+            dialogManager.Alert(message, title, confirmText);
+        else if (title != null)
+            dialogManager.Alert(message, title);
+        else
+            dialogManager.Alert(message);
+    }
+
+    public void ShowAlertWithCallback(string message = "An example message", string title = null, string confirmText = null)
+    {
+        if (confirmText != null)
+            dialogManager.Alert(message, title, OnAlertCallback, confirmText);
+        else if (title != null)
+            dialogManager.Alert(message, title, OnAlertCallback);
+        else
+            dialogManager.Alert(message, OnAlertCallback);
+    }
+
+    public Task OnAlertCallback()
+    {
+        ShowAlertNoCallback("Called after closing alert with callback");
+        return Task.CompletedTask;
+    }
+    #endregion
+
+
+    #region Confirm
+    public void ShowConfirm(string message = "Are you sure?", string title = null, string confirmText = null, string cancelText = null)
+    {
+        if (confirmText != null)
+            dialogManager.Confirm(message, title, OnConfirmCallback, confirmText, cancelText);
+        else if (title != null)
+            dialogManager.Confirm(message, title, OnConfirmCallback);
+        else
+            dialogManager.Confirm(message, OnConfirmCallback);
+    }
+
+    public void ShowConfirmCustomRender()
+    {
+        dialogManager.Confirm(CustomAlert, OnConfirmCallback);
+    }
+
+    public async Task OnConfirmCallback(bool confirmed)
+    {
+        await Task.Delay(2000);
+
+        if (confirmed == true)
+            ShowAlertNoCallback("Confirmed!");
+        else
+            ShowAlertNoCallback("Cancelled!");
+    }
+    #endregion
+
+    #region Prompt
+    public void ShowPrompt(string message = "Are you sure?", string title = null, string confirmText = null, string cancelText = null)
+    {
+        if (confirmText != null)
+            dialogManager.Prompt(message, title, OnPromptCallback, confirmText, cancelText);
+        else if (title != null)
+            dialogManager.Prompt(message, title, OnPromptCallback);
+        else
+            dialogManager.Prompt(message, OnPromptCallback);
+    }
+
+    public void ShowPromptCustomRender()
+    {
+        dialogManager.Prompt(CustomAlert, OnPromptCallback);
+    }
+
+    public async Task OnPromptCallback(string message)
+    {
+        await Task.Delay(2000);
+
+        if (message == null)
+            notificationManager.AddWarning($"No message given", "Failed to Save", options => options.Position = RForge.Abstractions.Notifications.RfNotificationPosition.BottomRight);
+        else
+
+            notificationManager.AddSuccess($"Mesage: {message}", "Successfully Saved!", options => options.Position = RForge.Abstractions.Notifications.RfNotificationPosition.BottomRight);
+    }
+
+    #endregion
+}
