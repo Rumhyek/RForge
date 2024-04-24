@@ -2,15 +2,70 @@
 
 
 .core-value {
-    
-    box-shadow: none;
-    border: 2px solid var(--bulma-primary);
+    --color-h: var(--bulma-shadow-h);
+    --color-s: var(--bulma-shadow-s);
+    --color-l: var(--bulma-shadow-l);
+    --box-shadow-a: 0.1;
+    --border-width: 0.125rem;
+    --rotation: 60deg;
+    border-radius: calc(var(--bulma-radius-medium) + var(--border-width));
+    padding: var(--border-width);
+    background: linear-gradient(var(--rotation), var(--bulma-text-50) 4.28%, var(--bulma-text-55) 51.66%, var(--bulma-text-65) 100%);
+    box-shadow: 0 .5rem 1rem 0 hsla(var(--color-h),var(--color-s),var(--color-l),var(--box-shadow-a)),
+                0 1rem 2rem 0 hsla(var(--color-h),var(--color-s),var(--color-l),var(--box-shadow-a))
 }
+
+    .core-value.is-primary {
+        --color-h: var(--bulma-primary-h);
+        --color-s: var(--bulma-primary-s);
+        --color-l: var(--bulma-primary-l);
+        background: linear-gradient(var(--rotation), var(--bulma-primary-45) 4.28%, var(--bulma-primary-50) 51.66%, var(--bulma-primary-65) 100%);
+    }
+
+    .core-value.is-warning {
+        --color-h: var(--bulma-warning-h);
+        --color-s: var(--bulma-warning-s);
+        --color-l: var(--bulma-warning-l);
+        background: linear-gradient(var(--rotation), var(--bulma-warning-45) 0%, var(--bulma-warning-70) 60%);
+    }
+
+    .core-value.is-danger {
+        --color-h: var(--bulma-danger-h);
+        --color-s: var(--bulma-danger-s);
+        --color-l: var(--bulma-danger-l);
+        background: linear-gradient(var(--rotation), var(--bulma-danger-45) 4.28%, var(--bulma-danger-50) 51.66%, var(--bulma-danger-65) 100%);
+    }
+
+    .core-value.is-success {
+        --color-h: var(--bulma-success-h);
+        --color-s: var(--bulma-success-s);
+        --color-l: var(--bulma-success-l);
+        background: linear-gradient(var(--rotation), var(--bulma-success-45) 4.28%, var(--bulma-success-50) 51.66%, var(--bulma-success-65) 100%);
+    }
+
+    .core-value.is-info {
+        --color-h: var(--bulma-info-h);
+        --color-s: var(--bulma-info-s);
+        --color-l: var(--bulma-info-l);
+        background: linear-gradient(var(--rotation), var(--bulma-info-45) 4.28%, var(--bulma-info-50) 51.66%, var(--bulma-info-65) 100%);
+    }
+
+.core-value--wrapper {
+    background-color: var(--bulma-body-background-color);
+    border-radius: var(--bulma-radius-medium);
+}
+
+.core-value .icon {
+    color: hsl(var(--color-h), var(--color-s), var(--color-l));
+}
+
 
 
 .message-header {
-    border-radius: var(--bulma-radius) var(--bulma-radius) 0 0;
-    background-color: hsl(var(--bulma-message-h), var(--bulma-message-s), var(--bulma-message-background-l));
-    padding: .5rem;
+    border-radius: 1rem 1rem 0 0;
+    /*background-color: hsl(var(--bulma-message-h), var(--bulma-message-s), var(--bulma-message-background-l));*/
 }
 
+.message-body {
+    border-radius: 0 0 1rem 1rem;
+}

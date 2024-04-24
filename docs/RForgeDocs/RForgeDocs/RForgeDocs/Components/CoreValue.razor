@@ -1,26 +1,55 @@
 ﻿
+<div class="core-value @ColorCss">
+    <div class="core-value--wrapper px-5 py-4">
 
-<div class="message core-value">
+        <div class="is-flex is-gap-3 is-align-items-center">
 
-    <div class="message-header is-size-4 has-text-primary is-justify-content-center">
-        <span>Header</span>
+            @if (string.IsNullOrWhiteSpace(IconCss) == false || IconContent != null)
+            {
+                @if (IconContent == null)
+                {
+                    <span class="icon">
+                        <i class="@IconCss fa-lg"></i>
+                    </span>
+                }
+                else
+                {
+                    @IconContent
+                }
+            }
+
+            <div>
+
+                <h2 class="title is-size-5 pb-1">@Title</h2>
+                <h3 class="subtitle is-size-6">
+                    @MessageContent
+                </h3>
+
+            </div>
+
+        </div>
+
+
     </div>
-
-    <div class="message-body">
-
-        
-        @ChildContent
-    </div>
-
 </div>
 
 
 
 @code {
 
-
+    [Parameter]
+    public string ColorCss { get; set; }
 
     [Parameter]
-    public RenderFragment ChildContent { get; set; }
+    public string IconCss { get; set; }
+
+    [Parameter]
+    public RenderFragment IconContent { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public RenderFragment MessageContent { get; set; }
 
 }
