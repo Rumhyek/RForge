@@ -8,12 +8,16 @@
     --box-shadow-a: 0.1;
     --border-width: 0.125rem;
     --rotation: 60deg;
+    transition: background .5s ease;
     border-radius: calc(var(--bulma-radius-medium) + var(--border-width));
     padding: var(--border-width);
     background: linear-gradient(var(--rotation), var(--bulma-text-50) 4.28%, var(--bulma-text-55) 51.66%, var(--bulma-text-65) 100%);
-    box-shadow: 0 .5rem 1rem 0 hsla(var(--color-h),var(--color-s),var(--color-l),var(--box-shadow-a)),
-                0 1rem 2rem 0 hsla(var(--color-h),var(--color-s),var(--color-l),var(--box-shadow-a))
+    box-shadow: 0 .5rem 1rem 0 hsla(var(--color-h),var(--color-s),var(--color-l),var(--box-shadow-a)), 0 1rem 2rem 0 hsla(var(--color-h),var(--color-s),var(--color-l),var(--box-shadow-a))
 }
+    .core-value:hover {
+        --rotation: 0deg;
+        --box-shadow-a: 0.125;
+    }
 
     .core-value.is-primary {
         --color-h: var(--bulma-primary-h);
@@ -26,7 +30,7 @@
         --color-h: var(--bulma-warning-h);
         --color-s: var(--bulma-warning-s);
         --color-l: var(--bulma-warning-l);
-        background: linear-gradient(var(--rotation), var(--bulma-warning-45) 0%, var(--bulma-warning-70) 60%);
+        background: linear-gradient(var(--rotation), var(--bulma-warning-45) 4.28%, var(--bulma-warning-50) 51.66%, var(--bulma-warning-65) 100%);
     }
 
     .core-value.is-danger {
@@ -57,15 +61,4 @@
 
 .core-value .icon {
     color: hsl(var(--color-h), var(--color-s), var(--color-l));
-}
-
-
-
-.message-header {
-    border-radius: 1rem 1rem 0 0;
-    /*background-color: hsl(var(--bulma-message-h), var(--bulma-message-s), var(--bulma-message-background-l));*/
-}
-
-.message-body {
-    border-radius: 0 0 1rem 1rem;
 }
