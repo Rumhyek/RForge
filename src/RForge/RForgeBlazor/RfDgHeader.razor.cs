@@ -5,6 +5,9 @@ using RForgeBlazor.Models;
 
 namespace RForgeBlazor;
 
+/// <summary>
+/// Wraps a th providing support for sorting columns.
+/// </summary>
 public partial class RfDgHeader
 {
     #region Parameters
