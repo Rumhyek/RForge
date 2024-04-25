@@ -1,4 +1,5 @@
-﻿@using RForgeDocs.Abstractions
+﻿@using RForgeBlazor.Services
+@using RForgeDocs.Abstractions
 
 <section class="hero is-dark @heroCssClass">
 
@@ -11,13 +12,21 @@
 
     <div class="container @ContainerCssClass">
         <div class="hero-body">
-            <h1 class="title is-size-2 @titleCssClass">@Title</h1>
-            @if (string.IsNullOrWhiteSpace(SubTitle) == false)
+            @if (HeroBody == null)
             {
-                <p class="subtitle">@SubTitle</p>
+                <h1 class="title @titleCssClass">@Title</h1>
+                @if (string.IsNullOrWhiteSpace(SubTitle) == false)
+                {
+                    <p class="subtitle">@SubTitle</p>
+                }
+            }
+            else
+            {
+                @HeroBody
             }
         </div>
     </div>
+
     @if (HeroFooter != null)
     {
         <div class="hero-footer">
@@ -39,12 +48,17 @@
 
     [Parameter]
     public bool SpaceTitle { get; set; }
+    [Parameter]
+    public string TitleCss { get; set; }
 
     [Parameter]
     public string ContainerCssClass { get; set; }
 
     [Parameter]
     public HeroSectionSize Size { get; set; } = HeroSectionSize.Default;
+
+    [Parameter]
+    public RenderFragment HeroBody { get; set; }
 
     [Parameter]
     public RenderFragment HeroFooter { get; set; }
@@ -88,10 +102,16 @@
     {
         get
         {
-            if (SpaceTitle == true)
-                return "is-spaced";
+            string css = null;
 
-            return null;
+            CssHelper.AddIfTrue(ref css, SpaceTitle == true, "is-spaced");
+
+            if (string.IsNullOrEmpty(TitleCss) == true)
+                css += " is-size-2";
+            else
+                css += $" {TitleCss}";
+
+            return css;
         }
     }
 

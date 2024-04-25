@@ -31,3 +31,9 @@
     .hero.hero-splash .title, .hero.hero-splash .subtitle {
         color: hsl(var(--bulma-black-h), var(--bulma-black-s), var(--bulma-black-l));
     }
+
+
+.hero.is-info.has-gradient {
+    --rotation: 300deg;
+    background: linear-gradient(var(--rotation), var(--bulma-info-50) 20%, var(--bulma-info-65) 80%);
+}

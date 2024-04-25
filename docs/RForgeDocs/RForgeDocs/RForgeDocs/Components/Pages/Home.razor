@@ -6,6 +6,7 @@
              SubTitle="A light weight Blazor library using Bulma"
              Size="Abstractions.HeroSectionSize.Large"
              HeroCss="hero-splash"
+             TitleCss="is-size-1"
              ContainerCssClass="has-text-centered"
              SpaceTitle=true />
 
@@ -28,7 +29,7 @@
                 <div class="cell">
                     <CoreValue ColorCss="is-warning"
                                IconCss="fa-solid fa-database"
-                               Title="Memory Effecient">
+                               Title="Memory Efficient">
                         <MessageContent>
                             Conscious of memory usage
                         </MessageContent>
@@ -62,4 +63,78 @@
     </article>
 
 
+
 </div>
+
+<div class="container">
+    <article class="section is-medium">
+
+        <h2 class="title is-size-2">Light Weight and Memory Efficient</h2>
+
+        <div class="columns">
+
+            <div class="column is-6-desktop">
+                <div class="content">
+                    <p>
+                        RForge will focus on key components and avoid over-bloating the library with small,
+                        simple ones. This approach allows the CSS framework Bulma to excel at what it does best.
+                        By leveraging Bulma effectively, RForge ensures low load times and minimal memory usage.
+                    </p>
+                    <p>
+                        Additionally, RForge will strive to eliminate any JavaScript dependencies,
+                        helping to keep the download file size to a minimum. The primary goal is to minimize
+                        client-side downloads, particularly when used in WASM environments, where the client
+                        would otherwise be burdened with both WASM and JavaScript files.
+                    </p>
+                    <p>
+                        Consistent with these principles, RForge will keep its package CSS minimal,
+                        concentrating on the utilization of Bulma. This strategy not only keeps RForge's
+                        CSS download size compact but also reduces the complexity and memory requirements
+                        of the Blazor components themselves.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </article>
+</div>
+
+<HeroSection HeroCss="is-info has-gradient" Size="Abstractions.HeroSectionSize.Medium">
+
+    <HeroBody>
+        <h2 class="title is-size-2">True UI Components</h2>
+        <div class="columns">
+
+            <div class="column is-6-desktop">
+
+                <div class="content">
+
+                    <p>
+                        One of RForge's primary objectives is to keep the components focused purely on UI, leaving any form of business 
+                        logic to the developer. This approach attempts to remove any bias towards how an application should be
+                        coded, allowing developers using RForge the freedom to implement their way.
+                    </p>
+                    <p>
+                        At the same time, RForge's internal code remains lean, reducing feature bloat, file size, and memory usage. 
+                        This design philosophy grants developers more flexibility in their choices for implementing features.
+                    </p>
+                    <p>
+                        However, RForge has no plans to abstract the base CSS, adding an additional layer of abstraction that 
+                        developers would need to understand. Instead, we fully leverage Bulma CSS, avoiding simple component 
+                        implementations. This simplifies the development process for developers while maximizing overall memory
+                        efficiency and load speed by reducing the number of components.
+                    </p>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </HeroBody>
+
+</HeroSection>
+
+
+
+
