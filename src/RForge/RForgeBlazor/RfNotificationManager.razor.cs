@@ -10,10 +10,10 @@ namespace RForgeBlazor;
 /// </summary>
 /// <example>
 /// <code>
-/// &lt;RfNotificatonManager  /&gt;
+/// &lt;RfNotificationManager  /&gt;
 /// </code>
 /// </example>
-public partial class RfNotificatonManager : IDisposable
+public partial class RfNotificationManager : IDisposable
 {
     [Inject]
     private INotificationManager _notificationManager { get; set; }

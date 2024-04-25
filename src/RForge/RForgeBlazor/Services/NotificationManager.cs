@@ -39,10 +39,10 @@ public class NotificationManager : INotificationManager
     }
 
     public void AddError(string message, Action<NotificationOptions> options = null)
-        => AddError(RfNotificatonManager.MessageOnly(message), options);
+        => AddError(RfNotificationManager.MessageOnly(message), options);
 
     public void AddError(string message, string title, Action<NotificationOptions> options = null)
-        => AddError(RfNotificatonManager.MessageAndTitle((message, title)), options);
+        => AddError(RfNotificationManager.MessageAndTitle((message, title)), options);
 
     public void AddInfo(RenderFragment content, Action<NotificationOptions> options = null)
     {
@@ -53,10 +53,10 @@ public class NotificationManager : INotificationManager
     }
 
     public void AddInfo(string message, Action<NotificationOptions> options = null)
-        => AddInfo(RfNotificatonManager.MessageOnly(message), options);
+        => AddInfo(RfNotificationManager.MessageOnly(message), options);
 
     public void AddInfo(string message, string title, Action<NotificationOptions> options = null)
-        => AddInfo(RfNotificatonManager.MessageAndTitle((message, title)), options);
+        => AddInfo(RfNotificationManager.MessageAndTitle((message, title)), options);
 
 
     public void AddSuccess(RenderFragment content, Action<NotificationOptions> options = null)
@@ -68,10 +68,10 @@ public class NotificationManager : INotificationManager
     }
 
     public void AddSuccess(string message, Action<NotificationOptions> options = null)
-        => AddSuccess(RfNotificatonManager.MessageOnly(message), options);
+        => AddSuccess(RfNotificationManager.MessageOnly(message), options);
 
     public void AddSuccess(string message, string title, Action<NotificationOptions> options = null)
-        => AddSuccess(RfNotificatonManager.MessageAndTitle((message, title)), options);
+        => AddSuccess(RfNotificationManager.MessageAndTitle((message, title)), options);
 
 
     public void AddWarning(RenderFragment content, Action<NotificationOptions> options = null)
@@ -83,9 +83,9 @@ public class NotificationManager : INotificationManager
     }
 
     public void AddWarning(string message, Action<NotificationOptions> options = null)
-        => AddWarning(RfNotificatonManager.MessageOnly(message), options);
+        => AddWarning(RfNotificationManager.MessageOnly(message), options);
 
     public void AddWarning(string message, string title, Action<NotificationOptions> options = null)
-        => AddWarning(RfNotificatonManager.MessageAndTitle((message, title)), options);
+        => AddWarning(RfNotificationManager.MessageAndTitle((message, title)), options);
 
 }

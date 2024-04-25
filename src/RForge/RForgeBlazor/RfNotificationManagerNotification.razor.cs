@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using RForge.Abstractions.Notifications;
-using static RForgeBlazor.RfNotificatonManager;
+using static RForgeBlazor.RfNotificationManager;
 
 namespace RForgeBlazor;
 
@@ -11,7 +11,7 @@ public partial class RfNotificationManagerNotification
     ///<summary>
     /// Required to communicate removing from the notification manager.
     ///</summary>
-    public RfNotificatonManager NotificatonManager { get; set; }
+    public RfNotificationManager NotificatonManager { get; set; }
 
     [Parameter]
     ///<summary>
