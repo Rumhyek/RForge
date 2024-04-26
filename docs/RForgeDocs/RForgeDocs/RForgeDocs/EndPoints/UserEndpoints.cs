@@ -28,6 +28,13 @@ namespace RForgeDocs.EndPoints
                     return Results.Ok(await processor.SaveUser(user));
                 });
 
+            //IUserDataGridPageProcessor
+            app.MapPost("/api/users/page",
+                async ([FromServices] IUserDataGridPageProcessor processor, [FromBody] UserDataGridGetPageData options) =>
+                {
+                    return Results.Ok(await processor.GetPage(options));
+                });
+
             //IFindUserProcessor
             app.MapGet("/api/users/find/",
                 async ([FromServices] IFindUsersProcessor processor, string searchText, int returnCount = 10) =>

@@ -8,13 +8,13 @@ public partial class RfDataGrid<TRowData>
 {
     #region Parameters
     /// <summary>
-    /// How many columns to render while showing the skeleton mode. Deafult = 4;
+    /// How many columns to render while showing the skeleton mode. Deafult = 4
     /// </summary>
     [Parameter]
     public int PreRenderColumnCount { get; set; } = 4;
 
     /// <summary>
-    /// How many rows to render while showing the skeleton mode. Default = null;
+    /// How many rows to render while showing the skeleton mode.  Default = PageSize or 4 if both are null.
     /// </summary>
     [Parameter]
     public int? PreRenderRowCount { get; set; }
@@ -75,7 +75,7 @@ public partial class RfDataGrid<TRowData>
     public EventCallback<int> CurrentPageIndexChanged { get; set; }
 
     /// <summary>
-    /// 
+    /// The max number or rows for any given page.
     /// </summary>
     [Parameter]
     public int? PageSize { get; set; }
@@ -132,13 +132,13 @@ public partial class RfDataGrid<TRowData>
     public string CssClass { get; set; }
 
     /// <summary>
-    /// Should the table be compact or not.
+    /// Should the table be compact or not. Default = true.
     /// </summary>
     [Parameter]
     public bool Compact { get; set; } = true;
 
     /// <summary>
-    /// Should the table take up 100% of the space or not.
+    /// Should the table take up 100% of the space or not. Default = true.
     /// </summary>
     [Parameter]
     public bool IsFullWidth { get; set; } = true;

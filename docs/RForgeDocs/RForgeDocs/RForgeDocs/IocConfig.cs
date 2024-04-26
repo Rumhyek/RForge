@@ -13,5 +13,7 @@ public class IocConfig
         services.AddScoped<IGetUserProcessor, GetUserProcessor>();
         services.AddScoped<ISaveUserProcessor, SaveUserProcessor>();
         services.AddScoped<IFindUsersProcessor, FindUsersProcessor>();
+        services.AddScoped<IUserDataGridPageProcessor, UserDataGridPageProcessor>();
+
     }
 }

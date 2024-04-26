@@ -1,0 +1,254 @@
+﻿@page "/data-grid/playground"
+@using RForge.Abstractions
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+@rendermode InteractiveAuto
+
+@inject IUserDataGridPageProcessor userDataGridPageProcessor
+
+<PlaygroundDetails @ref="Logger"
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/DataGridPage.razor")"
+                   HasEvents=true
+                   SubTitle="Data Grid"
+                   ComponentName="Data Grid"
+                   Title="Playground"
+                   MakeDisplaySticky=false
+                   ComponentDetailsUrl="/data-grid/details">
+
+    <Parameters>
+
+        <BulmaInput Label="PreRenderColumnCount"
+                    HelpText="How many columns to render while showing the skeleton mode. Deafult = 4">
+            <InputNumber @bind-Value=@PreRenderColumnCount class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="PreRenderRowCount"
+                    HelpText="How many rows to render while showing the skeleton mode. Default = PageSize or 4 if both are null.">
+            <InputNumber @bind-Value=@PreRenderRowCount class="input" />
+        </BulmaInput>
+
+        <BulmaCheckbox Label="AllowFilters"
+                       HelpText="If true shows the filter row. Default = true">
+            <InputCheckbox @bind-Value=@AllowFilters class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaCheckbox Label="AllowSelection"
+                       HelpText="If true adds support for OnRowSelect and OnRowDeselect.">
+            <InputCheckbox @bind-Value=@AllowSelection class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaInput Label="MaxSelection"
+                    HelpText="If set the tells the Data Grid what the maximum selected rows.">
+            <InputNumber @bind-Value=@MaxSelection class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="SortKey"
+                    HelpText="The current sort key the grid is filtering with.">
+            <InputText @bind-Value=@SortKey class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="RfSortOrder"
+                    HelpText="The current sort direction.">
+            <div class="select is-primary">
+                <select @bind=SortOrder>
+                    @foreach (var opt in Enum.GetValues(typeof(RfSortOrder)))
+                    {
+                        <option value="@opt">@opt</option>
+                    }
+                </select>
+            </div>
+        </BulmaInput>
+
+        <BulmaInput Label="TotalCount"
+                    HelpText="The total row count. All rows not just the ones displayed for the current page.">
+            <InputNumber @bind-Value=@TotalCount class="input" readonly="readonly" />
+        </BulmaInput>
+
+        <BulmaInput Label="CurrentPageIndex"
+                    HelpText="The current page index. 0 based.">
+            <InputNumber @bind-Value=@CurrentPageIndex class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="CurrentPageIndex"
+                    HelpText="The current page index. 0 based.">
+            <InputNumber @bind-Value=@CurrentPageIndex class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="PageSize"
+                    HelpText="The max number or rows for any given page.">
+            <InputNumber @bind-Value=@PageSize class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="MaxPagingOptions"
+                    HelpText="The max paging options to show in the bottom left. By default = 7.">
+            <InputNumber @bind-Value=@MaxPagingOptions class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="CssClass"
+                    HelpText="A Css class to add to the base table.">
+            <InputText @bind-Value=@CssClass class="input" />
+        </BulmaInput>
+
+        <BulmaCheckbox Label="Compact"
+                       HelpText="Should the table be compact or not. Default = true">
+            <InputCheckbox @bind-Value=@Compact class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaCheckbox Label="IsFullWidth"
+                       HelpText="Should the table take up 100% of the space or not. Default = true">
+            <InputCheckbox @bind-Value=@IsFullWidth class="checkbox" />
+        </BulmaCheckbox>
+
+    </Parameters>
+
+    <Display>
+
+        <RfDataGrid TRowData="UserData"
+                    PreRenderColumnCount=@PreRenderColumnCount
+                    PreRenderRowCount=@PreRenderRowCount
+                    AllowFilters=@AllowFilters
+                    AllowSelection=@AllowSelection
+                    MaxSelection=@MaxSelection
+                    SortKey=@SortKey
+                    SortOrder=@SortOrder
+                    Data=@Data
+                    TotalCount=@TotalCount
+                    @bind-CurrentPageIndex=@CurrentPageIndex
+                    PageSize=@PageSize
+                    MaxPagingOptions=@MaxPagingOptions
+                    CssClass=@CssClass
+                    Compact=@Compact
+                    OnLoadData=@OnLoad
+                    IsFullWidth=@IsFullWidth>
+
+            <Headers>
+                <RfDgHeader SortKey="@nameof(UserData.Id)">Id</RfDgHeader>
+                <RfDgHeader SortKey="FullName">Name</RfDgHeader>
+                <RfDgHeader SortKey="@nameof(UserData.Email)">Email</RfDgHeader>
+                <RfDgHeader SortKey="@nameof(UserData.DateCreated)">Date Created</RfDgHeader>
+            </Headers>
+
+            <Cells>
+                <td>@context.Id</td>
+                <td>@context.FirstName @context.LastName</td>
+                <td>@context.Email</td>
+                <td>@context.DateCreated.ToShortDateString()</td>
+            </Cells>
+
+        </RfDataGrid>
+
+
+    </Display>
+
+</PlaygroundDetails>
+
+@code {
+
+    public PlaygroundDetails Logger { get; set; }
+
+    private UserFiltersData Filters { get; set; }
+
+    #region Parameters
+    /// <summary>
+    /// How many columns to render while showing the skeleton mode. Deafult = 4;
+    /// </summary>
+    public int PreRenderColumnCount { get; set; } = 4;
+
+    /// <summary>
+    /// How many rows to render while showing the skeleton mode. Default = null;
+    /// </summary>
+    public int? PreRenderRowCount { get; set; }
+
+    /// <summary>
+    /// If true shows the filter row.
+    /// </summary>
+    public bool AllowFilters { get; set; } = true;
+
+    /// <summary>
+    /// If true adds support for <see cref="OnRowSelect"/> and <see cref="OnRowDeselect"/>
+    /// </summary>
+    public bool AllowSelection { get; set; }
+
+    /// <summary>
+    /// If set the tells the Data Grid what the maximum selected rows.
+    /// </summary>
+    public int? MaxSelection { get; set; }
+
+    /// <summary>
+    /// The current sort key the grid is filtering with.
+    /// </summary>
+    public string SortKey { get; set; }
+
+    /// <summary>
+    /// The current sort direction
+    /// </summary>
+    public RfSortOrder SortOrder { get; set; }
+
+    /// <summary>
+    /// The data rows to display within the data grid. If null the skeleton of the data grid will be shown.
+    /// </summary>
+    public List<UserData> Data { get; set; }
+
+    /// <summary>
+    /// The total row count. All rows not just the ones displayed for the current page.
+    /// </summary>
+    public int TotalCount { get; set; }
+
+    /// <summary>
+    /// The current page index. 0 based.
+    /// </summary>
+    public int CurrentPageIndex { get; set; }
+
+    /// <summary>
+    ///The max number or rows for any given page.
+    /// </summary>
+    public int? PageSize { get; set; } = 10;
+
+    /// <summary>
+    /// The max paging options to show in the bottom left. By default = 7
+    /// </summary>
+    public int MaxPagingOptions { get; set; } = 7;
+
+
+    /// <summary>
+    /// A Css class to add to the base table.
+    /// </summary>
+    public string CssClass { get; set; }
+
+    /// <summary>
+    /// Should the table be compact or not.
+    /// </summary>
+    public bool Compact { get; set; } = true;
+
+    /// <summary>
+    /// Should the table take up 100% of the space or not.
+    /// </summary>
+    public bool IsFullWidth { get; set; } = true;
+    #endregion
+
+    private async Task OnLoad()
+    {
+        var response = await userDataGridPageProcessor.GetPage(new UserDataGridGetPageData()
+            {
+                PageIndex = CurrentPageIndex,
+                PageSize = PageSize,
+                SortKey = SortKey,
+                SortOrder = SortOrder,
+            });
+
+        TotalCount = response.TotalCount;
+        Data = response.Data;
+
+        StateHasChanged();
+    }
+
+    private class UserFiltersData
+    {
+        public int? Id { get; set; }
+        public string FullName { get; set; }
+        public string Email { get; set; }
+        public DateTime? DateCreated { get; set; }
+    }
+
+
+}
