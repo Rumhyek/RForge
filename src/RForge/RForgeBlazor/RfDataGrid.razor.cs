@@ -24,7 +24,7 @@ public partial class RfDataGrid<TRowData>
     /// If true shows the filter row.
     /// </summary>
     [Parameter]
-    public bool AllowFilters { get; set; }
+    public bool AllowFilters { get; set; } = true;
 
     /// <summary>
     /// If true adds support for <see cref="OnRowSelect"/> and <see cref="OnRowDeselect"/>
@@ -47,7 +47,7 @@ public partial class RfDataGrid<TRowData>
     public EventCallback<string> SortKeyChanged { get; set; }
 
     /// <summary>
-    /// THe current sort direction
+    /// The current sort direction
     /// </summary>
     [Parameter]
     public RfSortOrder SortOrder { get; set; }

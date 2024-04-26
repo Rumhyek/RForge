@@ -55,21 +55,23 @@
                 creates and passes down via a <code>CascadingParameter</code>.
             </p>
 
-            <h3>Headers</h3>
+            <h2>Headers</h2>
             <p>
                 The render fragment <code>Headers</code> is where each columns <code>th</code> elements should go.
                 As an option, if sorting isn't required, you could remove the creation of additional sub components by just writing the standard
                 elements within <code>Headers</code>.
             </p>
-                <pre><code><xmp>//Example Headers
+            <pre><code><xmp>//Example Headers
 <th>Column 1</th>
 <th>Column 2</th>
 <th>Column 3</th>
 <th>Column 4</th>
 <th>Column n</th>
-</xmp></code></pre> 
+</xmp></code></pre>
 
-            <h5>Available Sub Components</h5>
+            <p>
+                Below list out sub components of <code>RfDataGrid</code>
+            </p>
             <table>
                 <thead>
                     <tr>
@@ -85,18 +87,19 @@
                 </tbody>
             </table>
 
-            <h3>Filters</h3>
+            <h2>Filters</h2>
             <p>
                 <code>Filters</code> render fragment is an optional location to add filters for the DataGrid. They are included in the <code>thead</code>
-                underneath the <code>Headers</code>. There are several prebuilt filters that can be used or if a custom one is required look to <code>RfDgFilterInput</code> base class
-                for an example of a filter. 
-
+                underneath the <code>Headers</code> row. There are several prebuilt filters that can be used or
+                if a custom one is required look to <code>RfDgFilterInput</code> base class for an example of a filter.
             </p>
             <p>
                 However, this class is not required. To make the filter work correctly you will need to have a <code>DataGridContext</code>
-                parameter and properly call <code>DataGridContext.OnFilterChanged</code>.
+                parameter and properly call <code>DataGridContext.OnFilterChanged</code>, or call the pages listener for <code>RfDataGrid.OnLoad</code>.
             </p>
-            <h5>Available Sub Components</h5>
+            <p>
+                Below list out all predefined filters. More are planned to be written.
+            </p>
             <table>
                 <thead>
                     <tr>
@@ -106,14 +109,111 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><code></code></td>
-                        <td></td>
+                        <td><code>RfDgFilterNone</code></td>
+                        <td>Use this if a column doesn't need a filter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfDgFilterInputDate</code></td>
+                        <td>A date input filter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfDgFilterInputDateTime</code></td>
+                        <td>A date and time input filter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfDgFilterInputDouble</code></td>
+                        <td>A double input filter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfDgFilterInputFloat</code></td>
+                        <td>A float input filter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfDgFilterInputInt</code></td>
+                        <td>A int input filter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfDgFilterInputLong</code></td>
+                        <td>A long input filter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfDgFilterInputText</code></td>
+                        <td>A string input filter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfDgFilterInputTime</code></td>
+                        <td>A time input filter.</td>
                     </tr>
                 </tbody>
             </table>
 
+            <div class="notification is-info">
+                <strong>NOTE:</strong> To improve performance, the <code class="has-text-info">RfDataGrid</code> is not aware of any filters nor does it manage them.
+                Treat this simarly to how <code class="has-text-info">EditForm</code> component works. This has the additional benifit to easily support filters
+                outside of the <code class="has-text-info">RfDataGrid</code>.
+            </div>
 
+            <h2>Cells</h2>
+            <p>
+                The <code>Cells</code> render fragment is where you format the content of a row of the table. The <code>Cells</code> has the current
+                row of data being passed into it giving it access to <code>context</code> where <code>context</code> equals to the <code>TRowData</code>.
+            </p>
+            <p>
+                Unlike <code>Headers</code> needing to use <code>RfDgHeader</code>, the <code>Cells</code> has no interactions with the <code>RfDataGrid</code>.
+                This allows a row to render with no components improving performance.
+            </p>
 
+            <p>
+                There are currently no sub components for <code>Cells</code>
+            </p>
+
+            <h1>Required Parameters</h1>
+            <p>
+                <code>RfDataGrid</code> needs the following parameters set in order to render properly.
+            </p>
+            <ul>
+                <li><code>Data</code> - Without it the skeleton is shown.</li>
+                <li><code>TotalCount</code> - Needs to show for pagination.</li>
+                <li><code>CurrentPageIndex</code> - Needs to show for pagination.</li>
+                <li><code>SortOrder</code> - Required if sorting is allowed.</li>
+                <li><code>SortKey</code> - Required if sorting is allowed.</li>
+                <li><code>OnLoadData</code> - Required to setup <code>Data</code></li>
+            </ul>
+
+            <h1>Example</h1>
+            <p>
+                Below shows an example of setting up the <code>RfDataGrid</code>. 
+                The example doesn't show the properties declarations or the <code>OnLoadData</code> function.
+            </p>
+
+            <pre><code>&lt;RfDataGrid OnLoadData="@@OnLoadData"
+            Data=UserCollection
+            TotalCount=TotalCount
+            @@bind-CurrentPageIndex=CurrentPageIndex
+            @@bind-SortOrder=CurrentSortOrder
+            @@bind-SortKey=@@CurrentSortKey&gt;
+
+    &lt;Headers&gt;
+        &lt;RfDgHeader&gt;Id&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader&gt;First Name&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader&gt;Last Name&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader&gt;Email&lt;/RfDgHeader&gt;
+    &lt;/Headers&gt;
+
+    &lt;Filters&gt;
+        &lt;RfDgFilterNone /&gt;
+        &lt;RfDgFilterInputText @@bind-Value=Filter.FirstName /&gt;
+        &lt;RfDgFilterInputText @@bind-Value=Filter.LastName /&gt;
+        &lt;RfDgFilterInputText @@bind-Value=Filter.Email /&gt;
+    &lt;/Filters&gt;
+
+    &lt;Cells&gt;
+        &lt;td&gt;@@context.Id&lt;/td&gt;
+        &lt;td&gt;@@context.FirstName&lt;/td&gt;
+        &lt;td&gt;@@context.LastName&lt;/td&gt;
+        &lt;td&gt;@@context.Email&lt;/td&gt;
+    &lt;/Cells&gt;    
+&lt;/RfDataGrid&gt;</code></pre>
         </div>
 
     </BasicUsage>
