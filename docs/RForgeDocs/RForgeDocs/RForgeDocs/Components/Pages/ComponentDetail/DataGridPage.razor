@@ -4,21 +4,80 @@
                  PlaygroundUrl="/data-grid/playground"
                  SubTitle="Paginated table support">
 
-    <RepoLinks>
-        @ComponentDetail.SideLink(("RfNotificationManager.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfNotificationManager.razor"))
-        @ComponentDetail.SideLink(("RfNotificationManager.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfNotificationManager.razor.cs"))
-        @ComponentDetail.SpacerLink()
-        @ComponentDetail.SideLink(("INotificationManager.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Services/INotificationManager.cs"))
-        @ComponentDetail.SideLink(("INotificationManagerBackend.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/INotificationManagerBackend.cs"))
-        @ComponentDetail.SpacerLink()
-        @ComponentDetail.SideLink(("NotificationOptions.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/NotificationOptions.cs"))
-        @ComponentDetail.SideLink(("RfNotificationColor.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/RfNotificationColor.cs"))
-        @ComponentDetail.SideLink(("RfNotificationSeverity.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/RfNotificationSeverity.cs"))
-        @ComponentDetail.SideLink(("RfNotificationPosition.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Notifications/RfNotificationPosition.cs"))
-        @ComponentDetail.SpacerLink()
-        @ComponentDetail.SideLink(("RfNotificationManagerNotification.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfNotificationManagerNotification.razor"))
-        @ComponentDetail.SideLink(("RfNotificationManagerNotification.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfNotificationManagerNotification.razor.cs"))
-    </RepoLinks>
+    <CustomSideLinks>
+
+        <div class="menu">
+            <p class="menu-label is-size-6 mb-2">Repository Links</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("RfDataGrid.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDataGrid.razor"))
+                @ComponentDetail.SideLink(("RfDataGrid.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDataGrid.razor.cs"))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("DataGridContext.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/DataGridContext.razor.cs"))
+                @ComponentDetail.SideLink(("RfSortOrder.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/RfSortOrder.cs"))
+
+            </ul>
+        </div>
+
+        <div class="menu mt-5">
+            <p class="menu-label">Header Components</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("RfDgHeader.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgHeader.razor"))
+                @ComponentDetail.SideLink(("RfDgHeader.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgHeader.razor.cs"))
+            </ul>
+        </div>
+
+        <div class="menu mt-5">
+            <p class="menu-label">Filter Components</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("RfDgFilterInput.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDgFilterInput.cs"))
+                @ComponentDetail.SpacerLink()
+
+                @ComponentDetail.SideLink(("RfDgFilterNone.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterNone.razor"))
+                @ComponentDetail.SideLink(("RfDgFilterNone.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterNone.razor.cs"))
+                @ComponentDetail.SpacerLink()
+
+                @ComponentDetail.SideLink(("RfDgFilterInputDate.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputDate.razor"))
+                @ComponentDetail.SideLink(("RfDgFilterInputDate.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputDate.razor.cs"))
+                @ComponentDetail.SpacerLink()
+
+                @ComponentDetail.SideLink(("RfDgFilterInputDateTime.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputDateTime.razor"))
+                @ComponentDetail.SideLink(("RfDgFilterInputDateTime.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputDateTime.razor.cs"))
+                @ComponentDetail.SpacerLink()
+
+                @ComponentDetail.SideLink(("RfDgFilterInputDouble.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputDouble.razor"))
+                @ComponentDetail.SideLink(("RfDgFilterInputDouble.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputDouble.razor.cs"))
+                @ComponentDetail.SpacerLink()
+
+                @ComponentDetail.SideLink(("RfDgFilterInputFloat.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputFloat.razor"))
+                @ComponentDetail.SideLink(("RfDgFilterInputFloat.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputFloat.razor.cs"))
+                @ComponentDetail.SpacerLink()
+
+                @ComponentDetail.SideLink(("RfDgFilterInputInt.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputInt.razor"))
+                @ComponentDetail.SideLink(("RfDgFilterInputInt.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputInt.razor.cs"))
+                @ComponentDetail.SpacerLink()
+
+                @ComponentDetail.SideLink(("RfDgFilterInputLong.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputLong.razor"))
+                @ComponentDetail.SideLink(("RfDgFilterInputLong.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputLong.razor.cs"))
+                @ComponentDetail.SpacerLink()
+
+                @ComponentDetail.SideLink(("RfDgFilterInputText.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputText.razor"))
+                @ComponentDetail.SideLink(("RfDgFilterInputText.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputText.razor.cs"))
+                @ComponentDetail.SpacerLink()
+
+                @ComponentDetail.SideLink(("RfDgFilterInputTime.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputTime.razor"))
+                @ComponentDetail.SideLink(("RfDgFilterInputTime.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDgFilterInputTime.razor.cs"))
+                @ComponentDetail.SpacerLink()
+            </ul>
+        </div>
+
+        <div class="menu mt-6">
+            <p class="menu-label is-size-6 mb-2">Examples</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("Basic Example", TagInfo.Empty, "/data-grid/examples/basic-example"))
+
+            </ul>
+        </div>
+    </CustomSideLinks>
 
     <Purpose>
         <div class="content">
@@ -182,7 +241,7 @@
 
             <h1>Example</h1>
             <p>
-                Below shows an example of setting up the <code>RfDataGrid</code>. 
+                Below shows an example of setting up the <code>RfDataGrid</code>.
                 The example doesn't show the properties declarations or the <code>OnLoadData</code> function.
             </p>
 

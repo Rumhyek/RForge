@@ -30,26 +30,33 @@
                 </div>
 
 
-                @if (RepoLinks != null)
+                @if (CustomSideLinks != null)
                 {
-                    <div class="menu">
-                        <p class="menu-label">Repository Links</p>
-                        <ul class="menu-list">
-                            @RepoLinks
-                        </ul>
-
-                    </div>
+                    @CustomSideLinks
                 }
-
-                @if (Examples != null)
+                else
                 {
-                    <div class="menu">
-                        <p class="menu-label">Examples</p>
-                        <ul class="menu-list">
-                            @Examples
-                        </ul>
+                    @if (RepoLinks != null)
+                    {
+                        <div class="menu">
+                            <p class="menu-label">Repository Links</p>
+                            <ul class="menu-list">
+                                @RepoLinks
+                            </ul>
 
-                    </div>
+                        </div>
+                    }
+
+                    @if (Examples != null)
+                    {
+                        <div class="menu">
+                            <p class="menu-label">Examples</p>
+                            <ul class="menu-list">
+                                @Examples
+                            </ul>
+
+                        </div>
+                    }
                 }
 
             </section>
@@ -108,6 +115,9 @@
 
     [Parameter]
     public RenderFragment RepoLinks { get; set; }
+
+    [Parameter]
+    public RenderFragment CustomSideLinks { get; set; }
 
     [Parameter]
     public string PlaygroundUrl { get; set; }
