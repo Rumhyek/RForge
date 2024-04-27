@@ -3,7 +3,7 @@
 <th>
     <input type="date"
            placeholder="@Placeholder"
-           value="@Value"
+           value="@Value?.ToString("yyyy-MM-dd")"
            @onchange=OnChange
            name="@Name"
            title="@Title"

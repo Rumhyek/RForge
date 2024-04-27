@@ -132,10 +132,16 @@ public partial class RfDataGrid<TRowData>
     public string CssClass { get; set; }
 
     /// <summary>
-    /// Should the table be compact or not. Default = true.
+    /// A Css class to add to the pager wrapping div.
     /// </summary>
     [Parameter]
-    public bool Compact { get; set; } = true;
+    public string PagerCssClass { get; set; }
+
+    /// <summary>
+    /// Should the table have stripes or not. Default = true.
+    /// </summary>
+    [Parameter]
+    public bool IsStriped { get; set; } = true;
 
     /// <summary>
     /// Should the table take up 100% of the space or not. Default = true.
@@ -147,6 +153,9 @@ public partial class RfDataGrid<TRowData>
     private List<TRowData> currentSelection { get; set; } = new List<TRowData>();
 
     private DataGridContext GridContext { get; set; }
+
+    private bool onParameterSetUpdateSortOrder { get; set; }
+    private bool onParameterSetReloadData { get; set; }
 
     private string ComputedTableCss
     {
@@ -166,7 +175,7 @@ public partial class RfDataGrid<TRowData>
             if (AllowSelection == true && Cells != null && Data != null)
                 css += " is-hoverable";
 
-            if (Compact == true)
+            if (IsStriped == true)
                 css += " is-striped";
 
             return css;
@@ -200,20 +209,134 @@ public partial class RfDataGrid<TRowData>
 
     protected override void OnInitialized()
     {
-        GridContext = new DataGridContext();
+        GridContext = new DataGridContext()
+        {
+            InitialSortOrder = SortOrder,
+            InitialSortKey = SortKey
+        };
         GridContext.OnSortChanged += OnSortChangedCallback;
         GridContext.OnFilterChanged += OnFilterChangedCallback;
     }
 
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        onParameterSetReloadData = false;
+        onParameterSetUpdateSortOrder = false;
+
+        foreach (var parameter in parameters)
+        {
+            switch (parameter.Name)
+            {
+                case nameof(PreRenderColumnCount):
+                    PreRenderColumnCount = (int)parameter.Value;
+                    break;
+                case nameof(PreRenderRowCount):
+                    PreRenderRowCount = (int?)parameter.Value;
+                    break;
+                case nameof(AllowFilters):
+                    AllowFilters = (bool)parameter.Value;
+                    break;
+                case nameof(AllowSelection):
+                    AllowSelection = (bool)parameter.Value;
+                    break;
+                case nameof(MaxSelection):
+                    MaxSelection = (int?)parameter.Value;
+                    break;
+                case nameof(SortKey):
+                    onParameterSetUpdateSortOrder |= SortKey != (string)parameter.Value;
+                    SortKey = (string)parameter.Value;
+                    break;
+                case nameof(SortKeyChanged):
+                    SortKeyChanged = (EventCallback<string>)parameter.Value;
+                    break;
+                case nameof(SortOrderChanged):
+                    SortOrderChanged = (EventCallback<RfSortOrder>)parameter.Value;
+                    break;
+                case nameof(SortOrder):
+                    onParameterSetUpdateSortOrder |= SortOrder != (RfSortOrder)parameter.Value;
+                    SortOrder = (RfSortOrder)parameter.Value;
+                    break;
+                case nameof(Data):
+                    Data = (IEnumerable<TRowData>)parameter.Value;
+                    break;
+                case nameof(TotalCount):
+                    TotalCount = (int)parameter.Value;
+                    break;
+                case nameof(CurrentPageIndex):
+                    onParameterSetReloadData |= CurrentPageIndex != (int?)parameter.Value;
+                    CurrentPageIndex = (int)parameter.Value;
+                    break;
+                case nameof(CurrentPageIndexChanged):
+                    CurrentPageIndexChanged = (EventCallback<int>)parameter.Value;
+                    break;
+                case nameof(PageSize):
+                    onParameterSetReloadData |= PageSize != (int?)parameter.Value;
+                    PageSize = (int?)parameter.Value;
+                    break;
+                case nameof(PageSizeChanged):
+                    PageSizeChanged = (EventCallback<int?>)parameter.Value;
+                    break;
+                case nameof(MaxPagingOptions):
+                    MaxPagingOptions = (int)parameter.Value;
+                    break;
+                case nameof(OnRowSelect):
+                    OnRowSelect = (EventCallback<TRowData>)parameter.Value;
+                    break;
+                case nameof(OnRowDeselect):
+                    OnRowDeselect = (EventCallback<TRowData>)parameter.Value;
+                    break;
+                case nameof(OnLoadData):
+                    OnLoadData = (EventCallback)parameter.Value;
+                    break;
+                case nameof(Headers):
+                    Headers = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(Filters):
+                    Filters = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(Cells):
+                    Cells = (RenderFragment<TRowData>)parameter.Value;
+                    break;
+                case nameof(CssClass):
+                    CssClass = (string)parameter.Value;
+                    break;
+                case nameof(PagerCssClass):
+                    PagerCssClass = (string)parameter.Value;
+                    break;
+                case nameof(IsStriped):
+                    IsStriped = (bool)parameter.Value;
+                    break;
+                case nameof(IsFullWidth):
+                    IsFullWidth = (bool)parameter.Value;
+                    break;
+            }
+        }
+
+        //If the sort changed we need to reload the data.
+        onParameterSetReloadData |= onParameterSetUpdateSortOrder;
+
+        //don't reload on the initialize
+        //onParameterSetUpdateSortOrder &= GridContext != null;
+        onParameterSetReloadData &= GridContext != null;
+
+        await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+
     protected override async Task OnParametersSetAsync()
     {
-        await GridContext.SortChanged(new DataGridSortBy()
+        if(onParameterSetUpdateSortOrder == true)
         {
-            SortKey = this.SortKey,
-            SortOrder = this.SortOrder
-        });
+            //The parent component updated the parameter. Notify the children
+            await GridContext.SortChanged(new DataGridSortBy()
+            {
+                SortKey = SortKey,
+                SortOrder = SortOrder
+            });
+        }
 
-        //TODO: if things change due to parent we will need to reload data
+        if(onParameterSetReloadData == true)
+            await OnLoadData.InvokeAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -224,7 +347,7 @@ public partial class RfDataGrid<TRowData>
 
     #region paging
 
-    public bool ShowPaging => PageSize.HasValue;
+    public bool ShowPaging => PageSize.HasValue && PageSize.Value > 0;
 
     public int TotalPages
     {
@@ -284,6 +407,7 @@ public partial class RfDataGrid<TRowData>
     {
         if (pageIndex == CurrentPageIndex) return;
 
+        CurrentPageIndex = pageIndex;
         await CurrentPageIndexChanged.InvokeAsync(pageIndex);
 
         await ReloadData();
@@ -331,12 +455,14 @@ public partial class RfDataGrid<TRowData>
         bool hasChanged = false;
         if (sortBy.SortKey != this.SortKey)
         {
+            SortKey = sortBy.SortKey;
             await this.SortKeyChanged.InvokeAsync(sortBy.SortKey);
             hasChanged = true;
         }
 
         if (sortBy.SortOrder != this.SortOrder)
         {
+            SortOrder = sortBy.SortOrder;
             await this.SortOrderChanged.InvokeAsync(sortBy.SortOrder);
             hasChanged = true;
         }
@@ -345,7 +471,10 @@ public partial class RfDataGrid<TRowData>
         {
 
             if (ShowPaging == true && CurrentPageIndex != 0)
+            {
+                CurrentPageIndex = 0;
                 await CurrentPageIndexChanged.InvokeAsync(0);
+            }
 
             await ReloadData();
         }

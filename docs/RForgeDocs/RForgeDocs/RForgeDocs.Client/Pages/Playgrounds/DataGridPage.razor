@@ -69,11 +69,6 @@
             <InputNumber @bind-Value=@CurrentPageIndex class="input" />
         </BulmaInput>
 
-        <BulmaInput Label="CurrentPageIndex"
-                    HelpText="The current page index. 0 based.">
-            <InputNumber @bind-Value=@CurrentPageIndex class="input" />
-        </BulmaInput>
-
         <BulmaInput Label="PageSize"
                     HelpText="The max number or rows for any given page.">
             <InputNumber @bind-Value=@PageSize class="input" />
@@ -89,9 +84,14 @@
             <InputText @bind-Value=@CssClass class="input" />
         </BulmaInput>
 
-        <BulmaCheckbox Label="Compact"
-                       HelpText="Should the table be compact or not. Default = true">
-            <InputCheckbox @bind-Value=@Compact class="checkbox" />
+        <BulmaInput Label="PagerCssClass"
+                    HelpText="A Css class to add to the pager wrapping div.">
+            <InputText @bind-Value=@PagerCssClass class="input" />
+        </BulmaInput>
+
+        <BulmaCheckbox Label="IsStriped"
+                       HelpText="Should the table have stripes or not. Default = true.">
+            <InputCheckbox @bind-Value=@IsStriped class="checkbox" />
         </BulmaCheckbox>
 
         <BulmaCheckbox Label="IsFullWidth"
@@ -109,16 +109,23 @@
                     AllowFilters=@AllowFilters
                     AllowSelection=@AllowSelection
                     MaxSelection=@MaxSelection
-                    SortKey=@SortKey
-                    SortOrder=@SortOrder
+                    @bind-SortKey=@SortKey
+                    @bind-SortKey:after=@(() => Logger.AddLog($"SortKey:after({SortKey})"))
+                    @bind-SortOrder=@SortOrder
+                    @bind-SortOrder:after=@(() => Logger.AddLog($"SortOrder:after({SortOrder})"))
                     Data=@Data
                     TotalCount=@TotalCount
                     @bind-CurrentPageIndex=@CurrentPageIndex
-                    PageSize=@PageSize
+                    @bind-CurrentPageIndex:after=@(() => Logger.AddLog($"CurrentPageIndex:after({CurrentPageIndex})"))
+                    @bind-PageSize=@PageSize
+                    @bind-PageSize:after=@(() => Logger.AddLog($"PageSize:after({PageSize})"))
                     MaxPagingOptions=@MaxPagingOptions
                     CssClass=@CssClass
-                    Compact=@Compact
+                    PagerCssClass=@PagerCssClass
+                    IsStriped=@IsStriped
                     OnLoadData=@OnLoad
+                    OnRowSelect=@((row) => Logger.AddLog($"OnRowSelect({row.Id})"))
+                    OnRowDeselect=@((row) => Logger.AddLog($"OnRowDeselect({row.Id})"))
                     IsFullWidth=@IsFullWidth>
 
             <Headers>
@@ -127,6 +134,14 @@
                 <RfDgHeader SortKey="@nameof(UserData.Email)">Email</RfDgHeader>
                 <RfDgHeader SortKey="@nameof(UserData.DateCreated)">Date Created</RfDgHeader>
             </Headers>
+
+            <Filters>
+
+                <RfDgFilterInputInt MinValue="0" Step="1" Title="Exact Match" @bind-Value=@Filters.Id />
+                <RfDgFilterInputText @bind-Value=@Filters.FullName Placeholder="First and / or Last" />
+                <RfDgFilterInputText @bind-Value=@Filters.Email Placeholder="Contains" />
+                <RfDgFilterInputDate @bind-Value=@Filters.DateCreated />
+            </Filters>
 
             <Cells>
                 <td>@context.Id</td>
@@ -138,6 +153,13 @@
         </RfDataGrid>
 
 
+        <div class="buttons">
+
+            <button class="button" @onclick=OnUnloadClick>Unload</button>
+            <button class="button" @onclick=OnLoad>Force Reload</button>
+
+        </div>
+
     </Display>
 
 </PlaygroundDetails>
@@ -146,7 +168,7 @@
 
     public PlaygroundDetails Logger { get; set; }
 
-    private UserFiltersData Filters { get; set; }
+    private UserFiltersData Filters { get; set; } = new();
 
     #region Parameters
     /// <summary>
@@ -177,12 +199,12 @@
     /// <summary>
     /// The current sort key the grid is filtering with.
     /// </summary>
-    public string SortKey { get; set; }
+    public string SortKey { get; set; } = "Email";
 
     /// <summary>
     /// The current sort direction
     /// </summary>
-    public RfSortOrder SortOrder { get; set; }
+    public RfSortOrder SortOrder { get; set; } = RfSortOrder.Descending;
 
     /// <summary>
     /// The data rows to display within the data grid. If null the skeleton of the data grid will be shown.
@@ -216,9 +238,14 @@
     public string CssClass { get; set; }
 
     /// <summary>
-    /// Should the table be compact or not.
+    /// A Css class to add to the pager wrapping div.
     /// </summary>
-    public bool Compact { get; set; } = true;
+    public string PagerCssClass { get; set; } = "block";
+
+    /// <summary>
+    /// Should the table be IsStriped or not.
+    /// </summary>
+    public bool IsStriped { get; set; } = true;
 
     /// <summary>
     /// Should the table take up 100% of the space or not.
@@ -234,13 +261,33 @@
                 PageSize = PageSize,
                 SortKey = SortKey,
                 SortOrder = SortOrder,
+                Filters = new()
+                {
+                    FullName = Filters.FullName,
+                    DateCreated = Filters.DateCreated,
+                    Email = Filters.Email,
+                    Id = Filters.Id
+                }
             });
 
         TotalCount = response.TotalCount;
         Data = response.Data;
 
+
+        Logger.AddLog($" - Filters(Id: {Filters.Id}, FullName: {Filters.FullName}, Email: {Filters.Email}, DateCreated: {Filters.DateCreated})");
+        Logger.AddLog($"OnLoad(PageIndex: {CurrentPageIndex}, PageSize: {PageSize}, SortKey: {SortKey}, SortOrder: {SortOrder})");
+
         StateHasChanged();
     }
+
+
+    private void OnUnloadClick()
+    {
+        Data = null;
+        TotalCount = 0;
+    }
+
+
 
     private class UserFiltersData
     {

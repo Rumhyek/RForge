@@ -20,6 +20,9 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
         //filters
         if (options.Filters.Id.HasValue == true)
             query = query.Where(u => u.Id == options.Filters.Id.Value);
+        
+        if (options.Filters.DateCreated.HasValue == true)
+            query = query.Where(u => u.DateCreated.Date == options.Filters.DateCreated.Value.Date);
 
         if (string.IsNullOrEmpty(options.Filters.FirstName) == false)
             query = query.Where(u => u.FirstName.Contains(options.Filters.FirstName));

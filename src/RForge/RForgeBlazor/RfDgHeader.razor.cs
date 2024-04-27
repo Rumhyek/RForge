@@ -50,11 +50,17 @@ public partial class RfDgHeader
 
     protected override void OnInitialized()
     {
+        if (SortKey == GridContext.InitialSortKey)
+            SortOrder = GridContext.InitialSortOrder;
+
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
+        if (AllowSorting == true && string.IsNullOrWhiteSpace(SortKey) == true)
+            throw new ArgumentNullException($"{nameof(RfDgHeader)} must asign {nameof(SortKey)} a unique value and cannot be null if {nameof(AllowSorting)} is true.");
+
         if (GridContext == null)
             throw new ArgumentNullException($"{nameof(RfDgHeader)} must be within a {nameof(GridContext)}");
         else
@@ -62,9 +68,6 @@ public partial class RfDgHeader
             GridContext.OnSortChanged -= OnSortChangedCallback;
             GridContext.OnSortChanged += OnSortChangedCallback;
         }
-
-        if (AllowSorting == true && string.IsNullOrWhiteSpace(SortKey) == true)
-            throw new ArgumentNullException($"{nameof(RfDgHeader)} must asign {nameof(SortKey)} a unique value and cannot be null if {nameof(AllowSorting)} is true.");
     }
 
 
@@ -93,10 +96,11 @@ public partial class RfDgHeader
         int index = Array.IndexOf(ToggleOrder, SortOrder);
         index = (index + 1) % ToggleOrder.Length;
 
+        SortOrder = ToggleOrder[index];
         await GridContext.SortChanged(new DataGridSortBy()
         {
             SortKey = this.SortKey,
-            SortOrder = ToggleOrder[index]
+            SortOrder = SortOrder
         });
     }
 

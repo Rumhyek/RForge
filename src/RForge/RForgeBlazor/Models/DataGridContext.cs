@@ -1,4 +1,5 @@
-﻿using RForge.Abstractions.DataGrids;
+﻿using RForge.Abstractions;
+using RForge.Abstractions.DataGrids;
 
 namespace RForgeBlazor.Models;
 
@@ -17,6 +18,8 @@ public class DataGridContext
     /// </summary>
     public event AsyncEventHandler<DataGridFilterBy> OnFilterChanged;
 
+    public string InitialSortKey { get; set; }
+    public RfSortOrder InitialSortOrder { get; set; }
 
     public async Task SortChanged(DataGridSortBy sort)
     {
