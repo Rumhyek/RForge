@@ -1,17 +1,20 @@
 @inherits RfDgFilterSelect<bool?>
 
 <th>
-    <select value="@Value?.ToString()"
-            @onchange=OnChange
-            name="@Name"
-            title="@Title"
-            class="input is-small @CssClass"
-            aria-label="@AriaLabelValue">
-        @foreach (var option in Options)
-        {
-            <option value="@option.Value?.ToString()">@option.Text</option>
-        }
-    </select>
+    <div class="select is-small is-fullwidth">
+        <select value="@Value?.ToString()"
+                @onchange=OnChange
+                name="@Name"
+                title="@Title"
+                class="@CssClass"
+                placeholder=@Placeholder
+                aria-label="@AriaLabelValue">
+            @foreach (var option in Options)
+            {
+                <option value="@option.Value?.ToString()">@option.Text</option>
+            }
+        </select>
+    </div>
 
 </th>
 
