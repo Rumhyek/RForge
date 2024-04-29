@@ -1,0 +1,135 @@
+﻿@page "/data-grid/example/basic-example"
+
+@using RForge.Abstractions
+@using RForgeDocs.Abstractions
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+
+@inject IUserDataGridPageProcessor userDataGridPageProcessor
+
+@rendermode InteractiveAuto
+
+<ExampleDetail Title="Basic Example"
+               SubTitle="Data Grid"
+               ComponentName="Data Grid"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/DataGrid/BasicExamplePage.razor")"
+               ComponentDetailsUrl="/data-grid/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This example is a usecase of a common data grid. It has pagination, some filters, and some sorting.
+                    </p>
+
+                    <h5>Sorting</h5>
+                    <p>
+                        Sorting is assumed by default so on <code>RfDgHeader</code> the parameter
+                        <code>AllowSorting</code> must be set to false otherwise the component will require <code>SortKey</code>.
+                    </p>
+
+                    <h5>Filtering</h5>
+                    <p>
+                        Filtering is done outside of the <code>RfDataGrid</code>. However the data grid can turn off filtering
+                        via <code>RfDataGrid.AllowFilters = false</code>.
+                    </p>
+                    <p>
+                        To render a column with no filter use either <code>RfDgFilterNone</code> or just create an empty <code>th</code>.
+                    </p>
+
+                    <h5>Pagination</h5>
+                    <p>
+                        Pagination is off by default. To add pagination set <code>RfDataGrid.PageSize</code> to something greater than 0.
+                    </p>
+
+                    <h5>Total Count</h5>
+                    <p>
+                        Regardless of pagination, <code>TotalCount</code> is still shown. Make sure to set it when setting the data.
+                    </p>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <RfDataGrid TRowData="UserData"
+                        Data=Data
+                        @bind-CurrentPageIndex=@CurrentPageIndex
+                        @bind-SortKey=@CurrentSortKey
+                        @bind-SortOrder=@CurrentSortOrder
+                        PageSize=@PageSize
+                        TotalCount=@TotalCount
+                        OnLoadData=OnLoad>
+
+                <Headers>
+
+                    <RfDgHeader AllowSorting=false>Id</RfDgHeader>
+                    <RfDgHeader SortKey="FirstName">First Name</RfDgHeader>
+                    <RfDgHeader SortKey="LastName">Last Name</RfDgHeader>
+                    <RfDgHeader SortKey="IsAdmin">Is Admin</RfDgHeader>
+
+                </Headers>
+
+                <Filters>
+                    <RfDgFilterInputInt @bind-Value=Filters.Id MinValue=0 />
+                    <RfDgFilterInputText @bind-Value=Filters.FirstName Placeholder="Contains" />
+                    <RfDgFilterNone />
+                    <RfDgFilterInputBool @bind-Value=Filters.IsAdmin />
+                </Filters>
+
+                <Cells>
+                    <td>@context.Id</td>
+                    <td>@context.FirstName</td>
+                    <td>@context.LastName</td>
+                    <td>@context.IsAdmin</td>
+                </Cells>
+
+
+            </RfDataGrid>
+
+        </article>
+    </div>
+</div>
+
+@code {
+
+    private int TotalCount { get; set; }
+    private int PageSize { get; set; } = 10;
+    private int CurrentPageIndex { get; set; }
+    private string CurrentSortKey { get; set; }
+    private RfSortOrder CurrentSortOrder { get; set; }
+    private FilterData Filters { get; set; } = new();
+    private List<UserData> Data { get; set; }
+
+    public async Task OnLoad()
+    {
+        var response = await userDataGridPageProcessor.GetPage(new UserDataGridGetPageData()
+            {
+                Filters = new UserDataGridFilterData()
+                {
+                    Id = Filters.Id,
+                    IsAdmin = Filters.IsAdmin,
+                    FirstName = Filters.FirstName,
+                },
+                PageIndex = CurrentPageIndex,
+                SortKey = CurrentSortKey,
+                PageSize = PageSize,
+                SortOrder = CurrentSortOrder
+            });
+
+        Data = response.Data;
+        TotalCount = response.TotalCount;
+        StateHasChanged();
+    }
+
+    private class FilterData
+    {
+        public int? Id { get; set; }
+        public string FirstName { get; set; }
+        public bool? IsAdmin { get; set; }
+    }
+
+}

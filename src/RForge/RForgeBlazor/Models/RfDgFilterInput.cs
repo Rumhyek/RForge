@@ -68,6 +68,7 @@ public abstract class RfDgFilterInput<TType> : ComponentBase
     public virtual async Task NotifyChange(TType value)
     {
         //notify the filter holder first then the gridview
+        Value = value;
         await ValueChanged.InvokeAsync(value);
 
         await GridContext.FilterChanged(new DataGridFilterBy()

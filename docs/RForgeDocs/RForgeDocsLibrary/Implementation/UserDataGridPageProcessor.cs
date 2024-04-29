@@ -21,6 +21,9 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
         if (options.Filters.Id.HasValue == true)
             query = query.Where(u => u.Id == options.Filters.Id.Value);
         
+        if (options.Filters.IsAdmin.HasValue == true)
+            query = query.Where(u => u.IsAdmin == options.Filters.IsAdmin.Value);
+
         if (options.Filters.DateCreated.HasValue == true)
             query = query.Where(u => u.DateCreated.Date == options.Filters.DateCreated.Value.Date);
 
@@ -41,7 +44,6 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
 
         if (string.IsNullOrEmpty(options.Filters.FullName) == false)
         {
-
             var parts = options.Filters.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             if (parts.Length == 1)
@@ -60,7 +62,7 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
         {
             switch (options.SortKey)
             {
-                case nameof(UserDataGridFilterData.Id):
+                case nameof(UserData.Id):
                     if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.Id);
                     else
@@ -76,41 +78,47 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
                             .OrderByDescending(u => u.LastName)
                             .OrderByDescending(u => u.FirstName);
                     break;
-                case nameof(UserDataGridFilterData.FirstName):
+                case nameof(UserData.FirstName):
                     if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.FirstName);
                     else
                         query = query.OrderByDescending(u => u.FirstName);
                     break;
-                case nameof(UserDataGridFilterData.LastName):
+                case nameof(UserData.LastName):
                     if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.LastName);
                     else
                         query = query.OrderByDescending(u => u.LastName);
                     break;
-                case nameof(UserDataGridFilterData.Username):
+                case nameof(UserData.Username):
                     if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.Username);
                     else
                         query = query.OrderByDescending(u => u.Username);
                     break;
-                case nameof(UserDataGridFilterData.Email):
+                case nameof(UserData.Email):
                     if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.Email);
                     else
                         query = query.OrderByDescending(u => u.Email);
                     break;
-                case nameof(UserDataGridFilterData.Bio):
+                case nameof(UserData.Bio):
                     if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.Bio);
                     else
                         query = query.OrderByDescending(u => u.Bio);
                     break;
-                case nameof(UserDataGridFilterData.DateCreated):
+                case nameof(UserData.DateCreated):
                     if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.DateCreated);
                     else
                         query = query.OrderByDescending(u => u.DateCreated);
+                    break;
+                case nameof(UserData.IsAdmin):
+                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                        query = query.OrderBy(u => u.IsAdmin);
+                    else
+                        query = query.OrderByDescending(u => u.IsAdmin);
                     break;
             }
         }
@@ -123,7 +131,6 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
                 .Take(options.PageSize.Value);
         }
 
-
         results.Data.AddRange(query
             .Select(u => new UserData()
             {
@@ -133,9 +140,9 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
                 FirstName = u.FirstName,
                 LastName = u.LastName,
                 Id = u.Id,
+                IsAdmin = u.IsAdmin,
                 Username = u.Username
             }));
-
 
         return results;
     }

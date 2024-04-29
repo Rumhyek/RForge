@@ -15,6 +15,8 @@ public class User
 
     public string Bio { get; set; }
 
+    public bool IsAdmin { get; set; }   
+
     public DateTime DateCreated { get; set; }
     public DateTime DateModified { get; set; }
 

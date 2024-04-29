@@ -73,7 +73,7 @@
         <div class="menu mt-6">
             <p class="menu-label is-size-6 mb-2">Examples</p>
             <ul class="menu-list">
-                @ComponentDetail.SideLink(("Basic Example", TagInfo.Empty, "/data-grid/examples/basic-example"))
+                @ComponentDetail.SideLink(("Basic Example", TagInfo.Empty, "/data-grid/example/basic-example"))
 
             </ul>
         </div>
@@ -253,10 +253,10 @@
             @@bind-SortKey=@@CurrentSortKey&gt;
 
     &lt;Headers&gt;
-        &lt;RfDgHeader&gt;Id&lt;/RfDgHeader&gt;
-        &lt;RfDgHeader&gt;First Name&lt;/RfDgHeader&gt;
-        &lt;RfDgHeader&gt;Last Name&lt;/RfDgHeader&gt;
-        &lt;RfDgHeader&gt;Email&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader SortKey="Id" &gt;Id&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader SortKey="FirstName" &gt;First Name&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader SortKey="LastName" &gt;Last Name&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader SortKey="Email" &gt;Email&lt;/RfDgHeader&gt;
     &lt;/Headers&gt;
 
     &lt;Filters&gt;
