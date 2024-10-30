@@ -44,29 +44,3 @@ public class ApiSaveUserProcessor : ISaveUserProcessor
         return false;
     }
 }
-
-public class ApiUserDataGridPageProcessor : IUserDataGridPageProcessor
-{
-    private readonly IHttpClientFactory _httpClientFactory;
-
-    public ApiUserDataGridPageProcessor(IHttpClientFactory httpClientFactory)
-    {
-        _httpClientFactory = httpClientFactory;
-    }
-
-    public async Task<GridPageResults<UserData>> GetPage(UserDataGridGetPageData options)
-    {
-        try
-        {
-            var httpClient = _httpClientFactory.CreateClient("api");
-            var response = await httpClient.PostAsJsonAsync<UserDataGridGetPageData>("api/users/page", options);
-            var idString = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<GridPageResults<UserData>>(idString);
-        }
-        catch (Exception e)
-        {
-        }
-
-        return null;
-    }
-}
