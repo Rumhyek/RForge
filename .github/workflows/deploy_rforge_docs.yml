@@ -1,13 +1,27 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - rforge
+name: Build and deploy RForge Blazor Docs App
 
 on:
+  # Runs on pushes targeting the `main` branch
+  # when docs/** is updated
   push:
-    branches:
-      - main
+    branches: [main]
+    paths:
+      - 'docs/**'
+  # Allows for running manually from Actions tab
   workflow_dispatch:
+  
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: docs
 
 jobs:
   build:
