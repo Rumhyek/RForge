@@ -1,9 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-  </PropertyGroup>
-	
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <Description>Placeholder</Description>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+
+        <PackageId>RForge.Blazor.Abstractions</PackageId>
+        <Product>RForge.Blazor.Abstractions</Product>
+        <Version>$(Version)</Version>
+        <Authors>Rumhyek</Authors>
+        <PackageTags>blazor; components; library, abstraction</PackageTags>
+        <Title>Light Weight Blazor Components</Title>
+        <Description>Placeholder</Description>
+        <RepositoryUrl>https://github.com/rumhyek/rforge</RepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <Target Name="InjectPackageReleaseNotes" BeforeTargets="GenerateNuspec" Condition="Exists('CHANGELOG.md')">
+        <PropertyGroup>
+            <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/CHANGELOG.md"))</PackageReleaseNotes>
+        </PropertyGroup>
+    </Target>
+    
 </Project>

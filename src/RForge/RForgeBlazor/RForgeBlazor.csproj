@@ -1,33 +1,41 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<Nullable>disable</Nullable>
-		<PackageId>RForge.Blazor</PackageId>
-		<Product>RForge.Blazor</Product>
-		<LangVersion>latest</LangVersion>
-		<Version>0.1.0</Version>
-		<PackageTags>blazor; components; library</PackageTags>
-		<Authors>Rumhyek</Authors>
-		<Title>Light Weight Blazor Components</Title>
-		<RepositoryUrl>https://github.com/rumhyek/rforge</RepositoryUrl>
-		<ImplicitUsings>enable</ImplicitUsings>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>disable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <ImplicitUsings>enable</ImplicitUsings>
+        
+        <PackageId>RForge.Blazor</PackageId>
+        <Product>RForge.Blazor</Product>
+        <Version>$(Version)</Version>
+        <Authors>Rumhyek</Authors>
+        <PackageTags>blazor; components; library</PackageTags>
+        <Title>Light Weight Blazor Components</Title>
+        <Description>Placeholder</Description>
+        <RepositoryUrl>https://github.com/rumhyek/rforge</RepositoryUrl>
+        
+    </PropertyGroup>
 
-	<ItemGroup>
-		<SupportedPlatform Include="browser" />
-	</ItemGroup>
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.3" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.3" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\RForge.Abstractions\RForge.Abstractions.csproj" />
+    </ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\RForge.Abstractions\RForge.Abstractions.csproj" />
-	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="wwwroot\" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <Target Name="InjectPackageReleaseNotes" BeforeTargets="GenerateNuspec" Condition="Exists('CHANGELOG.md')">
+        <PropertyGroup>
+            <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/CHANGELOG.md"))</PackageReleaseNotes>
+        </PropertyGroup>
+    </Target>
 
 </Project>
