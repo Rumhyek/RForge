@@ -59,7 +59,7 @@ jobs:
         working-directory: src/RForge/RForgeBlazor
 
       - name: Printing Version
-        run: echo "Packing version: ${{ steps.version.outputs.fullSemVer }}"
+        run: echo "Packing version ${{ steps.version.outputs.fullSemVer }}"
 
       # # Pack all packages at the given version
       # - name: Package Pack
