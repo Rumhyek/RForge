@@ -1,3 +1,4 @@
 
 # RForge.Blazor
 
+Testing GitVersion!
