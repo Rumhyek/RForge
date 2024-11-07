@@ -68,8 +68,8 @@ jobs:
       - name: Publish Packages
         run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github
 
-      # Create the release
+      # Create the release as draft so I can add more details if needed.
       - name: Github Release
-        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes
+        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes -draft
         env:
           GH_TOKEN: ${{ github.token }}
