@@ -6,7 +6,7 @@ name: Create and Publish new RForge Package
 on:
   # Runs on pushes targeting the `main` branch
   # when docs/** is updated
-  push:
+  pull_request:
     branches: [main]
     paths:
       - 'src/**'
@@ -67,3 +67,7 @@ jobs:
       # Publish the packages to github under RForge
       - name: Publish Packages
         run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github
+
+      # Create the release
+      - name: Github Release
+        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes
