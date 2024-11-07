@@ -29,7 +29,7 @@ jobs:
 
     permissions:
       packages: write
-      contents: read
+      contents: write
       actions: write
       attestations: write
 
@@ -62,8 +62,8 @@ jobs:
         
       # Pack all packages at the given version
       - name: Package Pack
-        run: dotnet pack --output /artifacts --configuration Release -p:Version=${{ steps.version.outputs.fullSemVer }}
+        run: dotnet pack --output ${{env.DOTNET_ROOT}}/artifacts --configuration Release -p:Version=${{ steps.version.outputs.fullSemVer }}
       
       # Publish the packages to github under RForge
       - name: Publish Packages
-        run: dotnet nuget push /artifacts/*.nupkg --source github
+        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github
