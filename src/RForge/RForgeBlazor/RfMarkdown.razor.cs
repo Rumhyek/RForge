@@ -26,7 +26,7 @@ public partial class RfMarkdown : ComponentBase
     public string Markdown { get; set; }
 
     /// <summary>
-    /// Allows for customization for Markdown processor via <see cref="Markdig.MarkdownPipeline" href="https://github.com/xoofx/markdig" />
+    /// Allows for customization for Markdown processor via <see cref="Markdig.MarkdownPipeline" href="https://github.com/xoofx/markdig" />. To create a custom pipeline use <see cref="Markdig.MarkdownExtensions" href="https://github.com/xoofx/markdig/blob/master/src/Markdig/MarkdownExtensions.cs"/>.
     /// </summary>
     [Parameter]
     public MarkdownPipeline Pipeline { get; set; }
@@ -34,8 +34,13 @@ public partial class RfMarkdown : ComponentBase
     private bool _isRenderComplete = false;
     private string html;
 
+    private MarkdownPipeline DefaultPipeline;
+
     protected override void OnInitialized()
     {
+        MarkdownPipelineBuilder builder = new MarkdownPipelineBuilder();
+        DefaultPipeline = MarkdownExtensions.UsePipeTables(builder).Build();
+
         ParseMarkdown();
     }
 
@@ -56,7 +61,7 @@ public partial class RfMarkdown : ComponentBase
         if (string.IsNullOrEmpty(Markdown) == false)
         {
             if (Pipeline == null)
-                html = Markdig.Markdown.ToHtml(Markdown);
+                html = Markdig.Markdown.ToHtml(Markdown, DefaultPipeline);
             else
                 html = Markdig.Markdown.ToHtml(Markdown, Pipeline);
         }
