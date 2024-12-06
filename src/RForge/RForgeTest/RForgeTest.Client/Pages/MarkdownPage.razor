@@ -1,0 +1,22 @@
+﻿@page "/markdown"
+@rendermode InteractiveAuto
+
+<textarea @bind=Example class="textarea" @bind:event="oninput"></textarea>
+
+<RfMarkdown Markdown=@Example />
+    
+
+
+@code 
+{
+    public string Example { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        HttpClient client = new HttpClient();
+        HttpResponseMessage response = await client.GetAsync("https://raw.githubusercontent.com/mxstbr/markdown-test-file/master/TEST.md");
+        Example = await response.Content.ReadAsStringAsync();
+    }
+
+}
