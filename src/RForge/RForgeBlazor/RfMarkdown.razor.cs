@@ -33,13 +33,23 @@ public partial class RfMarkdown : ComponentBase
 
     private bool _isRenderComplete = false;
     private string html;
+    private MarkdownPipeline defaultPipeline;
 
-    private MarkdownPipeline DefaultPipeline;
+    private MarkdownPipeline DefaultPipeline
+    {
+        get
+        {
+            if(defaultPipeline == null)
+            {
+                MarkdownPipelineBuilder builder = new MarkdownPipelineBuilder();
+                defaultPipeline = MarkdownExtensions.UsePipeTables(builder).Build();
+            }
+            return defaultPipeline;
+        }
+    }
 
     protected override void OnInitialized()
     {
-        MarkdownPipelineBuilder builder = new MarkdownPipelineBuilder();
-        DefaultPipeline = MarkdownExtensions.UsePipeTables(builder).Build();
 
         ParseMarkdown();
     }
