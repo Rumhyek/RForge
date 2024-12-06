@@ -26,6 +26,12 @@ public partial class RfMarkdown : ComponentBase
     public string Markdown { get; set; }
 
     /// <summary>
+    /// Set this section to show something while the mardkown is null.
+    /// </summary>
+    [Parameter]
+    public RenderFragment Skeleton { get; set; }
+
+    /// <summary>
     /// Allows for customization for Markdown processor via <see cref="Markdig.MarkdownPipeline" href="https://github.com/xoofx/markdig" />. To create a custom pipeline use <see cref="Markdig.MarkdownExtensions" href="https://github.com/xoofx/markdig/blob/master/src/Markdig/MarkdownExtensions.cs"/>.
     /// </summary>
     [Parameter]
@@ -79,5 +85,10 @@ public partial class RfMarkdown : ComponentBase
         {
             html = null;
         }
+    }
+
+    private bool ShowSkeleton()
+    {
+        return Skeleton != null && Markdown == null;
     }
 }
