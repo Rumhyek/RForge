@@ -29,7 +29,7 @@ public static class Rf
             .Select(s => s.cssClass.Length)
             .Sum() + classes.Length - 1;
 
-        if (length == 0) return String.Empty;
+        if (length == 0) return string.Empty;
 
         // Using Span<T> for stack allocation and avoiding heap allocations
         Span<char> buffer = stackalloc char[length];
