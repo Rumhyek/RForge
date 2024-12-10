@@ -76,7 +76,4 @@ public class Rf_ClassWhen : VerifyBase
     {
         return Verify(Rf.ClassWhen(("hide", false), ("show", true), ("hide2", false)));
     }
-
-
-
 }
