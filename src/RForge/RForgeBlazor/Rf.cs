@@ -16,9 +16,10 @@ public static class Rf
         if (classes == null || classes.Length == 0)
             return string.Empty;
         
-        if(classes.Length == 1 && classes[0].show == true)
+        if(classes.Length == 1)
         {
-            if (string.IsNullOrWhiteSpace(classes[0].cssClass) == true)
+            if(classes[0].show == false 
+                || string.IsNullOrWhiteSpace(classes[0].cssClass) == true)
                 return string.Empty;
 
             return classes[0].cssClass;
@@ -78,6 +79,19 @@ public static class Rf
     {
         if(styles == null || styles.Length == 0) 
             return string.Empty;
+
+        if(styles.Length == 1)
+        {
+            var single = styles[0];
+
+            if (single.show == false
+                || string.IsNullOrWhiteSpace(single.styleName) == true
+                || string.IsNullOrWhiteSpace(single.value) == true)
+                return string.Empty;
+            
+            //let dotnet optimize this over writing our own span
+            return $"{single.styleName}:{single.value};";
+        }
 
         int length = styles
             .Where(c => c.show == true

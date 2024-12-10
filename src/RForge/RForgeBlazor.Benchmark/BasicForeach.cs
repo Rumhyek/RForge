@@ -22,4 +22,20 @@ public static class BasicForeach
 
         return classes;
     }
+    public static string StyleWhen(params (string styleName, string value, bool show)[] styles)
+    {
+        string output = "";
+        
+        foreach (var style in styles)
+        {
+            if (style.show == false
+                || string.IsNullOrWhiteSpace(style.styleName) == true
+                || string.IsNullOrWhiteSpace(style.value) == true) 
+                continue;
+
+            output += $"{style.styleName}:{style.value};";
+        }
+
+        return output;
+    }
 }

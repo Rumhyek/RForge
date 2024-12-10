@@ -7,6 +7,14 @@
         "Benchmark class-when-one": {
             "commandName": "Project",
             "commandLineArgs": "class-when-one"
+        },
+        "Benchmark style-when-many": {
+            "commandName": "Project",
+            "commandLineArgs": "style-when-many"
+        },
+        "Benchmark style-when-one": {
+            "commandName": "Project",
+            "commandLineArgs": "style-when-one"
         }
     }
 }

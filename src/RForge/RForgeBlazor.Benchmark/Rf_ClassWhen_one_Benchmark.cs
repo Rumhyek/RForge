@@ -7,11 +7,6 @@ using System.Xml.Serialization;
 [RankColumn]
 public class Rf_ClassWhen_One_Benchmark
 {
-    public string GetClassString(params (string cssClass, bool show)[] classes)
-    {
-        return Rf.ClassWhen(classes);
-    }
-
     public static readonly (string className, bool show)[] benchmarkTest = [
         ("class-a", true),
     ];
