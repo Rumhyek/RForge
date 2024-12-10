@@ -16,6 +16,14 @@ public static class Rf
         if (classes == null || classes.Length == 0)
             return string.Empty;
         
+        if(classes.Length == 1 && classes[0].show == true)
+        {
+            if (string.IsNullOrWhiteSpace(classes[0].cssClass) == true)
+                return string.Empty;
+
+            return classes[0].cssClass;
+        }
+
         int length = classes
             .Where(c => c.show == true && string.IsNullOrWhiteSpace(c.cssClass) == false)
             .Select(s => s.cssClass.Length)

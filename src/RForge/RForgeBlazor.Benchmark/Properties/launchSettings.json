@@ -1,0 +1,12 @@
+{
+    "profiles": {
+        "Benchmark class-when-many": {
+            "commandName": "Project",
+            "commandLineArgs": "class-when-many"
+        },
+        "Benchmark class-when-one": {
+            "commandName": "Project",
+            "commandLineArgs": "class-when-one"
+        }
+    }
+}

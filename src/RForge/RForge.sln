@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeTest.Client", "RForge
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{3D1AE443-6D56-4A48-BC5B-D0833EA8BB45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.UnitTest", "RForge.Blazor.UnitTest\RForge.Blazor.UnitTest.csproj", "{08BB1CEA-DDE8-41E0-82D4-62A18FF7F655}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Blazor.UnitTest", "RForge.Blazor.UnitTest\RForge.Blazor.UnitTest.csproj", "{08BB1CEA-DDE8-41E0-82D4-62A18FF7F655}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForgeBlazor.Benchmark", "RForgeBlazor.Benchmark\RForgeBlazor.Benchmark.csproj", "{C4AABCBE-6DBC-45AD-874C-BC362A3996E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{08BB1CEA-DDE8-41E0-82D4-62A18FF7F655}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08BB1CEA-DDE8-41E0-82D4-62A18FF7F655}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08BB1CEA-DDE8-41E0-82D4-62A18FF7F655}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4AABCBE-6DBC-45AD-874C-BC362A3996E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4AABCBE-6DBC-45AD-874C-BC362A3996E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4AABCBE-6DBC-45AD-874C-BC362A3996E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4AABCBE-6DBC-45AD-874C-BC362A3996E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -49,6 +55,7 @@ Global
 		{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A} = {3D1AE443-6D56-4A48-BC5B-D0833EA8BB45}
 		{211B08FD-14AB-4225-9B28-EB0926E680FA} = {3D1AE443-6D56-4A48-BC5B-D0833EA8BB45}
 		{08BB1CEA-DDE8-41E0-82D4-62A18FF7F655} = {3D1AE443-6D56-4A48-BC5B-D0833EA8BB45}
+		{C4AABCBE-6DBC-45AD-874C-BC362A3996E4} = {3D1AE443-6D56-4A48-BC5B-D0833EA8BB45}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AAFE48D9-A9B6-466C-AB8D-4B42E344F321}
