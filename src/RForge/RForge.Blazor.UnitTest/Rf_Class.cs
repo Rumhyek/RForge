@@ -8,6 +8,7 @@ public class Rf_Class : VerifyBase
     [TestMethod]
     public Task IsEmpty()
     {
+        //I made a change
         return Verify(Rf.Class());
     }
 
