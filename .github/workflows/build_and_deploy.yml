@@ -70,6 +70,6 @@ jobs:
 
       # Create the release as draft so I can add more details if needed.
       - name: Github Release
-        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes -draft
+        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes --draft
         env:
           GH_TOKEN: ${{ github.token }}
