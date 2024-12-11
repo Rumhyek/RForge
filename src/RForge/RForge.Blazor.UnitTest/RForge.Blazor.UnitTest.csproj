@@ -26,4 +26,51 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Rf_Class.IsEmpty.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.IsNull.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.LengthOfZero.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.ShowOneClass.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.ShowTwoClasses.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.TestLongClassName.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.TestMultipleClasses.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.TestOneClassHide.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.TestThreeClassOneHideTwoShow.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.TestThreeClassTwoHideOneShow.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+    <None Update="Rf_Class.TestTwoClassHide.verified.txt">
+      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
+      <DependentUpon>Rf_Class.cs</DependentUpon>
+    </None>
+  </ItemGroup>
+
 </Project>

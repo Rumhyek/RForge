@@ -2,7 +2,7 @@
 /// <summary>
 /// A base example using simple straight forward logic
 /// </summary>
-public static class BasicForeach
+public static class RfBasicForeach
 {
     public static string ClassWhen(params (string className, bool show)[] cssClassList)
     {
@@ -22,6 +22,14 @@ public static class BasicForeach
 
         return classes;
     }
+    public static string Class(params string[] classList)
+    {
+        if(classList == null || classList.Length == 0)
+            return string.Empty;
+
+        return string.Join(' ', new HashSet<string>(classList));
+    }
+
     public static string StyleWhen(params (string styleName, string value, bool show)[] styles)
     {
         string output = "";

@@ -1,20 +1,24 @@
 {
     "profiles": {
-        "Benchmark class-when-many": {
+        "Benchmark rf-class-when-many": {
             "commandName": "Project",
-            "commandLineArgs": "class-when-many"
+            "commandLineArgs": "rf-class-when-many"
         },
-        "Benchmark class-when-one": {
+        "Benchmark rf-class-when-one": {
             "commandName": "Project",
-            "commandLineArgs": "class-when-one"
+            "commandLineArgs": "rf-class-when-one"
         },
-        "Benchmark style-when-many": {
+        "Benchmark rf-style-when-many": {
             "commandName": "Project",
-            "commandLineArgs": "style-when-many"
+            "commandLineArgs": "rf-style-when-many"
         },
-        "Benchmark style-when-one": {
+        "Benchmark rf-style-when-one": {
             "commandName": "Project",
-            "commandLineArgs": "style-when-one"
+            "commandLineArgs": "rf-style-when-one"
+        },
+        "Benchmark rf-class-many": {
+            "commandName": "Project",
+            "commandLineArgs": "rf-class-many"
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Security.Cryptography.X509Certificates;
 
 namespace RForgeBlazor;
 /// <summary>
@@ -14,13 +14,17 @@ public static class Rf
     public static string ClassWhen(params (string cssClass, bool show)[] classes)
     {
         if (classes == null || classes.Length == 0)
-            return string.Empty;
-        
-        if(classes.Length == 1)
         {
-            if(classes[0].show == false 
+            return string.Empty;
+        }
+
+        if (classes.Length == 1)
+        {
+            if (classes[0].show == false
                 || string.IsNullOrWhiteSpace(classes[0].cssClass) == true)
+            {
                 return string.Empty;
+            }
 
             return classes[0].cssClass;
         }
@@ -30,7 +34,10 @@ public static class Rf
             .Select(s => s.cssClass.Length)
             .Sum() + classes.Length - 1;
 
-        if (length == 0) return string.Empty;
+        if (length == 0)
+        {
+            return string.Empty;
+        }
 
         // Using Span<T> for stack allocation and avoiding heap allocations
         Span<char> buffer = stackalloc char[length];
@@ -41,8 +48,10 @@ public static class Rf
         foreach ((string cssClass, bool show) in classes)
         {
             if (show == false || string.IsNullOrWhiteSpace(cssClass) == true)
+            {
                 continue;
-            
+            }
+
             if (first == false)
             {
                 // Add space between classes only after the first class (optimized for single class)
@@ -56,9 +65,31 @@ public static class Rf
         }
 
         if (offset > 0)
+        {
             return new string(buffer.Slice(0, offset));
+        }
 
         return string.Empty;
+    }
+
+    /// <summary>
+    /// Concatenates a list of classes together.
+    /// </summary>
+    /// <param name="classes">The list of classes to use.</param>
+    /// <returns>a string of space seperated classes.</returns>
+    public static string Class(params string[] classes)
+    {
+        if (classes == null || classes.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        if (classes.Length == 1)
+        {
+            return classes[0];
+        }
+
+        return string.Join(' ', classes);
     }
 
     /// <summary>
@@ -77,18 +108,22 @@ public static class Rf
     /// <returns></returns>
     public static string StyleWhen(params (string styleName, string value, bool show)[] styles)
     {
-        if(styles == null || styles.Length == 0) 
+        if (styles == null || styles.Length == 0)
+        {
             return string.Empty;
+        }
 
-        if(styles.Length == 1)
+        if (styles.Length == 1)
         {
             var single = styles[0];
 
             if (single.show == false
                 || string.IsNullOrWhiteSpace(single.styleName) == true
                 || string.IsNullOrWhiteSpace(single.value) == true)
+            {
                 return string.Empty;
-            
+            }
+
             //let dotnet optimize this over writing our own span
             return $"{single.styleName}:{single.value};";
         }
@@ -100,19 +135,24 @@ public static class Rf
             //+2 for : and semicolon
             .Select(s => s.styleName.Length + 2 + s.value.Length)
             .Sum();
-        
-        if (length == 0) return String.Empty;
+
+        if (length == 0)
+        {
+            return String.Empty;
+        }
 
         // Using Span<T> for stack allocation and avoiding heap allocations
         Span<char> buffer = stackalloc char[length];
         int offset = 0;
-        
+
         foreach ((string styleName, string value, bool show) in styles)
         {
-            if (show == false 
+            if (show == false
                 || string.IsNullOrWhiteSpace(styleName) == true
                 || string.IsNullOrWhiteSpace(value) == true)
+            {
                 continue;
+            }
 
             //add the style attribute
             styleName.AsSpan().CopyTo(buffer.Slice(offset));
@@ -127,9 +167,10 @@ public static class Rf
         }
 
         if (offset > 0)
+        {
             return new string(buffer.Slice(0, offset));
+        }
 
         return string.Empty;
     }
-
 }

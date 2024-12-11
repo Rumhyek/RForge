@@ -15,7 +15,7 @@ public class Rf_ClassWhen_One_Benchmark
     public void BootstrapBlazorMethod() => BootstrapBlazor.ClassWhen(benchmarkTest);
 
     [Benchmark]
-    public void ForeachMethod() => BasicForeach.ClassWhen(benchmarkTest);
+    public void ForeachMethod() => RfBasicForeach.ClassWhen(benchmarkTest);
 
     [Benchmark]
     public void RfMethod() => Rf.ClassWhen(benchmarkTest);
@@ -30,8 +30,8 @@ public class Rf_ClassWhen_One_Benchmark
         Console.WriteLine(nameof(BootstrapBlazor));
         Console.WriteLine(BootstrapBlazor.ClassWhen(benchmarkTest));
         Console.WriteLine();
-        Console.WriteLine(nameof(BasicForeach));
-        Console.WriteLine(BasicForeach.ClassWhen(benchmarkTest));
+        Console.WriteLine(nameof(RfBasicForeach));
+        Console.WriteLine(RfBasicForeach.ClassWhen(benchmarkTest));
         Console.WriteLine();
         Console.WriteLine(nameof(RfMethod));
         Console.WriteLine(Rf.ClassWhen(benchmarkTest));
