@@ -5,9 +5,9 @@ name: Create and Publish new RForge Package
 
 on:
   # Runs on pushes targeting the `main` branch
-  # when src/** is updated on the main branch or any release branch
+  # when src/** is updated on any release branch
   push:
-    branches: [main, release]
+    branches: [release]
     paths:
       - 'src/**'
   # Allows for running manually from Actions tab
@@ -70,6 +70,6 @@ jobs:
 
       # Create the release as draft so I can add more details if needed.
       - name: Github Release
-        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes --draft
+        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes --prerelease
         env:
           GH_TOKEN: ${{ github.token }}
