@@ -1,0 +1,95 @@
+﻿@page "/markdown"
+@rendermode InteractiveAuto
+
+<textarea @bind=Example class="textarea" @bind:event="oninput"></textarea>
+<div class="buttons">
+    <a class="button" @onclick=LoadExample>Load Example</a>
+    <a class="button" @onclick=ClearExample>Clear Example</a>
+
+</div>
+
+<div class="columns">
+    <div class="column">
+        <h1 class="title">Load Content</h1>
+        <RfMarkdown Markdown=@Example CssClass="is-small">
+            <Skeleton>
+                <div class="skeleton-lines block">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </Skeleton>
+        </RfMarkdown>
+
+    </div>
+    <div class="column">
+        <h1 class="title">Example Skeleton</h1>
+
+
+        <RfMarkdown>
+            <Skeleton>
+                <div class="skeleton-lines block">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+
+                <article class="media">
+                    <figure class="media-left">
+                        <p class="image is-64x64 is-skeleton">
+                            <img src="https://placehold.co/128x128" alt="Placeholder image">
+                        </p>
+                    </figure>
+                    <div class="media-content">
+                        <div class="content is-skeleton">
+                            <p>
+                                <strong>John Smith</strong> <small>@@johnsmith</small> <small>31m</small>
+                                <br>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ornare magna eros, eu pellentesque tortor
+                                sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus est non commodo luctus,
+                                nisi erat porttitor ligula, eget lacinia odio sem nec elit
+                                vestibulum ut. Maecenas non massa sem. Etiam finibus odio quis feugiat facilisis.
+                            </p>
+                        </div>
+                        <nav class="level is-mobile">
+                            <div class="level-left">
+                                <a class="level-item"><span class="icon is-small is-skeleton"><i class="fas fa-reply"></i></span></a>
+                                <a class="level-item"><span class="icon is-small is-skeleton"><i class="fas fa-retweet"></i></span></a>
+                                <a class="level-item"><span class="icon is-small is-skeleton"><i class="fas fa-heart"></i></span></a>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="media-right">
+                        <button aria-label="delete" class="delete is-skeleton"></button>
+                    </div>
+                </article>
+
+            </Skeleton>
+        </RfMarkdown>
+
+    </div>
+</div>
+
+
+
+@code
+{
+    public string Example { get; set; }
+
+    private async Task LoadExample()
+    {
+        HttpClient client = new HttpClient();
+        HttpResponseMessage response = await client.GetAsync("https://raw.githubusercontent.com/mxstbr/markdown-test-file/master/TEST.md");
+        Example = await response.Content.ReadAsStringAsync();
+    }
+
+    private void ClearExample()
+    {
+        Example = null;
+    }
+
+}

@@ -1,0 +1,11 @@
+
+@if (ShowSkeleton() == false)
+{
+    <div class="content @CssClass">
+        @((MarkupString)html)
+    </div>
+}
+else
+{
+    @Skeleton
+}
