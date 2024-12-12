@@ -4,7 +4,7 @@ branches:
     mode: ContinuousDeployment
   release:
     mode: ContinuousDeployment
-    tag: rc
+    label: rc
   feature:
     mode: ContinuousDeployment
-    tag: alpha
+    label: alpha
