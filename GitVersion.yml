@@ -3,8 +3,8 @@ branches:
   main:
     mode: ContinuousDeployment
   release:
-    mode: ContinuousDeployment
+    mode: ContinuousDelivery
     label: rc
   feature:
-    mode: ContinuousDeployment
+    mode: ContinuousDelivery
     label: alpha
