@@ -1,0 +1,72 @@
+﻿@page "/rf/details"
+
+<ComponentDetail Title="Rf"
+                 SubTitle="A Static Helper Class">
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("Rf.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfMarkdown.razor"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+            <p>
+                <code>Rf</code> is a static helper class made with optimized functions to help when developing in Blazor.
+            </p>
+        </div>
+    </Purpose>
+
+    <BasicUsage>
+        <div class="content" id="rf-class">
+            <p>Below list out the functions of <code>Rf</code>.</p>
+
+            <div id="rf-classwhen"></div>
+
+                <h2><code>Class</code></h2>
+                <p>
+                    Use <code>Rf.Class</code> to generate a quickly concatenate classes together by string.
+                </p>
+                <pre><code>// Concatenates a list of classes together.
+public static string Class(params string[] classes)</code></pre>
+
+            <h4>Example</h4>
+            <pre><code>... CssClass=@@Rf.Class("class-a", "class-b") ...</code></pre>
+
+            <div id="rf-stylewhen"></div>
+
+            <h2><code>ClassWhen</code></h2>
+            <p>
+                Use <code>Rf.ClassWhen</code> to generate a dynamic class list in line or from the code behind.
+            </p>
+            <pre><code>// Concatenates classes together based on when show is true. 
+public static string ClassWhen(params (string cssClass, bool show)[] classes)</code></pre>
+
+            <h4>Example</h4>
+            <pre><code>... CssClass=@@Rf.ClassWhen(("has-text-grey", IsDeleted)) ...</code></pre>
+
+            <h2><code>StyleWhen</code></h2>
+            <p>
+                Use <code>Rf.StyleWhen</code> to generate a dynamic style attribute in line or from the code behind.
+            </p>
+            <pre><code>// Concatenates styles together based on when show is true. Only returns styles that are not null or whitespace in either style name or value. 
+public static string StyleWhen(params (string styleName, string value, bool show)[] styles)</code></pre>
+
+            <h4>Examples</h4>
+            <pre><code>string value = Rf.StyleWhen(("color", "green", true));
+//value -&gt; color:green;
+
+bool IsDeleted = true;
+bool IsSpecial = false;
+value = Rf.StyleWhen(("color", "#333", IsDeleted)
+    , ("background-color", "yellow", IsSpecial));
+//value -&gt; color:#333;
+</code></pre>
+
+        </div>
+    </BasicUsage>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+</ComponentDetail>
+
+
