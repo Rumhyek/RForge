@@ -1,0 +1,72 @@
+﻿@page "/markdown/details"
+
+<ComponentDetail Title="Markdown"
+                 PlaygroundUrl="/markdown/playground"
+                 SubTitle="A markdown previewer">
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("RfMarkdown.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfMarkdown.razor"))
+        @ComponentDetail.SpacerLink()
+        @ComponentDetail.SideLink(("Markdig.MarkdownExtensions.cs", TagInfo.External, "https://github.com/xoofx/markdig/blob/master/src/Markdig/MarkdownExtensions.cs"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+            <p>
+                <code>RfMarkdown</code> takes a markdown string an renders it as a Bulma <code>div.content</code>.
+            </p>
+            <p>
+                <strong>NOTE:</strong> <code>RfMarkdown</code> is not an editor for markdown.
+            </p>
+        </div>
+    </Purpose>
+
+    <BasicUsage>
+        <div class="content">
+            <p>
+                The <code>RfMarkdown</code> requires only to set the <code>Markdown</code> property with a text string of markdown.
+                All other properties are optional.
+            </p>
+
+            <pre><code>&lt;RfMarkdown Markdown="# I'm Markdown!" /&gt;</code></pre>
+
+            <h3>Markdown Pipeline</h3>
+
+            <p>
+                <code>RfMarkdown</code> makes use of a nuget package <a href="https://github.com/xoofx/markdig/">Markdig</a>.
+                The creator of <code>Markdig</code> added support to modify the markdown pipeline. Rforge supports this feature
+                by exposing the <code>Pipeline</code> property. By default <code>RfMarkdown</code> makes use of <code>Markdig</code> defaults
+                plus pipe tables.
+            </p>
+
+            <div class="notification is-warning">
+                <strong>WARNING:</strong> <code>RfMarkdown</code> does not scrub out <code>&lt;script&gt;</code> tags from the markdown.
+                If it matters, make sure to santize it.
+            </div>
+
+            <h3>Custom Skeletons</h3>
+            <p>
+                <code>RfMarkdown</code> supports showing a custom skeleton when the property <code>Markdown</code> is null.
+                It does this with a render fragment <code>Skeleton</code>. The content of <code>Skeleton</code> will be rendered when <code>Markdown</code> is null.
+            </p>
+
+            <pre><code>&lt;RfMarkdown Markdown=null&gt;
+    &lt;Skeleton&gt;
+        &lt;div class="skeleton-lines"&gt;
+            &lt;div&gt;&lt;/div&gt;
+            &lt;div&gt;&lt;/div&gt;
+            &lt;div&gt;&lt;/div&gt;
+            &lt;div&gt;&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/Skeleton&gt;
+&lt;/RfMarkdown&gt;</code></pre>
+
+        </div>
+    </BasicUsage>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+</ComponentDetail>
+
+
