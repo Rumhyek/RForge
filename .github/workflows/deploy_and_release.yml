@@ -5,9 +5,9 @@ name: Create and Publish new RForge Package
 
 on:
   # Runs on pushes targeting the `main` branch
-  # when docs/** is updated
+  # when src/** is updated on the main branch or any release branch
   push:
-    branches: [main]
+    branches: [main, release]
     paths:
       - 'src/**'
   # Allows for running manually from Actions tab
