@@ -1,0 +1,10 @@
+workflow: GitHubFlow/v1
+branches:
+  main:
+    mode: ContinuousDeployment
+  release:
+    mode: ContinuousDeployment
+    tag: rc
+  feature:
+    mode: ContinuousDeployment
+    tag: alpha
