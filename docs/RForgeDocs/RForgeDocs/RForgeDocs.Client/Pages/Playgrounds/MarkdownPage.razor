@@ -1,0 +1,168 @@
+﻿@page "/markdown/playground"
+@using RForge.Abstractions
+@using RForge.Abstractions.DropDowns
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+@rendermode InteractiveAuto
+
+@inject IFindUsersProcessor findUsersProcessor
+
+<PlaygroundDetails @ref="Logger"
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/MarkdownPage.razor")"
+                   HasEvents=false
+                   MakeDisplaySticky=false
+                   SubTitle="Markdown"
+                   ComponentName="Markdown"
+                   Title="Playground"
+                   ComponentDetailsUrl="/markdown/details">
+
+    <Parameters>
+
+        <h3 class="title is-size-5">RfMarkdown</h3>
+
+        <BulmaInput Label="CssClass"
+                    HelpText="The css class added the div.content. Try 'is-small' and 'is-large'">
+            <InputText type="text" @bind-Value=@CssClass class="input" placeholder="is-small is-large" />
+        </BulmaInput>
+
+        <BulmaInput Label="Skeleton"
+                    HelpText="Examples of skeletons. Note: skeletons only show when Markdown is null.">
+            <div class="select is-primary">
+                <select @bind=SelectedSkeletonOption>
+                    @foreach (var opt in SkeletonOptions)
+                    {
+                        <option value="@opt">@opt</option>
+                    }
+                </select>
+            </div>
+        </BulmaInput>
+
+        <BulmaInput Label="Markdown"
+                    HelpText="Markdown that will be shown on the page.">
+
+            <textarea class="textarea" @bind=Markdown @bind:event="oninput"></textarea>
+
+        </BulmaInput>
+
+    </Parameters>
+
+    <Display>
+
+        <div class="buttons">
+            <button class="button" @onclick=OnUnloadClick>Null Out</button>
+
+        </div>
+
+
+        @if (ShowSkeleton == false)
+        {
+            <RfMarkdown Markdown=@Markdown CssClass=@CssClass />
+        }
+        else
+        {
+            <RfMarkdown Markdown=@Markdown CssClass=@CssClass>
+                <Skeleton>
+                    @if (SelectedSkeletonOption == "Paragraph")
+                    {
+                        <div class="skeleton-lines block">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                        <div class="skeleton-lines block">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                        <div class="skeleton-lines block">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                        <div class="skeleton-lines block">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    }
+                    else if (SelectedSkeletonOption == "Headings and Paragraphs")
+                    {
+                        <h1 class="title is-skeleton">Loading</h1>
+                        <div class="skeleton-lines block">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                        
+                        <figure class="image is-64x64 is-skeleton block">
+                            <img alt="Placeholder" src="https://placehold.co/64x64">
+                        </figure>
+
+                        <div class="skeleton-lines block">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                        <h1 class="subtitle is-skeleton">Loading</h1>
+                        <div class="skeleton-lines block">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                        <div class="skeleton-lines block">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    }
+                </Skeleton>
+            </RfMarkdown>
+        }
+
+    </Display>
+
+</PlaygroundDetails>
+
+
+@code {
+
+    public PlaygroundDetails Logger { get; set; }
+
+    /// <summary>
+    /// The css class added to the dropdown itself.
+    /// </summary>
+    public string CssClass { get; set; }
+
+    /// <summary>
+    /// If set to true the dropdown will open. Is two way binding.
+    /// </summary>
+    public bool ShowSkeleton => SelectedSkeletonOption != "None";
+
+    /// <summary>
+    /// The markdown that is rendered in the component
+    /// </summary>
+    public string Markdown { get; set; }
+
+    public string SelectedSkeletonOption { get; set; } = "Paragraph";
+    public string[] SkeletonOptions { get; set; } = [
+        "Paragraph",
+        "Headings and Paragraphs",
+        "None",
+    ];
+
+    public void OnUnloadClick()
+    {
+        Markdown = null;
+    }
+}

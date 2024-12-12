@@ -16,4 +16,8 @@
     <ProjectReference Include="..\..\RForgeBlazor\RForgeBlazor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>
