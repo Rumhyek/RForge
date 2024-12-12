@@ -9,6 +9,7 @@ namespace RForgeBlazor;
 /// </summary>
 /// <example>
 /// <code>
+/// <RfMarkdown Markdown="# Hi from Markdown!" />
 /// </code>
 /// </example>
 public partial class RfMarkdown : ComponentBase
