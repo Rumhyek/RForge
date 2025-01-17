@@ -19,10 +19,10 @@ public partial class RfNotificationManager : IDisposable
     private INotificationManager _notificationManager { get; set; }
 
     #region Parameters
-    [Parameter]
     ///<summary>
     /// The default <see cref="NotificationOptions"/> for a <see cref="RfNotificationSeverity.Error"/> notification.
     ///</summary>
+    [Parameter]
     public NotificationOptions DefaultErrorOptions { get; set; } = new NotificationOptions()
     {
         Color = RfNotificationColor.Danger,
@@ -31,10 +31,10 @@ public partial class RfNotificationManager : IDisposable
         Icon = "fa-solid fa-circle-minus",
     };
 
-    [Parameter]
     ///<summary>
     /// The default <see cref="NotificationOptions"/> for a <see cref="RfNotificationSeverity.Warning"/> notification.
     ///</summary>
+    [Parameter]
     public NotificationOptions DefaultWarningOptions { get; set; } = new NotificationOptions()
     {
         Color = RfNotificationColor.Warning,
@@ -43,10 +43,10 @@ public partial class RfNotificationManager : IDisposable
         Icon = "fa-solid fa-circle-exclamation",
     };
 
-    [Parameter]
     ///<summary>
     /// The default <see cref="NotificationOptions"/> for a <see cref="RfNotificationSeverity.Info"/> notification.
     ///</summary>
+    [Parameter]
     public NotificationOptions DefaultInfoOptions { get; set; } = new NotificationOptions()
     {
         Color = RfNotificationColor.Info,
@@ -56,10 +56,10 @@ public partial class RfNotificationManager : IDisposable
         Icon = "fa-solid fa-circle-info",
     };
 
-    [Parameter]
     ///<summary>
     /// The default <see cref="NotificationOptions"/> for a <see cref="RfNotificationSeverity.Success"/> notification.
     ///</summary>
+    [Parameter]
     public NotificationOptions DefaultSuccessOptions { get; set; } = new NotificationOptions()
     {
         Color = RfNotificationColor.Success,
@@ -72,6 +72,9 @@ public partial class RfNotificationManager : IDisposable
 
     private Dictionary<RfNotificationPosition, List<NotificationDetails>> Messages { get; set; }
 
+    /// <summary>
+    /// Initializes the component.
+    /// </summary>
     protected override void OnInitialized()
     {
         Messages = new()
@@ -90,6 +93,10 @@ public partial class RfNotificationManager : IDisposable
         _notificationManager.OnClearBySeverity += NotificationManager_OnClearBySeverity;
     }
 
+    /// <summary>
+    /// Listens to <see cref="NotificationManager.OnClearBySeverity"/>. Clears notifications by severity.
+    /// </summary>
+    /// <param name="severity">The severity of the notifications to clear.</param>
     private void NotificationManager_OnClearBySeverity(RfNotificationSeverity severity)
     {
         bool stateHasChanged = false;
@@ -101,7 +108,10 @@ public partial class RfNotificationManager : IDisposable
         if (stateHasChanged == true)
             StateHasChanged();
     }
-
+    /// <summary>
+    /// Listens to <see cref="NotificationManager.OnClearByPosition"/>. Clears notifications by position.
+    /// </summary>
+    /// <param name="position">The position of the notifications to clear.</param>
     private void NotificationManager_OnClearByPosition(RfNotificationPosition position)
     {
 
@@ -115,11 +125,20 @@ public partial class RfNotificationManager : IDisposable
             StateHasChanged();
     }
 
+    /// <summary>
+    /// Listens to <see cref="NotificationManager.OnClearAll"/>. Clears all notifications.
+    /// </summary>
     private void NotificationManager_OnClearAll()
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Listens to <see cref="NotificationManager.OnShow"/>. Shows a notification.
+    /// </summary>
+    /// <param name="content">The content to display in the notification.</param>
+    /// <param name="baseOptions">The base options for the notification.</param>
+    /// <param name="configuration">The configuration action for the notification options.</param>
     private void NotificationManager_OnShow(RenderFragment content, NotificationOptions baseOptions, Action<NotificationOptions> configuration)
     {
         baseOptions ??= new NotificationOptions();
@@ -174,6 +193,11 @@ public partial class RfNotificationManager : IDisposable
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Gets the CSS class for the notification location.
+    /// </summary>
+    /// <param name="location">The location of the notification.</param>
+    /// <returns>The CSS class for the notification location.</returns>
     private static string LocationCssClass(RfNotificationPosition location)
     {
         switch (location)
@@ -190,6 +214,10 @@ public partial class RfNotificationManager : IDisposable
         return null;
     }
 
+    /// <summary>
+    /// Removes a notification.
+    /// </summary>
+    /// <param name="notification">The notification to remove.</param>
     internal void OnRemoveNotification(NotificationDetails notification)
     {
         if (notification == null) return;
@@ -208,6 +236,9 @@ public partial class RfNotificationManager : IDisposable
         }
     }
 
+    /// <summary>
+    /// Disposes the notification manager.
+    /// </summary>
     public void Dispose()
     {
         if (_notificationManager != null)
@@ -229,13 +260,29 @@ public partial class RfNotificationManager : IDisposable
 
         Messages.Clear();
     }
-
+    /// <summary>
+    /// Represents the details of a notification.
+    /// </summary>
     public class NotificationDetails
     {
+        /// <summary>
+        /// Gets or sets the options for the notification.
+        /// </summary>
         public NotificationOptions Options { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier for the notification.
+        /// </summary>
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content to display in the notification.
+        /// </summary>
         public RenderFragment DisplayFragment { get; set; }
 
+        /// <summary>
+        /// Gets or sets the countdown timer for the notification.
+        /// </summary>
         internal CountdownTimer Timer { get; set; }
 
     }

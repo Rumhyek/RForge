@@ -1,5 +1,8 @@
 ﻿namespace RForge.Abstractions;
 
+/// <summary>
+/// Represents a countdown timer that triggers events at regular intervals and upon completion.
+/// </summary>
 public class CountdownTimer : IDisposable
 {
     private readonly PeriodicTimer _timer;
@@ -14,6 +17,11 @@ public class CountdownTimer : IDisposable
     /// </summary>
     public TimerStatus Status { get; private set; } = TimerStatus.Stopped;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CountdownTimer"/> class with the specified timeout and cancellation token.
+    /// </summary>
+    /// <param name="timeout">The timeout duration in milliseconds.</param>
+    /// <param name="cancellationToken">The cancellation token to observe.</param>
     public CountdownTimer(int timeout, CancellationToken cancellationToken = default)
     {
         _ticksToTimeout = 100;
@@ -71,6 +79,10 @@ public class CountdownTimer : IDisposable
             }
         }
     }
+
+    /// <summary>
+    /// Disposes the timer.
+    /// </summary>
     public void Dispose()
     {
         _timer.Dispose();

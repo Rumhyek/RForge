@@ -9,6 +9,11 @@ namespace RForgeBlazor;
 /// A dropdown that supports a single selection.
 /// </summary>
 /// <typeparam name="TItem">The data type of a item within the dropdown.</typeparam>
+/// <example>
+/// <code>
+/// &lt;RfDropDown TItem="string" Items="new List&lt;string&gt; { "Item1", "Item2", "Item3" }" SelectedItem="selectedItem" SelectedItemChanged="OnSelectedItemChanged" /&gt;
+/// </code>
+/// </example>
 public partial class RfDropDown<TItem> : RfDropDownBase<TItem>
 {
     #region Parameters
@@ -17,12 +22,20 @@ public partial class RfDropDown<TItem> : RfDropDownBase<TItem>
     /// </summary>
     [Parameter]
     public TItem SelectedItem { get; set; }
+
+    /// <summary>
+    /// Event callback for when the selected item changes.
+    /// </summary>
     [Parameter]
     public EventCallback<TItem> SelectedItemChanged { get; set; }
 
     #endregion
 
-
+    /// <summary>
+    /// Determines if the item is selected. Makes use of ItemComparer to determine if the item is selected.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns>True if the item is selected; otherwise, false.</returns>
     private bool IsSelected(TItem item)
     {
         if (SelectedItem == null) return false;
@@ -30,6 +43,10 @@ public partial class RfDropDown<TItem> : RfDropDownBase<TItem>
         return ItemComparer(SelectedItem, item);
     }
 
+    /// <summary>
+    /// Handles the item click event. Sets the selected item to the clicked item.
+    /// </summary>
+    /// <param name="item">The item that was clicked.</param>
     private async Task OnItemClick(TItem item)
     {
         if (IsReadonly == true) return;
@@ -52,6 +69,11 @@ public partial class RfDropDown<TItem> : RfDropDownBase<TItem>
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Handles the item key down event. Supports Enter and Escape keys.
+    /// </summary>
+    /// <param name="e">The keyboard event arguments.</param>
+    /// <param name="item">The item that was interacted with.</param>
     private async Task OnItemKeyDown(KeyboardEventArgs e, TItem item)
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")

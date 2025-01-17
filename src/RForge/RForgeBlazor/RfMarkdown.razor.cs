@@ -9,7 +9,7 @@ namespace RForgeBlazor;
 /// </summary>
 /// <example>
 /// <code>
-/// <RfMarkdown Markdown="# Hi from Markdown!" />
+/// &lt;RfMarkdown Markdown="# Hi from Markdown!" &lt;/&gt;
 /// </code>
 /// </example>
 public partial class RfMarkdown : ComponentBase
@@ -55,17 +55,26 @@ public partial class RfMarkdown : ComponentBase
         }
     }
 
+    /// <summary>
+    /// Initializes the component.
+    /// </summary>
     protected override void OnInitialized()
     {
-
         ParseMarkdown();
     }
 
-    protected override async void OnAfterRender(bool firstRender)
+    /// <summary>
+    /// Called after the component has rendered.
+    /// </summary>
+    /// <param name="firstRender">True if this is the first time the component has rendered; otherwise false.</param>
+    protected override void OnAfterRender(bool firstRender)
     {
         _isRenderComplete = true;
     }
-
+    
+    /// <summary>
+    /// Called when the component's parameters are set. Will render markdown after the first render.
+    /// </summary>
     protected override void OnParametersSet()
     {
         if (_isRenderComplete == false) return;
@@ -73,6 +82,9 @@ public partial class RfMarkdown : ComponentBase
         ParseMarkdown();
     }
 
+    /// <summary>
+    /// Parses the Markdown string to HTML.
+    /// </summary>
     private void ParseMarkdown()
     {
         if (string.IsNullOrEmpty(Markdown) == false)
@@ -88,6 +100,10 @@ public partial class RfMarkdown : ComponentBase
         }
     }
 
+    /// <summary>
+    /// Determines whether to show the skeleton content.
+    /// </summary>
+    /// <returns>True if the skeleton content should be shown; otherwise false.</returns>
     private bool ShowSkeleton()
     {
         return Skeleton != null && Markdown == null;

@@ -5,11 +5,15 @@ using System.Collections.Concurrent;
 
 namespace RForgeBlazor.Models;
 
+/// <summary>
+/// Base class for a dropdown component in Blazor.
+/// </summary>
+/// <typeparam name="TItem">The type of the items in the dropdown.</typeparam>
 public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 {
     #region Parameters
     /// <summary>
-    /// How to render a <see cref="TItem"/> within the dropdown and select input.
+    /// How to render a <typeparamref name="TItem"/> within the dropdown and select input.
     /// </summary>
     [Parameter]
     public RenderFragment<TItem> ChildContent { get; set; }
@@ -33,7 +37,7 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     public RfShowSelectionInDropDown ShowSelectedItemInDropDown { get; set; } = RfShowSelectionInDropDown.OnlyWhenNotInList;
 
     /// <summary>
-    /// Used to compare two items within the list to determine if it is selected or not. By default uses <see cref="TItem.Equals(object?)"/>
+    /// Used to compare two items within the list to determine if it is selected or not. By default uses <typeparamref name="TItem"/> Equals(object?)/>
     /// </summary>
     [Parameter]
     public Func<TItem, TItem, bool> ItemComparer { get; set; }
@@ -73,6 +77,9 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     /// </summary>
     [Parameter]
     public string Filter { get; set; }
+    /// <summary>
+    /// The current filter text. Is a two way binding.
+    /// </summary>
     [Parameter]
     public EventCallback<string> FilterChanged { get; set; }
 
@@ -131,6 +138,9 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     /// </summary>
     [Parameter]
     public bool IsOpen { get; set; }
+    /// <summary>
+    /// Event callback for when the IsOpen parameter changes.
+    /// </summary>
     [Parameter]
     public EventCallback<bool> IsOpenChanged { get; set; }
 
@@ -171,8 +181,14 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     public bool IsReadonly { get; set; }
     #endregion
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the dropdown is loading.
+    /// </summary>
     protected bool IsLoading { get; set; }
 
+    /// <summary>
+    /// Handles the click event for the dropdown. Is ignored if <see cref="IsReadonly"/> is true.
+    /// </summary>
     protected virtual async Task OnDropDownClick()
     {
         if (IsReadonly == true) return;
@@ -184,6 +200,9 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     }
 
     private readonly Func<TItem, TItem, bool> _defaultItemComparer = (i1, i2) => i1.Equals(i2);
+    /// <summary>
+    /// Sets the parameters for the component.
+    /// </summary>
     protected override void OnParametersSet()
     {
         ItemComparer ??= _defaultItemComparer;
@@ -239,6 +258,10 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Handles the change event for the filter input.
+    /// </summary>
+    /// <param name="args">The change event arguments.</param>
     protected void OnFilterChange(ChangeEventArgs args)
     {
 
@@ -248,6 +271,9 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
             _filterHandler = handleFilters();
     }
 
+    /// <summary>
+    /// Closes the dropdown. If <see cref="IsOpen"/> is false it will not close.
+    /// </summary>
     protected async Task CloseDropDown()
     {
         if (IsOpen == false) return;
@@ -267,6 +293,9 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 
     }
 
+    /// <summary>
+    /// Opens the dropdown. If <see cref="IsLoading"/> is true it will not open.
+    /// </summary>
     protected async Task OpenDropDown()
     {
         if (IsLoading == true) return;
@@ -285,6 +314,9 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 
     }
 
+    /// <summary>
+    /// Disposes the component.
+    /// </summary>
     public void Dispose()
     {
         _filterChanges.Clear();
@@ -295,6 +327,9 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 
     #region Computeds
 
+    /// <summary>
+    /// Gets the CSS classes for the dropdown.
+    /// </summary>
     protected string DropdownCss
     {
         get
@@ -313,6 +348,9 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the CSS classes for the loading state.
+    /// </summary>
     protected string IsLoadingCss
     {
         get
@@ -328,11 +366,24 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 
     #endregion
 
+    /// <summary>
+    /// Represents the filter event arguments.
+    /// </summary>
     internal class FilterEventArgs
     {
+        /// <summary>
+        /// Gets or sets the date and time when the filter event was recorded.
+        /// </summary>
         internal DateTime DateRecorded { get; set; } = DateTime.Now;
+        /// <summary>
+        /// Gets or sets the filter text.
+        /// </summary>
         internal string Filter { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FilterEventArgs"/> class.
+        /// </summary>
+        /// <param name="filter">The filter text.</param>
         internal FilterEventArgs(string filter)
         {
             Filter = filter;

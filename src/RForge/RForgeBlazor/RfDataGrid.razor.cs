@@ -4,6 +4,28 @@ using RForge.Abstractions.DataGrids;
 using RForgeBlazor.Models;
 
 namespace RForgeBlazor;
+
+/// <summary>
+/// A component for displaying data in a grid format with support for sorting, filtering, and pagination.
+/// Example usage:
+/// <code>
+/// &lt;RfDataGrid Data="data" TotalCount="totalCount" CurrentPageIndex="currentPageIndex" PageSize="pageSize" OnLoadData="LoadData"&gt;
+///     &lt;Headers&gt;
+///         &lt;RfDgHeader SortKey="Name"&gt;Name&lt;/RfDgHeader&gt;
+///         &lt;RfDgHeader SortKey="Age"&gt;Age&lt;/RfDgHeader&gt;
+///     &lt;/Headers&gt;
+///     &lt;Filters&gt;
+///         &lt;RfDgFilterInputText Placeholder="Filter by name" /&gt;
+///         &lt;RfDgFilterInputInt Placeholder="Filter by age" /&gt;
+///     &lt;/Filters&gt;
+///     &lt;Cells&gt;
+///         &lt;RfDgCell&gt;@context.Name&lt;/RfDgCell&gt;
+///         &lt;RfDgCell&gt;@context.Age&lt;/RfDgCell&gt;
+///     &lt;/Cells&gt;
+/// &lt;/RfDataGrid&gt;
+/// </code>
+/// </summary>
+/// <typeparam name="TRowData">The type of the data rows.</typeparam>
 public partial class RfDataGrid<TRowData>
 {
     #region Parameters
@@ -43,6 +65,9 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public string SortKey { get; set; }
+    /// <summary>
+    /// Fires when the sort key changes.
+    /// </summary>
     [Parameter]
     public EventCallback<string> SortKeyChanged { get; set; }
 
@@ -51,6 +76,9 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public RfSortOrder SortOrder { get; set; }
+    /// <summary>
+    /// Fires when the sort order changes.
+    /// </summary>
     [Parameter]
     public EventCallback<RfSortOrder> SortOrderChanged { get; set; }
 
@@ -71,6 +99,9 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public int CurrentPageIndex { get; set; }
+    /// <summary>
+    /// Fires when the current page index changes.
+    /// </summary>
     [Parameter]
     public EventCallback<int> CurrentPageIndexChanged { get; set; }
 
@@ -79,6 +110,9 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public int? PageSize { get; set; }
+    /// <summary>
+    /// Fires when the page size changes.
+    /// </summary>
     [Parameter]
     public EventCallback<int?> PageSizeChanged { get; set; }
 
@@ -87,7 +121,6 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public int MaxPagingOptions { get; set; } = 7;
-
 
     /// <summary>
     /// Fires when a row is selected return the value of the row.
@@ -120,7 +153,7 @@ public partial class RfDataGrid<TRowData>
     public RenderFragment Filters { get; set; }
 
     /// <summary>
-    /// The template section to create the table cells. Use <see cref="RfDgCell{TRowData}"/>
+    /// The template section to create the table cells. Uses <typeparamref name="TRowData"/>
     /// </summary>
     [Parameter]
     public RenderFragment<TRowData> Cells { get; set; }
@@ -150,13 +183,29 @@ public partial class RfDataGrid<TRowData>
     public bool IsFullWidth { get; set; } = true;
     #endregion
 
+    /// <summary>
+    /// The current selection of rows.
+    /// </summary>
     private List<TRowData> currentSelection { get; set; } = new List<TRowData>();
 
+    /// <summary>
+    /// The context for the data grid. Used to talk between the data grid and the children.
+    /// </summary>
     private DataGridContext GridContext { get; set; }
 
+    /// <summary>
+    /// If the sort order or key has been updated.
+    /// </summary>
     private bool onParameterSetUpdateSortOrder { get; set; }
+
+    /// <summary>
+    /// If the current page index or page size has been updated.
+    /// </summary>
     private bool onParameterSetReloadData { get; set; }
 
+    /// <summary>
+    /// The computed css class for the table.
+    /// </summary>
     private string ComputedTableCss
     {
         get
@@ -182,6 +231,9 @@ public partial class RfDataGrid<TRowData>
         }
     }
 
+    /// <summary>
+    /// How many rows to prerender.
+    /// </summary>
     private int PreRenderRowCountValue
     {
         get
@@ -195,6 +247,9 @@ public partial class RfDataGrid<TRowData>
         }
     }
 
+    /// <summary>
+    /// Reloads the data in the grid calling the <see cref="OnLoadData"/> event while also clearing the current selection.
+    /// </summary>
     public async Task ReloadData()
     {
         while (currentSelection.Count > 0)
@@ -207,6 +262,9 @@ public partial class RfDataGrid<TRowData>
         await OnLoadData.InvokeAsync();
     }
 
+    /// <summary>
+    /// Initializes the data grid context.
+    /// </summary>
     protected override void OnInitialized()
     {
         GridContext = new DataGridContext()
@@ -218,6 +276,11 @@ public partial class RfDataGrid<TRowData>
         GridContext.OnFilterChanged += OnFilterChangedCallback;
     }
 
+    /// <summary>
+    /// Sets the parameters for the component.
+    /// </summary>
+    /// <param name="parameters"></param>
+    /// <returns></returns>
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         onParameterSetReloadData = false;
@@ -322,7 +385,10 @@ public partial class RfDataGrid<TRowData>
         await base.SetParametersAsync(ParameterView.Empty);
     }
 
-
+    /// <summary>
+    /// Sets the parameters for the component.
+    /// </summary>
+    /// <returns></returns>
     protected override async Task OnParametersSetAsync()
     {
         if(onParameterSetUpdateSortOrder == true)
@@ -339,6 +405,9 @@ public partial class RfDataGrid<TRowData>
             await OnLoadData.InvokeAsync();
     }
 
+    /// <summary>
+    /// Called after the component has been rendered. If the data is null and is the first render it will attempt to reload the data.
+    /// </summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender == true && Data == null)
@@ -347,8 +416,14 @@ public partial class RfDataGrid<TRowData>
 
     #region paging
 
+    /// <summary>
+    /// If the paging should be shown.
+    /// </summary>
     public bool ShowPaging => PageSize.HasValue && PageSize.Value > 0;
 
+    /// <summary>
+    /// The total number of pages. Returns 0 if <see cref="ShowPaging"/> is false.
+    /// </summary>
     public int TotalPages
     {
         get
@@ -359,6 +434,9 @@ public partial class RfDataGrid<TRowData>
         }
     }
 
+    /// <summary>
+    /// The paging tabs to show.
+    /// </summary>
     private int[] PagingTabs
     {
         get
@@ -384,25 +462,42 @@ public partial class RfDataGrid<TRowData>
         }
     }
 
+    /// <summary>
+    /// Handles the click event for the first page button.
+    /// </summary>
     public async Task OnFirstPageClick()
     {
         await OnPageIndexClick(0);
     }
 
+    /// <summary>
+    /// Handles the click event for the previous page button.
+    /// </summary>
     public async Task OnPreviousPageClick()
     {
         await OnPageIndexClick(Math.Max(0, CurrentPageIndex - 1));
     }
 
+    /// <summary>
+    /// Handles the click event for the next page button.
+    /// </summary>
     public async Task OnNextPageClick()
     {
         await OnPageIndexClick(Math.Min(TotalPages - 1, CurrentPageIndex + 1));
     }
+
+    /// <summary>
+    /// Handles the click event for the last page button.
+    /// </summary>
     public async Task OnLastPageClick()
     {
         await OnPageIndexClick(TotalPages - 1);
     }
 
+    /// <summary>
+    /// Handles the click event for a specific page index.
+    /// </summary>
+    /// <param name="pageIndex">The page index to navigate to.</param>
     public async Task OnPageIndexClick(int pageIndex)
     {
         if (pageIndex == CurrentPageIndex) return;
@@ -417,6 +512,10 @@ public partial class RfDataGrid<TRowData>
 
     #region Selection
 
+    /// <summary>
+    /// Handles the click event for a row.
+    /// </summary>
+    /// <param name="row">The row data.</param>
     private async Task OnRowClick(TRowData row)
     {
         if (AllowSelection == false || MaxSelection <= 0) return;
@@ -442,6 +541,11 @@ public partial class RfDataGrid<TRowData>
 
     #endregion
 
+    /// <summary>
+    /// Handles the filter changed callback. Reloading the data if needed and reseting the page index to zero.
+    /// </summary>
+    /// <param name="caller">The caller object.</param>
+    /// <param name="filter">The filter details.</param>
     private async Task OnFilterChangedCallback(object caller, DataGridFilterBy filter)
     {
         if (ShowPaging == true && CurrentPageIndex != 0)
@@ -450,6 +554,11 @@ public partial class RfDataGrid<TRowData>
         await ReloadData();
     }
 
+    /// <summary>
+    /// Handles the sort changed callback. Reseting the page index to zero and reloading the data if needed.
+    /// </summary>
+    /// <param name="caller">The caller object.</param>
+    /// <param name="sortBy">The sort details.</param>
     private async Task OnSortChangedCallback(object caller, DataGridSortBy sortBy)
     {
         bool hasChanged = false;
@@ -480,6 +589,9 @@ public partial class RfDataGrid<TRowData>
         }
     }
 
+    /// <summary>
+    /// Disposes the component and detaches event handlers.
+    /// </summary>
     public void Dispose()
     {
         if (GridContext != null)
