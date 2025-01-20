@@ -3,9 +3,11 @@ using RForge.Abstractions.Notifications;
 
 namespace RForgeBlazor.Services;
 
+/// <summary>
+/// A service that manages notifications in a blazor application.
+/// </summary>
 public interface INotificationManager : INotificationManagerBackend
 {
-
     /// <summary>
     /// A event that will be invoked to clear all toasts
     /// </summary>
@@ -68,12 +70,12 @@ public interface INotificationManager : INotificationManagerBackend
     void ClearAll();
 
     /// <summary>
-    /// Removes all notifications with a specified <paramref name="RfNotificationSeverity"/>.
+    /// Removes all notifications with a specified <paramref name="severity"/>.
     /// </summary>
     void ClearAllBySeverity(RfNotificationSeverity severity);
 
     /// <summary>
-    /// Removes all notifications with a specified <paramref name="RfNotificationPosition"/>.
+    /// Removes all notifications with a specified <paramref name="position"/>.
     /// </summary>
     void ClearAllByPostion(RfNotificationPosition position);
 

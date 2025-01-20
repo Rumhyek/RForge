@@ -15,10 +15,15 @@ namespace RForgeBlazor;
 /// </example>
 public partial class RfModal : RfModalBase
 {
-
+    /// <summary>
+    /// Content to be rendered inside the modal.
+    /// </summary>
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
+    /// <summary>
+    /// Handles the close button click event.
+    /// </summary>
     private async Task OnCloseClick()
     {
         await IsVisibleChanged.InvokeAsync(false);

@@ -2,12 +2,15 @@
 using RForgeBlazor.Models;
 
 namespace RForgeBlazor.Services;
+
+/// <inheritdoc/>
 public class DialogManager : IDialogManager
 {
     private RfDialogManager _dialogManager;
 
     private Queue<RfDialogOption> _dialogOptions = new();
 
+    /// <inheritdoc/>
     public void Alert(RfDialogOptionAlert options)
     {
         if (_dialogManager == null)
@@ -19,6 +22,7 @@ public class DialogManager : IDialogManager
         _dialogManager.Show(options);
     }
 
+    /// <inheritdoc/>
     public void Prompt(RfDialogOptionPrompt options)
     {
         if (_dialogManager == null)
@@ -30,6 +34,7 @@ public class DialogManager : IDialogManager
         _dialogManager.Show(options);
     }
 
+    /// <inheritdoc/>
     public void Confirm(RfDialogOptionConfirm options)
     {
         if (_dialogManager == null)
@@ -43,6 +48,7 @@ public class DialogManager : IDialogManager
 
     #region Alert Overloads
 
+    /// <inheritdoc/>
     public void Alert(RenderFragment message, Func<Task> onAlert, string buttonText = "Ok")
     {
         Alert(new RfDialogOptionAlert()
@@ -53,26 +59,31 @@ public class DialogManager : IDialogManager
         });
     }
 
+    /// <inheritdoc/>
     public void Alert(string message, Func<Task> onAlert)
     {
         Alert(RfDialogManager.MessageOnly(message), onAlert);
     }
 
+    /// <inheritdoc/>
     public void Alert(string message, string title, Func<Task> onAlert, string buttonText = "Ok")
     {
         Alert(RfDialogManager.MessageAndTitle((message, title)), onAlert, buttonText);
     }
 
     private readonly Func<Task> emptyAlert = () => Task.CompletedTask;
+    /// <inheritdoc/>
     public void Alert(string message, string title, string buttonText = "Ok")
     {
         Alert(message, title, emptyAlert, buttonText);
     }
 
+    /// <inheritdoc/>
     public void Alert(string message)
     {
         Alert(message, emptyAlert);
     }
+    /// <inheritdoc/>
     public void Alert(RenderFragment message, string buttonText = "Ok")
     {
         Alert(message, emptyAlert, buttonText);
@@ -81,6 +92,7 @@ public class DialogManager : IDialogManager
 
     #region Confirm Overloads
 
+    /// <inheritdoc/>
     public void Confirm(RenderFragment message, Func<bool, Task> onConfirm, string confirmText = "Ok", string cancelText = "Cancel")
     {
         Confirm(new RfDialogOptionConfirm()
@@ -92,11 +104,13 @@ public class DialogManager : IDialogManager
         });
     }
 
+    /// <inheritdoc/>
     public void Confirm(string message, Func<bool, Task> onConfirm)
     {
         Confirm(RfDialogManager.MessageOnly(message), onConfirm);
     }
 
+    /// <inheritdoc/>
     public void Confirm(string message, string title, Func<bool, Task> onConfirm, string confirmText = "Ok", string cancelText = "Cancel")
     {
         Confirm(RfDialogManager.MessageAndTitle((message, title)), onConfirm, confirmText, cancelText);
@@ -105,6 +119,7 @@ public class DialogManager : IDialogManager
     #endregion
 
     #region Prompt Overloads
+    /// <inheritdoc/>
     public void Prompt(RenderFragment message, Func<string, Task> onPrompt, string confirmText = "Ok", string cancelText = "Cancel")
     {
         Prompt(new RfDialogOptionPrompt()
@@ -116,17 +131,20 @@ public class DialogManager : IDialogManager
         });
     }
 
+    /// <inheritdoc/>
     public void Prompt(string message, Func<string, Task> onPrompt)
     {
         Prompt(RfDialogManager.MessageOnly(message), onPrompt);
     }
 
+    /// <inheritdoc/>
     public void Prompt(string message, string title, Func<string, Task> onPrompt, string confirmText = "Ok", string cancelText = "Cancel")
     {
         Prompt(RfDialogManager.MessageAndTitle((message, title)), onPrompt, confirmText, cancelText);
     }
     #endregion
 
+    /// <inheritdoc/>
     public void RegisterDm(RfDialogManager dialogManager)
     {
         _dialogManager = dialogManager;
@@ -137,6 +155,7 @@ public class DialogManager : IDialogManager
         }
     }
 
+    /// <inheritdoc/>
     public void Unregister()
     {
         _dialogManager = null;

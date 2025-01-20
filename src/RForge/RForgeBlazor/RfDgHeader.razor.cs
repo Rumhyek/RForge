@@ -8,39 +8,54 @@ namespace RForgeBlazor;
 /// <summary>
 /// Wraps a th providing support for sorting columns.
 /// </summary>
+/// <example>
+/// <code>
+/// &lt;RfDgHeader SortKey="Name" CssClass="custom-header" AllowSorting="true"&gt;
+///     &lt;span&gt;Name&lt;/span&gt;
+/// &lt;/RfDgHeader&gt;
+/// </code>
+/// </example>
 public partial class RfDgHeader
 {
     #region Parameters
-    [CascadingParameter]
     /// <summary>
     /// The needed context to communicate between the data grid and the header for sorting.
     /// </summary>
+    [CascadingParameter]
     public DataGridContext GridContext { get; set; }
 
-    [Parameter]
     /// <summary>
     /// Allows this header to be clickable and send out <see cref="DataGridContext.OnSortChanged"/>.
     /// </summary>
+    [Parameter]
     public bool AllowSorting { get; set; } = true;
 
-    [Parameter]
     /// <summary>
-    /// Any custom class to add to the header's <th>
+    /// Any custom class to add to the header's &lt;/th&gt;
     /// </summary>
+    [Parameter]
     public string CssClass { get; set; }
 
-    [Parameter]
     /// <summary>
     /// The sort key that reperesents this header.
     /// </summary>
+    [Parameter]
     public string SortKey { get; set; }
+    /// <summary>
+    /// The content to be rendered inside the header.
+    /// </summary>
     [Parameter]
     public RenderFragment ChildContent { get; set; }
     #endregion
 
+    /// <summary>
+    /// The current sort order of the header.
+    /// </summary>
     private RfSortOrder SortOrder { get; set; }
 
-
+    /// <summary>
+    /// The possible sort orders to toggle through.
+    /// </summary>
     private static RfSortOrder[] ToggleOrder =
     [
         RfSortOrder.None,
@@ -48,6 +63,9 @@ public partial class RfDgHeader
         RfSortOrder.Descending
     ];
 
+    /// <summary>
+    /// Initializes the component.
+    /// </summary>
     protected override void OnInitialized()
     {
         if (SortKey == GridContext.InitialSortKey)
@@ -56,6 +74,9 @@ public partial class RfDgHeader
         base.OnInitialized();
     }
 
+    /// <summary>
+    /// Sets the parameters for the component. Requires <see cref="GridContext"/> to be set as well as <see cref="SortKey"/> if <see cref="AllowSorting"/> is true.
+    /// </summary>
     protected override void OnParametersSet()
     {
         if (AllowSorting == true && string.IsNullOrWhiteSpace(SortKey) == true)
@@ -70,7 +91,12 @@ public partial class RfDgHeader
         }
     }
 
-
+    /// <summary>
+    /// Callback for when the sort order changes. 
+    /// </summary>
+    /// <param name="caller">The caller object.</param>
+    /// <param name="sortBy">The sort details.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private Task OnSortChangedCallback(object caller, DataGridSortBy sortBy)
     {
         if (this.SortKey != sortBy.SortKey)
@@ -89,6 +115,10 @@ public partial class RfDgHeader
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Handles the click event on the column header.
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task OnColumnClick()
     {
         if (AllowSorting == false) return;
@@ -104,6 +134,9 @@ public partial class RfDgHeader
         });
     }
 
+    /// <summary>
+    /// Disposes the component and detaches event handlers.
+    /// </summary>
     public void Dispose()
     {
         if (GridContext != null)
@@ -114,6 +147,9 @@ public partial class RfDgHeader
 
     #region Computeds
 
+    /// <summary>
+    /// Gets the CSS classes for the header.
+    /// </summary>
     private string HeaderCss
     {
         get
