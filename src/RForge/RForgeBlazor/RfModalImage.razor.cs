@@ -18,38 +18,44 @@ public partial class RfModalImage : RfModalBase
 {
 
     #region Parameters
-    [Parameter]
     ///<summary>
     /// Any classes to apply to the wrapping div 
     ///</summary>
+    [Parameter]
     public string ImageCss { get; set; }
 
-    [Parameter]
     ///<summary>
     /// If set the image will set the aspect ratio given.
     ///</summary>
+    [Parameter]
     public AspectRatio? AspectRatio { get; set; }
 
-    [Parameter]
     ///<summary>
     /// Text to add to the image title and below the image.
     ///</summary>
+    [Parameter]
     public string ImageCaption { get; set; }
 
 
-    [Parameter]
     ///<summary>
     /// The url use to show the image.
     ///</summary>
+    [Parameter]
     public string ImageUrl { get; set; }
     #endregion
 
+    /// <summary>
+    /// Handles the close button click event.
+    /// </summary>
     private async Task OnCloseClick()
     {
         await IsVisibleChanged.InvokeAsync(false);
     }
 
     #region Computeds
+    /// <summary>
+    /// Gets the styles for the image container.
+    /// </summary>
     private string imageContainerStyles
     {
         get
@@ -63,6 +69,9 @@ public partial class RfModalImage : RfModalBase
         }
     }
 
+    /// <summary>
+    /// Gets the CSS classes for the image container.
+    /// </summary>
     private string imageContainerCss
     {
         get

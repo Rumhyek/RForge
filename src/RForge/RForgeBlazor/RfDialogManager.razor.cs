@@ -6,26 +6,46 @@ using RForgeBlazor.Services;
 using System.ComponentModel.DataAnnotations;
 
 namespace RForgeBlazor;
+
 /// <summary>
-/// Needed to render notifcations from <see cref="IDialogManager"/> or <see cref="IDialogManagerBackend"/>.
+/// Needed to render notifcations from <see cref="IDialogManager"/> or <see cref="RForge.Abstractions.Modal.IDialogManagerBackend"/>.
 /// </summary>
-/// <example>
-/// <code>
-/// &lt;RfDialogManager  /&gt;
-/// </code>
-/// </example>
 public partial class RfDialogManager : IDisposable
 {
+    /// <summary>
+    /// Injected dialog manager. Used by the dialog manager to show dialogs.
+    /// </summary>
     [Inject]
     private IDialogManager DialogManager { get; set; }
 
+    /// <summary>
+    /// The queue of pending dialogs to show.
+    /// </summary>
     private Queue<RfDialogOption> PendingDialogs { get; set; } = new Queue<RfDialogOption>();
+
+    /// <summary>
+    /// The active dialog to show.
+    /// </summary>
     private RfDialogOption ActiveDialog { get; set; }
 
+    /// <summary>
+    /// The edit context for the prompt dialog.
+    /// </summary>
     private EditContext EditContext { get; set; }
+    
+    /// <summary>
+    /// The form data for the prompt dialog.
+    /// </summary>
     private PromptDialogForm PromptFormData { get; set; } = new();
+    
+    /// <summary>
+    /// If true the dialog is loading.
+    /// </summary>
     private bool IsLoading { get; set; }
 
+    /// <summary>
+    /// Initializes the component. Registers with the injected dialog manager.
+    /// </summary>
     protected override void OnInitialized()
     {
         DialogManager.RegisterDm(this);
@@ -51,6 +71,9 @@ public partial class RfDialogManager : IDisposable
         }
     }
 
+    /// <summary>
+    /// Handles the confirm button click event. Calls the appropriate method based on the dialog type.
+    /// </summary>
     private async Task OnConfirmClick()
     {
         if (IsLoading == true) return;
@@ -87,6 +110,9 @@ public partial class RfDialogManager : IDisposable
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Handles the cancel button click event. Calls the appropriate method based on the dialog type.
+    /// </summary>
     private async Task OnCancelClick()
     {
         if (IsLoading == true) return;
@@ -122,12 +148,28 @@ public partial class RfDialogManager : IDisposable
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Handles the alert type confirm event. Makes use of options to call the appropriate method
+    /// </summary>
+    /// <param name="options"></param>
     private async Task OnAlertTypeConfirm(RfDialogOptionAlert options) => await options.OnAlert();
+    /// <summary>
+    /// Handles the alert type cancel event. Makes use of options to call the appropriate method
+    /// </summary>
     private Task OnAlertTypeCancel(RfDialogOptionAlert options) => Task.CompletedTask;
 
-    private async Task OnConfirmTypeConfirm(RfDialogOptionConfirm options) => await options.OnConfirm(true);
+    /// <summary>
+    /// Handles the confirm type confirm event. Makes use of options to call the appropriate method
+    /// </summary>
+    private async Task OnConfirmTypeConfirm(RfDialogOptionConfirm options) => await options.OnConfirm(true);    
+    /// <summary>
+    /// Handles the confirm type cancel event. Makes use of options to call the appropriate method
+    /// </summary>
     private async Task OnConfirmTypeCancel(RfDialogOptionConfirm options) => await options.OnConfirm(false);
 
+    /// <summary>
+    /// Handles the prompt type confirm event. Makes use of options to call the appropriate method
+    /// </summary>
     private async Task OnPromptTypeConfirm(RfDialogOptionPrompt options)
     {
         await options.OnPrompt(PromptFormData.Input);
@@ -135,6 +177,9 @@ public partial class RfDialogManager : IDisposable
         EditContext = new EditContext(PromptFormData);
         EditContext.SetFieldCssClassProvider(new CustomFieldClassProvider());
     }
+    /// <summary>
+    /// Handles the prompt type cancel event. Makes use of options to call the appropriate method
+    /// </summary>
     private async Task OnPromptTypeCancel(RfDialogOptionPrompt options)
     {
         await options.OnPrompt(null);
@@ -143,12 +188,18 @@ public partial class RfDialogManager : IDisposable
         EditContext.SetFieldCssClassProvider(new CustomFieldClassProvider());
     }
 
+    /// <summary>
+    /// Disposes the component. Unregisters with the injected dialog manager.
+    /// </summary>
     public void Dispose()
     {
         DialogManager.Unregister();
     }
 
     #region Computeds
+    /// <summary>
+    /// Determines if the dialog is loading returning is-loading if it is.
+    /// </summary>
     private string IsLoadingCss
     {
         get
@@ -161,14 +212,26 @@ public partial class RfDialogManager : IDisposable
 
     #endregion
 
+    /// <summary>
+    /// Represents the form data for the prompt dialog.
+    /// </summary>
     private class PromptDialogForm
     {
+        /// <summary>
+        /// The input value of the prompt dialog.
+        /// </summary>
         [Required]
         public string Input { get; set; }
     }
 
+    /// <summary>
+    /// Custom field class provider for the dialog manager.
+    /// </summary>
     private class CustomFieldClassProvider : FieldCssClassProvider
     {
+        /// <summary>
+        /// Gets the field css class for the field identifier.
+        /// </summary>
         public override string GetFieldCssClass(EditContext editContext, in FieldIdentifier fieldIdentifier)
         {
 

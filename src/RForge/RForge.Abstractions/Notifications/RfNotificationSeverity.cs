@@ -5,9 +5,21 @@
 /// </summary>
 public enum RfNotificationSeverity
 {
+    /// <summary>
+    /// Informational notification.
+    /// </summary>
     Info,
+    /// <summary>
+    /// Successful operation notification.
+    /// </summary>
     Success,
+    /// <summary>
+    /// Warning notification.
+    /// </summary>
     Warning,
+    /// <summary>
+    /// Error notification.
+    /// </summary>
     Error,
 }
 
