@@ -45,10 +45,10 @@
 </RfModal>
 
 <RfModalImage ImageUrl="@SelectedOption.DefaultImageUrl"
-              AspectRatio="@SelectedOption.AspectRatio" 
-              Width=@ImageCustomWidth 
-              ImageCaption=@ImageCaption
-              @bind-IsVisible=Example2IsVisible />
+AspectRatio="@SelectedOption.AspectRatio" 
+Width=@ImageCustomWidth 
+ImageCaption=@ImageCaption
+@bind-IsVisible=Example2IsVisible />
 
 <RfModalCard @bind-IsVisible="Example3IsVisible" ShowCloseButton="true">
     <Head>
@@ -249,9 +249,11 @@
         Example1IsVisible = true;
     }
 
-    private async Task OnDelete(bool userAcnkonwoledge)
+    private Task OnDelete(bool userAcnkonwoledge)
     {
-        if (userAcnkonwoledge == false) return;
+        if (userAcnkonwoledge == false) return Task.CompletedTask;
+
+        return Task.CompletedTask;
     }
 
 }

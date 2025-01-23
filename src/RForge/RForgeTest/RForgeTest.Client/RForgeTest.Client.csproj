@@ -1,23 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
-    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.3" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\RForgeBlazor\RForgeBlazor.csproj" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.3" />
+    </ItemGroup>
+
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\RForgeBlazor\RForgeBlazor.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="wwwroot\" />
+    </ItemGroup>
 
 </Project>

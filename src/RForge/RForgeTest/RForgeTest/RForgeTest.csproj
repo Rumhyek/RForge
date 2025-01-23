@@ -1,18 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>disable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\RForgeTest.Client\RForgeTest.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.3" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\RForgeTest.Client\RForgeTest.Client.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\lib\" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.3" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.1" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <Folder Include="wwwroot\lib\" />
+    </ItemGroup>
 
 </Project>
