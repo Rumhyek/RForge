@@ -13,7 +13,7 @@
         <Authors>Rumhyek</Authors>
         <PackageTags>blazor; components; library, abstraction</PackageTags>
         <Title>Light Weight Blazor Components</Title>
-        <Description>Placeholder</Description>
+        <Description>The abstraction layer of RForge to support serverside features.</Description>
         <RepositoryUrl>https://github.com/rumhyek/rforge</RepositoryUrl>
     </PropertyGroup>
 
