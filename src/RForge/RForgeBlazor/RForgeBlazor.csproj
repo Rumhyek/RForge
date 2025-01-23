@@ -13,7 +13,7 @@
         <Authors>Rumhyek</Authors>
         <PackageTags>blazor; components; library</PackageTags>
         <Title>Light Weight Blazor Components</Title>
-        <Description>Placeholder</Description>
+        <Description>A light weight blazor component library that makes use of Bulma.css and focuses on memory efficeiency.</Description>
         <RepositoryUrl>https://github.com/rumhyek/rforge</RepositoryUrl>
         
     </PropertyGroup>
