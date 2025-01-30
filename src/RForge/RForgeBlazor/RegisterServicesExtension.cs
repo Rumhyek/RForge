@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RForge.Abstractions.Modal;
+using RForge.Abstractions.Notifications;
 using RForgeBlazor.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RForgeBlazor
 {
@@ -22,7 +19,9 @@ namespace RForgeBlazor
         {
 
             services.AddScoped<INotificationManager, NotificationManager>();
+            services.AddScoped<INotificationManagerBackend, NotificationManager>();
             services.AddScoped<IDialogManager, DialogManager>();
+            services.AddScoped<IDialogManagerBackend, DialogManager>();
 
             return services;
         }
