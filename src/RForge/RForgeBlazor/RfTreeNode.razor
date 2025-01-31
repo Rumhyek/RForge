@@ -1,0 +1,19 @@
+@typeparam TTreeItemData
+
+<li>
+    @if (OnClick.HasDelegate == true || LinkUrl != null)
+    {
+        <a @onclick=@OnNodeClick href="@LinkUrl">@Node(NodeData)</a>
+    }
+    else
+    {
+        <a>@Node(NodeData)</a>
+    }
+
+    @if(Children != null && IsExpanded == true)
+    {
+        <ul>
+            @Children
+        </ul>
+    }
+</li>

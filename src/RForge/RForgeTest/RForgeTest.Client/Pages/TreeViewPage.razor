@@ -1,0 +1,47 @@
+﻿@page "/treeview"
+
+@using RForgeBlazor
+
+@using RForgeTest.Client.TestModels
+
+
+@if (RootUsers != null)
+{
+    <RfTreeView>
+
+        <RfTreeLabel>Global</RfTreeLabel>
+        <RfTreeList>
+
+            @foreach (var user in RootUsers)
+            {
+                @TreeBuilder(user)
+            }
+
+        </RfTreeList>
+
+    </RfTreeView>
+}
+
+
+@code {
+    public static RenderFragment TreeBuilder(UserRowData node) => __builder =>
+    {
+        <RfTreeNode TTreeItemData=UserRowData IsExpanded=true>
+
+            <Node>@node.FirstName @node.LastName</Node>
+
+            <Children>
+                @if (node.Children != null && node.Children.Count > 0)
+                {
+
+                    @foreach (var child in node.Children)
+                    {
+                        @TreeBuilder(child)
+                    }
+
+                }
+            </Children>
+
+        </RfTreeNode>
+    };
+}
