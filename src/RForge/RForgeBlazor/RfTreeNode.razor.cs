@@ -8,6 +8,7 @@ namespace RForgeBlazor;
 /// <typeparam name="TTreeItemData">The type of the tree item data.</typeparam>
 public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemData : class
 {
+    #region Parameters
     /// <summary>
     /// Gets or sets the node data.
     /// </summary>
@@ -81,11 +82,14 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     /// </summary>
     [Parameter]
     public EventCallback<TTreeItemData> OnNodeClick { get; set; }
+    #endregion
 
     [CascadingParameter]
     private TreeViewContext<TTreeItemData> TreeViewContext { get; set; }
 
     private string ChildrenId { get; set; }
+    private bool ExpansionChangeOcurred = false;
+    private bool selectionChangeOcurred = false;
 
     /// <summary>
     /// Method invoked when the component is initialized.
@@ -96,8 +100,6 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         base.OnInitialized();
     }
 
-    private bool expansionChangeOcurred = false;
-    private bool selectionChangeOcurred = false;
     /// <summary>
     /// Sets parameters supplied by the caller.
     /// </summary>
@@ -111,7 +113,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         }
         if (parameters.TryGetValue(nameof(IsExpanded), out bool isExpanded))
         {
-            expansionChangeOcurred = isExpanded != IsExpanded;
+            ExpansionChangeOcurred = isExpanded != IsExpanded;
         }
 
         await base.SetParametersAsync(parameters);
@@ -129,10 +131,14 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         else
         {
             if (selectionChangeOcurred == true)
+            {
                 TreeViewContext.NodeSelectionChange(this);
+            }
 
-            if (expansionChangeOcurred == true)
+            if (ExpansionChangeOcurred == true)
+            {
                 TreeViewContext.NodeExpandChange(this);
+            }
         }
 
         base.OnParametersSet();
