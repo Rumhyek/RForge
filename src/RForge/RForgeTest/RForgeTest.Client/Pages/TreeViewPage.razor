@@ -1,0 +1,60 @@
+﻿@page "/treeview"
+
+@rendermode InteractiveServer
+
+@using RForgeBlazor
+
+@using RForgeTest.Client.TestModels
+
+
+@if (RootUsers != null)
+{
+    <RfTreeView TTreeItemData=UserRowData AllowSelection=true AllowExpand=true>
+
+        <RfTreeLabel>Global</RfTreeLabel>
+        <RfTreeList>
+
+            @foreach (var user in RootUsers)
+            {
+                @TreeBuilder(user)
+            }
+
+        </RfTreeList>
+
+    </RfTreeView>
+}
+
+
+@code {
+
+    public bool IsExpanded { get; set; } = true;
+
+    public RenderFragment TreeBuilder(UserRowData node) => __builder =>
+    {
+        <RfTreeNode TTreeItemData=UserRowData 
+                    OnNodeClick=OnNodeClick
+                    NodeData=node
+                    ShowExpandIcon=@(node.Children.Count > 0)>
+
+            <Node>@node.FirstName @node.LastName</Node>
+
+            <Children>
+                @if (node.Children != null && node.Children.Count > 0)
+                {
+
+                    @foreach (var child in node.Children)
+                    {
+                        @TreeBuilder(child)
+                    }
+
+                }
+            </Children>
+
+        </RfTreeNode>
+    };
+
+    public void OnNodeClick(UserRowData node)
+    {
+        Console.WriteLine($"Node Clicked: {node.FirstName} {node.LastName}");
+    }
+}

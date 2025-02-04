@@ -7,5 +7,6 @@ public class UserRowData
     public string FirstName { get; set; }   
     public string LastName { get; set; }
     public string Email { get; set; }
-
+    public List<UserRowData> Children { get; set; } = new();
+    public UserRowData Parent { get; set; }
 }

@@ -1,0 +1,43 @@
+@typeparam TTreeItemData
+
+<li>
+    <div class="is-flex @NodeCss @Rf.ClassWhen(("with-left-expand", ShowExpandIcon))">
+        @if (ShowExpandIcon == true)
+        {
+            <button type="button"
+                    class="button @Rf.ClassWhen(("is-active", IsSelected))"
+                    disabled=@(TreeViewContext.AllowExpand != true)
+                    title="@ExpandTitleText"
+                    aria-expanded="@IsExpanded.ToString().ToLower()"
+                    aria-controls="@ChildrenId"
+                    @onclick=ToggleExpand
+                    @onclick:stopPropagation="true"
+                    @onclick:preventDefault="true">
+                <span class="icon">
+
+                    @if (IsExpanded == true)
+                    {
+                        <i class="@ExpandedIconCss"></i>
+                    }
+                    else
+                    {
+                        <i class="@CollapsedIconCss"></i>
+                    }
+                </span>
+            </button>
+        }
+
+        <a class="@Rf.ClassWhen(("is-active", IsSelected))" 
+           @onclick=OnNodeClickCallback href="@LinkUrl">
+            <span>@Node(NodeData)</span>
+        </a>
+    </div>
+
+    @if (ShowExpandIcon == true)
+    {
+        <ul class="mr-0 @Rf.ClassWhen(("is-open", IsExpanded))"
+            id="@ChildrenId">
+            @Children
+        </ul>
+    }
+</li>
