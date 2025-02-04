@@ -1,6 +1,9 @@
+@typeparam TTreeItemData
 
 <aside class="menu @CssClass">
  
-    @ChildContent
+    <CascadingValue Value=Context>
+        @ChildContent
+    </CascadingValue>
 
 </aside>

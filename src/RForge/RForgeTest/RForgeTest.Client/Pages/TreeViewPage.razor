@@ -1,5 +1,7 @@
 ﻿@page "/treeview"
 
+@rendermode InteractiveServer
+
 @using RForgeBlazor
 
 @using RForgeTest.Client.TestModels
@@ -7,7 +9,7 @@
 
 @if (RootUsers != null)
 {
-    <RfTreeView>
+    <RfTreeView TTreeItemData=UserRowData AllowSelection=false AllowExpand=true>
 
         <RfTreeLabel>Global</RfTreeLabel>
         <RfTreeList>
@@ -24,9 +26,15 @@
 
 
 @code {
-    public static RenderFragment TreeBuilder(UserRowData node) => __builder =>
+
+    public bool IsExpanded { get; set; } = true;
+
+    public RenderFragment TreeBuilder(UserRowData node) => __builder =>
     {
-        <RfTreeNode TTreeItemData=UserRowData IsExpanded=true>
+        <RfTreeNode TTreeItemData=UserRowData 
+                    OnNodeClick=OnNodeClick
+                    NodeData=node
+                    ShowExpandIcon=@(node.Children.Count > 0)>
 
             <Node>@node.FirstName @node.LastName</Node>
 
@@ -44,4 +52,9 @@
 
         </RfTreeNode>
     };
+
+    public void OnNodeClick(UserRowData node)
+    {
+        Console.WriteLine($"Node Clicked: {node.FirstName} {node.LastName}");
+    }
 }
