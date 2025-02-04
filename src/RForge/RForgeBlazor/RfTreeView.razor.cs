@@ -3,20 +3,39 @@ using RForgeBlazor.Models;
 
 namespace RForgeBlazor;
 
+/// <summary>
+/// Represents a tree view component.
+/// </summary>
+/// <typeparam name="TTreeItemData">The type of the tree item data.</typeparam>
 public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable where TTreeItemData : class
 {
+    /// <summary>
+    /// Gets or sets the child content to be rendered inside the tree view.
+    /// </summary>
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets the CSS class for the tree view.
+    /// </summary>
     [Parameter]
     public string CssClass { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether selection is allowed.
+    /// </summary>
     [Parameter]
     public bool AllowSelection { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether expansion is allowed.
+    /// </summary>
     [Parameter]
     public bool AllowExpand { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether multiple nodes can be expanded.
+    /// </summary>
     [Parameter]
     public bool AllowMultiExpand { get; set; } = true;
 
@@ -24,7 +43,9 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
     private RfTreeNode<TTreeItemData> SelectedNode { get; set; }
     private RfTreeNode<TTreeItemData> ExpandedNode { get; set; }
 
-
+    /// <summary>
+    /// Method invoked when the component is initialized.
+    /// </summary>
     protected override void OnInitialized()
     {
         Context = new TreeViewContext<TTreeItemData>()
@@ -51,6 +72,7 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
         //Currently there is nothing plan for this event. Though adding something here would be nice.
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (Context != null)

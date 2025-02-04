@@ -26,13 +26,30 @@ public delegate void RfEventHandler<TEventArgs>(object sender, TEventArgs e);
 public delegate bool RfBoolEventHandler<TEventArgs>(object sender, TEventArgs e);
 
 
+/// <summary>
+/// Represents the context for a tree view.
+/// </summary>
+/// <typeparam name="TTreeItemData">The type of the tree item data.</typeparam>
 public class TreeViewContext<TTreeItemData> where TTreeItemData : class
 {
+    /// <summary>
+    /// Gets or sets a value indicating whether selection is allowed.
+    /// </summary>
     public bool AllowSelection { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether expansion is allowed.
+    /// </summary>
     public bool AllowExpand { get; set; }
 
+    /// <summary>
+    /// Occurs when the selected node changes within the <see cref="RfTreeNode{TTreeItemData}"/>. Changes done outside are not notified.
+    /// </summary>
     public event RfEventHandler<RfTreeNode<TTreeItemData>> OnSelectedChange;
 
+    /// <summary>
+    /// Occurs when the expanded node changes within the <see cref="RfTreeNode{TTreeItemData}"/>. Changes done outside are not notified.
+    /// </summary>
     public event RfEventHandler<RfTreeNode<TTreeItemData>> OnExpandedChange;
 
     internal void NodeSelectionChange(RfTreeNode<TTreeItemData> rfTreeNode)
