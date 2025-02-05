@@ -3,7 +3,14 @@
 <aside class="menu @CssClass">
  
     <CascadingValue Value=Context>
-        @ChildContent
+        @if (ShowAsPrerender == true)
+        {
+            @PrerenderNodes
+        }
+        else
+        {
+            @Nodes
+        }
     </CascadingValue>
 
 </aside>

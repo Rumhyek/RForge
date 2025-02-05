@@ -10,13 +10,9 @@ public partial class TreeViewPage
 
     public List<UserRowData> RootUsers { get; set; }
 
-    protected override void OnInitialized()
-    {
-        var allUsers = GetFakeUsers.Get();
-        SetupUserTree(allUsers.ToList());
 
-        base.OnInitialized();
-    }
+    public bool AllowSelection { get; set; } = true;
+    public bool AllowExpand { get; set; } = true;
 
     private void SetupUserTree(List<UserRowData> users)
     {
@@ -42,4 +38,12 @@ public partial class TreeViewPage
 
         RootUsers = rootUsers;
     }
+
+    private void OnLoadUsers()
+    {
+        var allUsers = GetFakeUsers.Get();
+        SetupUserTree(allUsers.ToList());
+    }
+
+    private void ClearUsers() => RootUsers = null;
 }

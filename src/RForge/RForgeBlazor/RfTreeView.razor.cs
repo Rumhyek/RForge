@@ -13,7 +13,13 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
     /// Gets or sets the child content to be rendered inside the tree view.
     /// </summary>
     [Parameter]
-    public RenderFragment ChildContent { get; set; }
+    public RenderFragment Nodes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the child content to be rendered before the nodes. Use this to render the skeleton view of this tree. To show set <see cref="ShowAsPrerender"/> to true.
+    /// </summary>
+    [Parameter] 
+    public RenderFragment PrerenderNodes { get; set; }
 
     /// <summary>
     /// Gets or sets the CSS class for the tree view.
@@ -34,10 +40,10 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
     public bool AllowExpand { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether multiple nodes can be expanded.
+    /// Gets or sets a value indicating whether the tree view is in prerender mode or not.
     /// </summary>
     [Parameter]
-    public bool AllowMultiExpand { get; set; } = true;
+    public bool ShowAsPrerender { get; set; }
 
     private TreeViewContext<TTreeItemData> Context { get; set; }
     private RfTreeNode<TTreeItemData> SelectedNode { get; set; }
@@ -52,11 +58,25 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
         {
             AllowSelection = AllowSelection,
             AllowExpand = AllowExpand,
+            ShowAsPrerender = ShowAsPrerender
         };
 
         Context.OnExpandedChange += Context_OnExpanded;
         Context.OnSelectedChange += Context_OnSelected;
+
         base.OnInitialized();
+    }
+
+    /// <summary>
+    /// Method invoked when the component has received parameters from its parent.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        Context.AllowSelection = AllowSelection;
+        Context.AllowExpand = AllowExpand;
+        Context.ShowAsPrerender = ShowAsPrerender;
+
+        base.OnParametersSet();
     }
 
     private void Context_OnSelected(object sender, RfTreeNode<TTreeItemData> selectedNode)

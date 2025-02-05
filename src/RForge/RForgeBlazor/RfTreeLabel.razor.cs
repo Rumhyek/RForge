@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using RForgeBlazor.Models;
 
 namespace RForgeBlazor;
 /// <summary>
@@ -17,4 +18,10 @@ public partial class RfTreeLabel
     /// </summary>
     [Parameter]
     public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the context for the tree view.
+    /// </summary>
+    [CascadingParameter]
+    public TreeViewBaseContext Context { get; set; }
 }
