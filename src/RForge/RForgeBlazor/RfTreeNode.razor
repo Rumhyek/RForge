@@ -1,50 +1,73 @@
 @typeparam TTreeItemData
 
 <li>
-    @if (Context.ShowAsPrerender == true)
+
+    @switch (GetDisplayMode())
     {
-        <a class="is-skeleton">&nbsp;</a>
-    }
-    else
-    {
-        <div class="is-flex @NodeCss @Rf.ClassWhen(("with-left-expand", ShowExpandIcon))">
+        case TreeNodeDisplayMode.Display:
+        case TreeNodeDisplayMode.Loading:
+            <div class="is-flex @NodeCss @Rf.ClassWhen(("with-left-expand", ShowExpandIcon))">
+                @if (ShowExpandIcon == true)
+                {
+                    <button type="button"
+                            class="button @Rf.ClassWhen(("is-active", IsSelected), ("is-loading", IsLoading))"
+                            disabled=@(Context.AllowExpand != true)
+                            title="@ExpandTitleText"
+                            aria-expanded="@IsExpanded.ToString().ToLower()"
+                            aria-controls="@ChildrenId"
+                            @onclick=OnToggleExpandClick
+                            @onclick:stopPropagation="true"
+                            @onclick:preventDefault="true">
+                        <span class="icon">
+
+                            @if (IsExpanded == true)
+                            {
+                                <i class="@ExpandedIconCss"></i>
+                            }
+                            else
+                            {
+                                <i class="@CollapsedIconCss"></i>
+                            }
+                        </span>
+                    </button>
+                }
+
+                <a class="@Rf.ClassWhen(("is-active", IsSelected))"
+                   @onclick=OnNodeClickCallback href="@LinkUrl">
+                    <span>@Node(NodeData)</span>
+                </a>
+            </div>
+
+
             @if (ShowExpandIcon == true)
             {
-                <button type="button"
-                        class="button @Rf.ClassWhen(("is-active", IsSelected))"
-                        disabled=@(Context.AllowExpand != true)
-                        title="@ExpandTitleText"
-                        aria-expanded="@IsExpanded.ToString().ToLower()"
-                        aria-controls="@ChildrenId"
-                        @onclick=ToggleExpand
-                        @onclick:stopPropagation="true"
-                        @onclick:preventDefault="true">
-                    <span class="icon">
-
-                        @if (IsExpanded == true)
+                <ul class="mr-0 @Rf.ClassWhen(("is-open", IsExpanded))"
+                    id="@ChildrenId">
+                    @if (IsLoading == true)
+                    {
+                        @for (int i = 0; i < LoadingNodeCount; i++)
                         {
-                            <i class="@ExpandedIconCss"></i>
+                            <li>
+                                <a class="is-skeleton">&nbsp;</a>
+                            </li>
                         }
-                        else
-                        {
-                            <i class="@CollapsedIconCss"></i>
-                        }
-                    </span>
-                </button>
+                    }
+                    else
+                    {
+                        @Children
+                    }
+                </ul>
             }
 
-            <a class="@Rf.ClassWhen(("is-active", IsSelected))"
-               @onclick=OnNodeClickCallback href="@LinkUrl">
-                <span>@Node(NodeData)</span>
-            </a>
-        </div>
+            break;
+
+        case TreeNodeDisplayMode.TreeViewPrerender:
+            <a class="is-skeleton">&nbsp;</a>
+            <ul class="mr-0 is-open"
+                id="@ChildrenId">
+                @Children
+            </ul>
+            break;
     }
 
-    @if (ShowExpandIcon == true || Context.ShowAsPrerender == true)
-    {
-        <ul class="mr-0 @Rf.ClassWhen(("is-open", IsExpanded || Context.ShowAsPrerender))"
-            id="@ChildrenId">
-            @Children
-        </ul>
-    }
 </li>

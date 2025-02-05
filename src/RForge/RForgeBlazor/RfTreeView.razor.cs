@@ -79,17 +79,18 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
         base.OnParametersSet();
     }
 
-    private void Context_OnSelected(object sender, RfTreeNode<TTreeItemData> selectedNode)
+    private async Task Context_OnSelected(object sender, RfTreeNode<TTreeItemData> selectedNode)
     {
         if (SelectedNode != null && selectedNode != SelectedNode)
-            SelectedNode.Deselect();
+            await SelectedNode.Deselect();
 
         SelectedNode = selectedNode;
     }
 
-    private void Context_OnExpanded(object sender, RfTreeNode<TTreeItemData> expandedNode)
+    private Task Context_OnExpanded(object sender, RfTreeNode<TTreeItemData> expandedNode)
     {
         //Currently there is nothing plan for this event. Though adding something here would be nice.
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
