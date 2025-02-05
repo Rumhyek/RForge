@@ -92,7 +92,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     /// Gets or sets the callback for the node click event.
     /// </summary>
     [Parameter]
-    public EventCallback<TTreeItemData> OnNodeClick { get; set; }
+    public EventCallback<TreeViewNodeOnClickEventArgs<TTreeItemData>> NodeClick { get; set; }
 
     /// <summary>
     /// Called when the node's <see cref="IsExpanded"/> value changes from within the component.
@@ -181,7 +181,11 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
         if (Context.AllowSelection == true)
         {
-            await OnNodeClick.InvokeAsync(NodeData);
+            await NodeClick.InvokeAsync(new TreeViewNodeOnClickEventArgs<TTreeItemData>()
+            {
+                NodeData = NodeData,
+                NodeReference = this
+            });
         }
     }
 

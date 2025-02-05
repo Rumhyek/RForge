@@ -61,6 +61,13 @@
             </p>
 
             <p>
+                <code>RfTreeView</code> is currently a strongly typed component.
+                The tree and all nodes are required to state the type via a generic parameter <code>TTreeItemNodeData</code>.
+                This data is stored in <code>RfTreeNode.NodeData</code>.
+                The node data is only transmitted via the following
+                event callbacks: <code>NodeClick</code>, <code>NodeExpandChange</code>, and <code>NodeSelectChange</code>.
+            </p>
+            <p>
                 Below shows the hierarchical of sub components including when to use which.
             </p>
 
@@ -127,147 +134,154 @@
 
             <p>
                 <code>RfTreeNode</code> is how to add an interative, selectable, and expandable element to <code>RfTreeView</code>.
+                All interactions with the <code>RfTreeView</code> are made through <code>RfTreeNode</code>.
             </p>
 
             <h3>Parameters</h3>
 
         </div>
+
         <div class="block">
             <h5 class="subtitle mb-2">TTreeItemData</h5>
             <div class="tags mb-2">
-                <span class="tag is-info">generic</span> <span class="tag">Required</span>
+                <span class="tag is-info">generic</span>
+                <span class="tag">Required</span>
             </div>
             <p>A generic type to use as part of event callbacks.</p>
         </div>
 
         <div class="block">
-            <h5 class="subtitle mb-2 has-text-bold">TTreeItemData</h5>
-            <div class="mb-2">
-                <span class="tag">generic</span> - <span class="tag is-primary">Required</span>
+            <h5 class="subtitle mb-2">IsSelected</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">two-way binding</span>
+                <span class="tag">default: true</span>
             </div>
-            <p>A generic type to use as part of event callbacks.</p>
+            <p>If true the node will include <code>.is-active</code> to the node.</p>
         </div>
 
-        <table class="table is-fullwidth">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Attributes</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>TTreeItemData</code></td>
-                    <td><span class="tag">generic</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                    </td>
-                    <td>A generic type to use as part of event callbacks.</td>
-                </tr>
-                <tr>
-                    <td><code>NodeData</code></td>
-                    <td><span class="tag">TTreeItemData</span></td>
-                    <td>
-                    </td>
-                    <td>The custom data used to represent this node. Will be passed into <code>OnNodeClick</code></td>
-                </tr>
-                <tr>
-                    <td><code>IsSelected</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>If true the node will apply <code>.is-active</code> to the node.</td>
-                </tr>
-                <tr>
-                    <td><code>Name</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>Description</td>
-                </tr>
-                <tr>
-                    <td><code>Name</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>Description</td>
-                </tr>
-                <tr>
-                    <td><code>Name</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>Description</td>
-                </tr>
-                <tr>
-                    <td><code>Name</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>Description</td>
-                </tr>
-                <tr>
-                    <td><code>Name</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>Description</td>
-                </tr>
-                <tr>
-                    <td><code>Name</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>Description</td>
-                </tr>
-                <tr>
-                    <td><code>Name</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>Description</td>
-                </tr>
-                <tr>
-                    <td><code>Name</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>Description</td>
-                </tr>
-                <tr>
-                    <td><code>Name</code></td>
-                    <td><span class="tag">bool</span></td>
-                    <td>
-                        <span class="tag is-primary">Required</span>
-                        <span class="tag is-success" title="supports two way binding.">@@bind</span>
-                    </td>
-                    <td>Description</td>
-                </tr>
-
-            </tbody>
-        </table>
-        <div class="content">
-
+        <div class="block">
+            <h5 class="subtitle mb-2">NodeCss</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">string</span>
+                <span class="tag">default: null</span>
+            </div>
+            <p>Css that is applied to the node element.</p>
         </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">ShowExpandIcon</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">default: false</span>
+            </div>
+            <p>Required to support children nodes. Currently this cannot be inferred and must be set if expandability is needed.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">IsExpanded</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">two-way binding</span>
+                <span class="tag">default: false</span>
+            </div>
+            <p>Used in conjuction with <code>ShowExpandIcon</code>. If true the children render fragment will be rendered.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">IsLoading</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">default: false</span>
+            </div>
+            <p>
+                Used in conjuction with <code>ShowExpandIcon</code>. If true the expand button will be marked
+                as <code>.is-loading</code> and the children will be replace with a set number of skeleton nodes based on <code>LoadingNodeCount</code>
+            </p>
+        </div>
+        <div class="block">
+            <h5 class="subtitle mb-2">LoadingNodeCount</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">default: 3</span>
+            </div>
+            <p>
+                Used in conjuction with <code>ShowExpandIcon</code> and <code>IsLoading</code>.
+                <br />
+                If <code>IsLoading == true && ShowExpandIcon == true && IsExpanded == true</code> the component will render x number of skeleton nodes where x equals <code>LoadingNodeCount</code>.
+            </p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">ExpandedIconCss</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">string</span>
+                <span class="tag">default: fa-solid fa-chevron-down</span>
+            </div>
+            <p>The css icons to show on the expand button while expanded.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">CollapsedIconCss</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">string</span>
+                <span class="tag">default: fa-solid fa-chevron-right</span>
+            </div>
+            <p>The css icons to show on the expand button while collapsed.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">Node</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">RenderFragment {TTreeItemData}</span>
+            </div>
+            <p>The render fragment used to render the node text.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">Children</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">RenderFragment</span>
+            </div>
+            <p>The render fragment used to render the children nodes.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">LinkUrl</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">string</span>
+            </div>
+            <p>The url to add to the node.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">NodeClick</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">EventCallback{TreeViewNodeOnClickEventArgs{TTreeItemData}}</span>
+                <span class="tag">Event</span>
+            </div>
+            <p>An event that is called when the node is clicked. <strong>NOTE</strong>: This will not be called when toggling the expand. </p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">NodeExpandChange</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">EventCallback{TreeViewNodeIsExpandEventArgs{TTreeItemData}}</span>
+                <span class="tag">Event</span>
+            </div>
+            <p>An event that is called when the <code>RfTreeNode.IsExpanded</code> changes within the <code>RfTreeView</code> component.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">NodeSelectChange</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">EventCallback{TreeViewNodeIsSelectedEventArgs{TTreeItemData}}</span>
+                <span class="tag">Event</span>
+            </div>
+            <p>An event that is called when the <code>RfTreeNode.IsSelected</code> changes within the <code>RfTreeView</code> component.</p>
+        </div>
+
+
     </BasicUsage>
 
     <Setup>
