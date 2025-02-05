@@ -85,7 +85,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     #endregion
 
     [CascadingParameter]
-    private TreeViewContext<TTreeItemData> TreeViewContext { get; set; }
+    private TreeViewContext<TTreeItemData> Context { get; set; }
 
     private string ChildrenId { get; set; }
     private bool ExpansionChangeOcurred = false;
@@ -124,7 +124,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     /// </summary>
     protected override void OnParametersSet()
     {
-        if (TreeViewContext == null)
+        if (Context == null)
         {
             throw new InvalidOperationException($"{nameof(RfTreeNode<TTreeItemData>)} must be a child of {nameof(RfTreeView<TTreeItemData>)}");
         }
@@ -132,12 +132,12 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         {
             if (selectionChangeOcurred == true)
             {
-                TreeViewContext.NodeSelectionChange(this);
+                Context.NodeSelectionChange(this);
             }
 
             if (ExpansionChangeOcurred == true)
             {
-                TreeViewContext.NodeExpandChange(this);
+                Context.NodeExpandChange(this);
             }
         }
 
@@ -146,19 +146,19 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
     private async Task OnNodeClickCallback()
     {
-        if (TreeViewContext.AllowSelection == true && IsSelected == false)
+        if (Context.AllowSelection == true && IsSelected == false)
         {
             IsSelected = true;
-            TreeViewContext.NodeSelectionChange(this);
+            Context.NodeSelectionChange(this);
         }
 
-        if (TreeViewContext.AllowExpand == true && IsExpanded == false)
+        if (Context.AllowExpand == true && IsExpanded == false)
         {
             IsExpanded = true;
-            TreeViewContext.NodeExpandChange(this);
+            Context.NodeExpandChange(this);
         }
 
-        if (TreeViewContext.AllowSelection == true)
+        if (Context.AllowSelection == true)
         {
             await OnNodeClick.InvokeAsync(NodeData);
         }
@@ -171,7 +171,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
             return;
         }
 
-        if (TreeViewContext.AllowExpand == false)
+        if (Context.AllowExpand == false)
         {
             return;
         }
