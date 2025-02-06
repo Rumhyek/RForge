@@ -80,6 +80,44 @@
     RfTreeNode
 </code></pre>
 
+            <h2>Overall Usage</h2>
+            <p>
+                <code>RfTreeView</code> exposes a few parameters to change how all subsequent nodes work.
+                The three are <code>AllowSelection</code>, <code>AllowExpand</code>, <code>AllowClick</code>.
+                By default all three are on.
+            </p>
+
+            <h4>Allow Selection</h4>
+            <p>
+                When set to true all sub <code>RfTreeNode</code> when clicked will be marked as active. 
+                <code>RfTreeView</code> supports only one selection at a time. 
+                The event <code>RfTreeNode.NodeSelectChange</code> will fire for both selections and deselections.
+            </p>
+            <div class="notification">
+                <strong>NOTE:</strong> Setting this to false will still allow <code>RfTreeNode.NodeClick</code> to fire as well as any <code>RfTreeNode.LinkUrl</code> that are set.
+            </div>
+
+            <h4>Allow Expand</h4>
+            <p>
+                When set to true, all sub <code>RfTreeNode</code> elements will have the ability to expand and collapse their child nodes.
+                The event <code>RfTreeNode.NodeExpandChange</code> will fire whenever a node is expanded or collapsed.
+            </p>
+            <div class="notification">
+                <strong>NOTE:</strong> Setting this to false will disable the expand/collapse functionality for all nodes.
+                The nodes will still show the expand / collapse icon but mark them as disabled. 
+                The <code>RfTreeNode.NodeClick</code> event will still fire when clicking on the node.
+            </div>
+
+            <h4>Allow Click</h4>
+            <p>
+                When set to true, all sub <code>RfTreeNode</code> elements will respond to click events.
+                This allows for custom actions to be performed when a node is clicked.
+                The event <code>RfTreeNode.NodeClick</code> will fire whenever a node is clicked.
+            </p>
+            <div class="notification">
+                <strong>NOTE:</strong> Any <code>RfTreeNode.LinkUrl</code> will still work.
+            </div>
+
             <h2>Label / Heading</h2>
 
             <p>
@@ -281,6 +319,32 @@
             <p>An event that is called when the <code>RfTreeNode.IsSelected</code> changes within the <code>RfTreeView</code> component.</p>
         </div>
 
+
+        <h3>Prerendering Entire Tree</h3>
+        <p>
+            <code>RfTreeView</code> supports two forms of skeleton. First you can make use of <code>RfTreeView.PrerenderNodes</code> render fragment to render
+            an example of the tree view. To use the prerender render fragment the <code>RfTreeView.ShowAsPrerender</code> must be set to true.
+        </p>
+        <p>
+            Use the same set of sub components when building out the <code>PrerenderNodes</code>.
+        </p>
+
+        <h4>Example</h4>
+        <p>
+            Below shows a simple example of setting up <code>RfTreeView.ShowAsPrerender</code> making use of a label and four nodes.
+        </p>
+        <pre><code>&lt;RfTreeView ShowAsPrerender="true" TTreeItemData="object"&gt;
+    &lt;PrerenderNodes&gt;
+        &lt;RfTreeLabel /&gt;
+        &lt;RfTreeNode TTreeItemData="object" /&gt;
+        &lt;RfTreeNode TTreeItemData="object" /&gt;
+        &lt;RfTreeNode TTreeItemData="object"&gt;
+            &lt;Children&gt;
+                &lt;RfTreeNode TTreeItemData="object" /&gt;
+            &lt;/Children&gt;
+        &lt;/RfTreeNode&gt;
+    &lt;/PrerenderNodes&gt;
+&lt;/RfTreeView&gt;</code></pre>
 
     </BasicUsage>
 
