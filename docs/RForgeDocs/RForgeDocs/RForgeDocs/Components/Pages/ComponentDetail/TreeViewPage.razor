@@ -1,0 +1,356 @@
+﻿@page "/treeview/details"
+
+<ComponentDetail Title="Tree View"
+                 PlaygroundUrl="/treeview/playground"
+                 SubTitle="A tree view making use of a vertical menu">
+
+    <CustomSideLinks>
+
+        <div class="menu">
+            <p class="menu-label is-size-6 mb-2">Repository Links</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("RfTreeView.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeView.razor"))
+                @ComponentDetail.SideLink(("RfTreeView.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeView.razor.cs"))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("TreeViewBaseContext.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/TreeViewBaseContext.cs"))
+                @ComponentDetail.SideLink(("TreeViewContext.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/TreeViewContext.cs"))
+            </ul>
+        </div>
+
+        <div class="menu mt-5">
+            <p class="menu-label">Child Components</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("RfTreeList.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeList.razor"))
+                @ComponentDetail.SideLink(("RfTreeList.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeList.razor.cs"))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("RfTreeLabel.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeLabel.razor"))
+                @ComponentDetail.SideLink(("RfTreeLabel.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeLabel.razor.cs"))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("RfTreeNode.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeNode.razor"))
+                @ComponentDetail.SideLink(("RfTreeNode.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeNode.razor.cs"))
+                @ComponentDetail.SpacerLink()
+            </ul>
+        </div>
+
+        <div class="menu mt-4">
+            <p class="menu-label is-size-6 mb-2">Examples</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("Basic Example", TagInfo.Empty, "/treeview/example/basic-example"))
+
+            </ul>
+        </div>
+    </CustomSideLinks>
+    <Purpose>
+        <div class="content">
+            <p>
+                <code>RfTreeView</code> was added to RForge to support tree like data structures.
+                It can be used as a folder traversal tool, simple side menu, basic accordian, etc.
+            </p>
+            <div class="notification">
+                <strong>NOTE:</strong> Eventually an accordian component will be added as a simplified / streamline way.
+            </div>
+        </div>
+    </Purpose>
+
+    <BasicUsage>
+        <div class="content">
+            <p>
+                <code>RfTreeView</code> is built upon Bulma's <a href="https://bulma.io/documentation/components/menu/"><code>.menu</code></a> component.
+                With that the naming of sub components for <code>RfTreeView</code> should match the naming convention of the Bulma menu.
+                For example: Use <code>RfTreeViewLabel</code> to add a <code>.menu-label</code>.
+            </p>
+
+            <p>
+                <code>RfTreeView</code> is currently a strongly typed component.
+                The tree and all nodes are required to state the type via a generic parameter <code>TTreeItemNodeData</code>.
+                This data is stored in <code>RfTreeNode.NodeData</code>.
+                The node data is only transmitted via the following
+                event callbacks: <code>NodeClick</code>, <code>NodeExpandChange</code>, and <code>NodeSelectChange</code>.
+            </p>
+            <p>
+                Below shows the hierarchical of sub components including when to use which.
+            </p>
+
+            <pre><code>RfTreeView                
+↳ RfTreeLabel
+  RfTreeList
+  ↳ RfTreeNode
+    ↳ RfTreeNode
+      RfTreeNode
+    RfTreeNode
+</code></pre>
+
+            <h2>Overall Usage</h2>
+            <p>
+                <code>RfTreeView</code> exposes a few parameters to change how all subsequent nodes work.
+                The three are <code>AllowSelection</code>, <code>AllowExpand</code>, <code>AllowClick</code>.
+                By default all three are on.
+            </p>
+
+            <h4>Allow Selection</h4>
+            <p>
+                When set to true all sub <code>RfTreeNode</code> when clicked will be marked as active. 
+                <code>RfTreeView</code> supports only one selection at a time. 
+                The event <code>RfTreeNode.NodeSelectChange</code> will fire for both selections and deselections.
+            </p>
+            <div class="notification">
+                <strong>NOTE:</strong> Setting this to false will still allow <code>RfTreeNode.NodeClick</code> to fire as well as any <code>RfTreeNode.LinkUrl</code> that are set.
+            </div>
+
+            <h4>Allow Expand</h4>
+            <p>
+                When set to true, all sub <code>RfTreeNode</code> elements will have the ability to expand and collapse their child nodes.
+                The event <code>RfTreeNode.NodeExpandChange</code> will fire whenever a node is expanded or collapsed.
+            </p>
+            <div class="notification">
+                <strong>NOTE:</strong> Setting this to false will disable the expand/collapse functionality for all nodes.
+                The nodes will still show the expand / collapse icon but mark them as disabled. 
+                The <code>RfTreeNode.NodeClick</code> event will still fire when clicking on the node.
+            </div>
+
+            <h4>Allow Click</h4>
+            <p>
+                When set to true, all sub <code>RfTreeNode</code> elements will respond to click events.
+                This allows for custom actions to be performed when a node is clicked.
+                The event <code>RfTreeNode.NodeClick</code> will fire whenever a node is clicked.
+            </p>
+            <div class="notification">
+                <strong>NOTE:</strong> Any <code>RfTreeNode.LinkUrl</code> will still work.
+            </div>
+
+            <h2>Label / Heading</h2>
+
+            <p>
+                Use <code>RfTreeLabel</code> to create a heading within the tree view.
+                These can be nested within a <code>RfTreeList</code> or <code>RfTreeNode</code>, but look best as a direct child of <code>RfTreeView</code>.
+            </p>
+
+            <p>
+                <code>RfTreeLabel</code> wraps the child content of it within a <code>p.menu-label</code>
+                and supports <code>CssClass</code> parameter which is applied to the wrapping <code>p</code> tag.
+            </p>
+
+            <p>
+                <code>RfTreeLabel</code> will automatically render as a skeleton variant if added within <code>RfTreeView.PrerenderNodes</code>
+                applying the same Css Classes. You can provide text for the label or leave it empty. If provided the text will be rendered and will grow the skeleton to fit the text.
+            </p>
+            <h3>Example:</h3>
+            <pre><code>&lt;RfTreeView&gt;
+    &lt;PrerenderNodes&gt;
+        &lt;RfTreeLabel CssClass="is-size-4"&gt;Root Label&lt;/RfTreeLabel&gt;
+        &lt;RfTreeLabel /&gt;
+        ....
+    &lt;/PrerenderNodes&gt;
+    &lt;Nodes&gt;
+        &lt;RfTreeLabel CssClass="is-size-4"&gt;Root Label&lt;/RfTreeLabel&gt;
+        &lt;RfTreeLabel&gt;Some other Label&lt;/RfTreeLabel&gt;
+        ....
+    &lt;/Nodes&gt;
+&lt;/RfTreeView&gt;</code></pre>
+
+            <h2>RfTreeList</h2>
+
+            <p>
+                Use <code>RfTreeList</code> to wrap the root node.
+                The purpose of this component is to create the initial <code>ul.menu-list</code> element.
+            </p>
+            <p>
+                <code>RfTreeList</code> supports one paramater <code>CssClass</code>.
+                Use this parameter to add additioanl classes to the wrapping <code>u.menu-list</code>.
+            </p>
+
+            <h3>Example:</h3>
+            <pre><code>&lt;RfTreeView&gt;
+    &lt;Nodes&gt;
+        &lt;RfTreeList&gt;
+            ... RfTreeNode(s) ...
+        &lt;/RfTreeList&gt;
+    &lt;/Nodes&gt;
+&lt;/RfTreeView&gt;</code></pre>
+
+            <h2>Tree Nodes</h2>
+
+            <p>
+                <code>RfTreeNode</code> is how to add an interative, selectable, and expandable element to <code>RfTreeView</code>.
+                All interactions with the <code>RfTreeView</code> are made through <code>RfTreeNode</code>.
+            </p>
+
+            <h3>Parameters</h3>
+
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">TTreeItemData</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">generic</span>
+                <span class="tag">Required</span>
+            </div>
+            <p>A generic type to use as part of event callbacks.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">IsSelected</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">two-way binding</span>
+                <span class="tag">default: true</span>
+            </div>
+            <p>If true the node will include <code>.is-active</code> to the node.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">NodeCss</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">string</span>
+                <span class="tag">default: null</span>
+            </div>
+            <p>Css that is applied to the node element.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">ShowExpandIcon</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">default: false</span>
+            </div>
+            <p>Required to support children nodes. Currently this cannot be inferred and must be set if expandability is needed.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">IsExpanded</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">two-way binding</span>
+                <span class="tag">default: false</span>
+            </div>
+            <p>Used in conjuction with <code>ShowExpandIcon</code>. If true the children render fragment will be rendered.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">IsLoading</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">default: false</span>
+            </div>
+            <p>
+                Used in conjuction with <code>ShowExpandIcon</code>. If true the expand button will be marked
+                as <code>.is-loading</code> and the children will be replace with a set number of skeleton nodes based on <code>LoadingNodeCount</code>
+            </p>
+        </div>
+        <div class="block">
+            <h5 class="subtitle mb-2">LoadingNodeCount</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool</span>
+                <span class="tag">default: 3</span>
+            </div>
+            <p>
+                Used in conjuction with <code>ShowExpandIcon</code> and <code>IsLoading</code>.
+                <br />
+                If <code>IsLoading == true && ShowExpandIcon == true && IsExpanded == true</code> the component will render x number of skeleton nodes where x equals <code>LoadingNodeCount</code>.
+            </p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">ExpandedIconCss</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">string</span>
+                <span class="tag">default: fa-solid fa-chevron-down</span>
+            </div>
+            <p>The css icons to show on the expand button while expanded.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">CollapsedIconCss</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">string</span>
+                <span class="tag">default: fa-solid fa-chevron-right</span>
+            </div>
+            <p>The css icons to show on the expand button while collapsed.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">Node</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">RenderFragment {TTreeItemData}</span>
+            </div>
+            <p>The render fragment used to render the node text.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">Children</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">RenderFragment</span>
+            </div>
+            <p>The render fragment used to render the children nodes.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">LinkUrl</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">string</span>
+            </div>
+            <p>The url to add to the node.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">NodeClick</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">EventCallback{TreeViewNodeOnClickEventArgs{TTreeItemData}}</span>
+                <span class="tag">Event</span>
+            </div>
+            <p>An event that is called when the node is clicked. <strong>NOTE</strong>: This will not be called when toggling the expand. </p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">NodeExpandChange</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">EventCallback{TreeViewNodeIsExpandEventArgs{TTreeItemData}}</span>
+                <span class="tag">Event</span>
+            </div>
+            <p>An event that is called when the <code>RfTreeNode.IsExpanded</code> changes within the <code>RfTreeView</code> component.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">NodeSelectChange</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">EventCallback{TreeViewNodeIsSelectedEventArgs{TTreeItemData}}</span>
+                <span class="tag">Event</span>
+            </div>
+            <p>An event that is called when the <code>RfTreeNode.IsSelected</code> changes within the <code>RfTreeView</code> component.</p>
+        </div>
+
+
+        <h3>Prerendering Entire Tree</h3>
+        <p>
+            <code>RfTreeView</code> supports two forms of skeleton. First you can make use of <code>RfTreeView.PrerenderNodes</code> render fragment to render
+            an example of the tree view. To use the prerender render fragment the <code>RfTreeView.ShowAsPrerender</code> must be set to true.
+        </p>
+        <p>
+            Use the same set of sub components when building out the <code>PrerenderNodes</code>.
+        </p>
+
+        <h4>Example</h4>
+        <p>
+            Below shows a simple example of setting up <code>RfTreeView.ShowAsPrerender</code> making use of a label and four nodes.
+        </p>
+        <pre><code>&lt;RfTreeView ShowAsPrerender="true" TTreeItemData="object"&gt;
+    &lt;PrerenderNodes&gt;
+        &lt;RfTreeLabel /&gt;
+        &lt;RfTreeNode TTreeItemData="object" /&gt;
+        &lt;RfTreeNode TTreeItemData="object" /&gt;
+        &lt;RfTreeNode TTreeItemData="object"&gt;
+            &lt;Children&gt;
+                &lt;RfTreeNode TTreeItemData="object" /&gt;
+            &lt;/Children&gt;
+        &lt;/RfTreeNode&gt;
+    &lt;/PrerenderNodes&gt;
+&lt;/RfTreeView&gt;</code></pre>
+
+    </BasicUsage>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+</ComponentDetail>
+
+

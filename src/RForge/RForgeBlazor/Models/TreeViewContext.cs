@@ -36,20 +36,20 @@ public class TreeViewContext<TTreeItemData> : TreeViewBaseContext where TTreeIte
     /// <summary>
     /// Occurs when the selected node changes within the <see cref="RfTreeNode{TTreeItemData}"/>. Changes done outside are not notified.
     /// </summary>
-    public event RfEventHandler<RfTreeNode<TTreeItemData>> OnSelectedChange;
+    public event AsyncEventHandler<RfTreeNode<TTreeItemData>> OnSelectedChange;
 
     /// <summary>
     /// Occurs when the expanded node changes within the <see cref="RfTreeNode{TTreeItemData}"/>. Changes done outside are not notified.
     /// </summary>
-    public event RfEventHandler<RfTreeNode<TTreeItemData>> OnExpandedChange;
+    public event AsyncEventHandler<RfTreeNode<TTreeItemData>> OnExpandedChange;
 
-    internal void NodeSelectionChange(RfTreeNode<TTreeItemData> rfTreeNode)
+    internal async Task NodeSelectionChange(RfTreeNode<TTreeItemData> rfTreeNode)
     {
-        OnSelectedChange?.Invoke(this, rfTreeNode);
+        await OnSelectedChange?.Invoke(this, rfTreeNode);
     }
 
-    internal void NodeExpandChange(RfTreeNode<TTreeItemData> rfTreeNode)
+    internal async Task NodeExpandChange(RfTreeNode<TTreeItemData> rfTreeNode)
     {
-        OnExpandedChange?.Invoke(this, rfTreeNode);
+        await OnExpandedChange?.Invoke(this, rfTreeNode);
     }
 }

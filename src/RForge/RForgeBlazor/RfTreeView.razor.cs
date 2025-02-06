@@ -40,6 +40,12 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
     public bool AllowExpand { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether a node can be clicked. This is seperate from being selected.
+    /// </summary>
+    [Parameter]
+    public bool AllowClick { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets a value indicating whether the tree view is in prerender mode or not.
     /// </summary>
     [Parameter]
@@ -58,7 +64,8 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
         {
             AllowSelection = AllowSelection,
             AllowExpand = AllowExpand,
-            ShowAsPrerender = ShowAsPrerender
+            ShowAsPrerender = ShowAsPrerender,
+            AllowNodeClick = AllowClick
         };
 
         Context.OnExpandedChange += Context_OnExpanded;
@@ -79,17 +86,18 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
         base.OnParametersSet();
     }
 
-    private void Context_OnSelected(object sender, RfTreeNode<TTreeItemData> selectedNode)
+    private async Task Context_OnSelected(object sender, RfTreeNode<TTreeItemData> selectedNode)
     {
         if (SelectedNode != null && selectedNode != SelectedNode)
-            SelectedNode.Deselect();
+            await SelectedNode.Deselect();
 
         SelectedNode = selectedNode;
     }
 
-    private void Context_OnExpanded(object sender, RfTreeNode<TTreeItemData> expandedNode)
+    private Task Context_OnExpanded(object sender, RfTreeNode<TTreeItemData> expandedNode)
     {
         //Currently there is nothing plan for this event. Though adding something here would be nice.
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>

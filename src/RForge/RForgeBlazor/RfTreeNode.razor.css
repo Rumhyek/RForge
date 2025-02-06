@@ -35,3 +35,7 @@ ul.is-open {
     border-radius: var(--bulma-skeleton-radius);
     display: block;
 }
+
+    .menu-list a.is-skeleton:last-child {
+        margin-bottom: var(--bulma-menu-nested-list-margin);
+    }

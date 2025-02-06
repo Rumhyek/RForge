@@ -44,6 +44,17 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     public EventCallback<bool> IsExpandedChanged { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the node is loading.
+    /// </summary>
+    [Parameter]
+    public bool IsLoading { get; set; }
+    /// <summary>
+    /// Gets or sets the number of loading nodes to display while loading.
+    /// </summary>
+    [Parameter]
+    public int LoadingNodeCount { get; set; } = 3;
+
+    /// <summary>
     /// Gets or sets a value indicating whether to show the expand icon.
     /// </summary>
     [Parameter]
@@ -81,7 +92,19 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     /// Gets or sets the callback for the node click event.
     /// </summary>
     [Parameter]
-    public EventCallback<TTreeItemData> OnNodeClick { get; set; }
+    public EventCallback<TreeViewNodeOnClickEventArgs<TTreeItemData>> NodeClick { get; set; }
+
+    /// <summary>
+    /// Called when the node's <see cref="IsExpanded"/> value changes from within the component.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TreeViewNodeIsExpandEventArgs<TTreeItemData>> NodeExpandChange { get; set; }
+    /// <summary>
+    /// Called when the node's <see cref="IsSelected"/> value changes from within the component.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TreeViewNodeIsSelectedEventArgs<TTreeItemData>> NodeSelectChange { get; set; }
+
     #endregion
 
     [CascadingParameter]
@@ -122,7 +145,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     /// <summary>
     /// Method invoked when the component's parameters are set.
     /// </summary>
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (Context == null)
         {
@@ -132,56 +155,109 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         {
             if (selectionChangeOcurred == true)
             {
-                Context.NodeSelectionChange(this);
+                await Context.NodeSelectionChange(this);
             }
 
             if (ExpansionChangeOcurred == true)
             {
-                Context.NodeExpandChange(this);
+                await Context.NodeExpandChange(this);
             }
         }
 
-        base.OnParametersSet();
+        await base.OnParametersSetAsync();
     }
 
     private async Task OnNodeClickCallback()
     {
-        if (Context.AllowSelection == true && IsSelected == false)
+        if (await ChangeSelection(true) == true)
         {
-            IsSelected = true;
-            Context.NodeSelectionChange(this);
+            await Context.NodeSelectionChange(this);
         }
 
-        if (Context.AllowExpand == true && IsExpanded == false)
+        if (await ChangeExpansion(true) == true)
         {
-            IsExpanded = true;
-            Context.NodeExpandChange(this);
+            await Context.NodeExpandChange(this);
         }
 
-        if (Context.AllowSelection == true)
+        if (Context.AllowNodeClick == true)
         {
-            await OnNodeClick.InvokeAsync(NodeData);
+            await NodeClick.InvokeAsync(new TreeViewNodeOnClickEventArgs<TTreeItemData>()
+            {
+                NodeData = NodeData,
+                NodeReference = this
+            });
         }
     }
 
-    private void ToggleExpand()
+    private async Task OnToggleExpandClick()
+    {
+        if (await ChangeExpansion(IsExpanded == false) == true)
+        {
+            await Context.NodeExpandChange(this);
+        }
+    }
+
+    private async Task<bool> ChangeExpansion(bool isExpanding)
     {
         if (ShowExpandIcon == false)
         {
-            return;
+            return false;
         }
 
         if (Context.AllowExpand == false)
         {
-            return;
+            return false;
         }
 
-        IsExpanded = IsExpanded == false;
+        if (IsExpanded == isExpanding)
+        {
+            return false;
+        }
+
+        IsExpanded = isExpanding;
+
+        StateHasChanged();
+
+        await NodeExpandChange.InvokeAsync(new TreeViewNodeIsExpandEventArgs<TTreeItemData>()
+        {
+            IsExpanded = IsExpanded,
+            NodeData = NodeData,
+            NodeReference = this
+        });
+
+        return true;
     }
 
-    internal void Deselect() => IsSelected = false;
+    private async Task<bool> ChangeSelection(bool isSelecting)
+    {
+        if (Context.AllowSelection == false) return false;
+        if (IsSelected == isSelecting) return false;
 
-    internal void Collapse() => IsExpanded = false;
+        IsSelected = isSelecting;
+
+        StateHasChanged();
+
+        await NodeSelectChange.InvokeAsync(new TreeViewNodeIsSelectedEventArgs<TTreeItemData>()
+        {
+            IsSelected = IsSelected,
+            NodeData = NodeData,
+            NodeReference = this
+        });
+
+        return true;
+    }
+
+    internal async Task Deselect()
+    {
+        if(await ChangeSelection(false) == true)
+            await Context.NodeSelectionChange(this);
+    }
+
+    internal async Task Collapse()
+    {
+        if (await ChangeExpansion(false) == true)
+            await Context.NodeExpandChange(this);
+    }
 
     private string ExpandTitleText
     {
@@ -199,6 +275,28 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
             return "Click to expand";
         }
+    }
+
+    private TreeNodeDisplayMode GetDisplayMode()
+    {
+        if (Context.ShowAsPrerender == true)
+        {
+            return TreeNodeDisplayMode.TreeViewPrerender;
+        }
+
+        if (IsLoading == true)
+        {
+            return TreeNodeDisplayMode.Loading;
+        }
+
+        return TreeNodeDisplayMode.Display;
+    }
+
+    private enum TreeNodeDisplayMode
+    {
+        TreeViewPrerender,
+        Loading,
+        Display
     }
 
 }

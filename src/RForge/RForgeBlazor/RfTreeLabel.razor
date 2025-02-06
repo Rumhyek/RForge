@@ -3,7 +3,7 @@
 
     @if (Context?.ShowAsPrerender == true)
     {
-        <div class="is-skeleton">&nbsp;</div>
+        <div class="is-skeleton">&nbsp; @ChildContent</div>
     }
     else
     {
