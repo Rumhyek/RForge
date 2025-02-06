@@ -1,37 +1,40 @@
 @inherits RfModalBase
 
-<div class="modal @modalCss" style="@modalStyles">
-    <div class="modal-background"></div>
-    <div class="modal-card @modalContentCss">
-        @if (showHead == true)
-        {
-            <div class="modal-card-head">
-                @if (Head != null)
-                {
-                    @Head
-                }
-                else
-                {
-                    <p class="modal-card-title">@Title</p>
-                }
-                @if (ShowCloseButton == true)
-                {
-                    <button class="delete" aria-label="close" @onclick="OnCloseClick"></button>
-                }
+@if (IsVisible == true)
+{
+    <div class="modal @modalCss" style="@modalStyles">
+        <div class="modal-background"></div>
+        <div class="modal-card @modalContentCss">
+            @if (showHead == true)
+            {
+                <div class="modal-card-head">
+                    @if (Head != null)
+                    {
+                        @Head
+                    }
+                    else
+                    {
+                        <p class="modal-card-title">@Title</p>
+                    }
+                    @if (ShowCloseButton == true)
+                    {
+                        <button class="delete" aria-label="close" @onclick="OnCloseClick"></button>
+                    }
+                </div>
+            }
+            <div class="modal-card-body">
+                @Body
             </div>
-        }
-        <div class="modal-card-body">
-            @Body
+            @if (Foot != null)
+            {
+                <div class="modal-card-foot">
+                    @Foot
+                </div>
+            }
         </div>
-        @if (Foot != null)
+        @if (showHead == false && ShowCloseButton == true)
         {
-            <div class="modal-card-foot">
-                @Foot
-            </div>
+            <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
         }
     </div>
-    @if (showHead == false && ShowCloseButton == true)
-    {
-        <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
-    }
-</div>
+}
