@@ -1,0 +1,13 @@
+
+<p class="menu-label @CssClass">
+
+    @if (Context?.ShowAsPrerender == true)
+    {
+        <div class="is-skeleton">&nbsp; @ChildContent</div>
+    }
+    else
+    {
+        @ChildContent
+    }
+</p>
+

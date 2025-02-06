@@ -1,0 +1,41 @@
+﻿
+
+.menu-list .button {
+    --bulma-menu-list-link-padding: .25em .6em;
+    display: inline-block;
+    width: unset;
+}
+
+ul {
+    display: none;
+}
+
+ul.is-open {
+    display: block;
+}
+
+.menu-list .button.is-active {
+
+    --bulma-button-h: var(--bulma-menu-item-h);
+    --bulma-button-s: var(--bulma-menu-item-s);
+    --bulma-button-l: var(--bulma-menu-item-l);
+    --bulma-button-color-l: var(--bulma-menu-item-color-l);
+}
+
+.menu-list .with-left-expand .button.is-active {
+    border-radius: var(--bulma-menu-item-radius) 0 0 var(--bulma-menu-item-radius);
+}
+
+.menu-list .with-left-expand a.is-active {
+    border-radius: 0 var(--bulma-menu-item-radius) var(--bulma-menu-item-radius) 0;
+}
+
+.menu-list a.is-skeleton {
+    background-color: var(--bulma-skeleton-background);
+    border-radius: var(--bulma-skeleton-radius);
+    display: block;
+}
+
+    .menu-list a.is-skeleton:last-child {
+        margin-bottom: var(--bulma-menu-nested-list-margin);
+    }

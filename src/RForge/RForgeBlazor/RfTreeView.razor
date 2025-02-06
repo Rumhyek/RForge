@@ -1,0 +1,16 @@
+@typeparam TTreeItemData
+
+<aside class="menu @CssClass">
+ 
+    <CascadingValue Value=Context>
+        @if (ShowAsPrerender == true)
+        {
+            @PrerenderNodes
+        }
+        else
+        {
+            @Nodes
+        }
+    </CascadingValue>
+
+</aside>

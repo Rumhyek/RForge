@@ -18,10 +18,13 @@ namespace RForgeBlazor
         public static IServiceCollection AddRfForgeBlazorServices(this IServiceCollection services)
         {
 
-            services.AddScoped<INotificationManager, NotificationManager>();
-            services.AddScoped<INotificationManagerBackend, NotificationManager>();
-            services.AddScoped<IDialogManager, DialogManager>();
-            services.AddScoped<IDialogManagerBackend, DialogManager>();
+            services.AddScoped<NotificationManager>();
+            services.AddScoped<INotificationManager>(x => x.GetRequiredService<NotificationManager>());
+            services.AddScoped<INotificationManagerBackend>(x => x.GetRequiredService<NotificationManager>()); 
+            
+            services.AddScoped<DialogManager>();
+            services.AddScoped<IDialogManager>(x => x.GetRequiredService<DialogManager>());
+            services.AddScoped<IDialogManagerBackend>(x => x.GetRequiredService<DialogManager>());
 
             return services;
         }

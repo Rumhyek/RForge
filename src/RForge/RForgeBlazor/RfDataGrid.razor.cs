@@ -192,7 +192,7 @@ public partial class RfDataGrid<TRowData>
     /// The context for the data grid. Used to talk between the data grid and the children.
     /// </summary>
     private DataGridContext GridContext { get; set; }
-
+    
     /// <summary>
     /// If the sort order or key has been updated.
     /// </summary>

@@ -1,0 +1,73 @@
+@typeparam TTreeItemData
+
+<li>
+
+    @switch (GetDisplayMode())
+    {
+        case TreeNodeDisplayMode.Display:
+        case TreeNodeDisplayMode.Loading:
+            <div class="is-flex @NodeCss @Rf.ClassWhen(("with-left-expand", ShowExpandIcon))">
+                @if (ShowExpandIcon == true)
+                {
+                    <button type="button"
+                            class="button @Rf.ClassWhen(("is-active", IsSelected), ("is-loading", IsLoading))"
+                            disabled=@(Context.AllowExpand != true)
+                            title="@ExpandTitleText"
+                            aria-expanded="@IsExpanded.ToString().ToLower()"
+                            aria-controls="@ChildrenId"
+                            @onclick=OnToggleExpandClick
+                            @onclick:stopPropagation="true"
+                            @onclick:preventDefault="true">
+                        <span class="icon">
+
+                            @if (IsExpanded == true)
+                            {
+                                <i class="@ExpandedIconCss"></i>
+                            }
+                            else
+                            {
+                                <i class="@CollapsedIconCss"></i>
+                            }
+                        </span>
+                    </button>
+                }
+
+                <a class="@Rf.ClassWhen(("is-active", IsSelected))"
+                   @onclick=OnNodeClickCallback href="@LinkUrl">
+                    <span>@Node(NodeData)</span>
+                </a>
+            </div>
+
+
+            @if (ShowExpandIcon == true)
+            {
+                <ul class="mr-0 @Rf.ClassWhen(("is-open", IsExpanded))"
+                    id="@ChildrenId">
+                    @if (IsLoading == true)
+                    {
+                        @for (int i = 0; i < LoadingNodeCount; i++)
+                        {
+                            <li>
+                                <a class="is-skeleton">&nbsp;</a>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        @Children
+                    }
+                </ul>
+            }
+
+            break;
+
+        case TreeNodeDisplayMode.TreeViewPrerender:
+            <a class="is-skeleton">&nbsp;</a>
+            <ul class="mr-0 is-open"
+                id="@ChildrenId">
+                @Children
+            </ul>
+            break;
+    }
+
+</li>
