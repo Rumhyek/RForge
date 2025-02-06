@@ -1,14 +1,17 @@
 @inherits RfModalBase
 
-<div class="modal @modalCss" style="@modalStyles">
-    <div class="modal-background"></div>
-    <div class="modal-content @modalContentCss">
-        <div class="box">
-            @ChildContent
+@if (IsVisible == true)
+{
+    <div class="modal @modalCss" style="@modalStyles">
+        <div class="modal-background"></div>
+        <div class="modal-content @modalContentCss">
+            <div class="box">
+                @ChildContent
+            </div>
         </div>
+        @if (ShowCloseButton == true)
+        {
+            <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
+        }
     </div>
-    @if (ShowCloseButton == true)
-    {
-        <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
-    }
-</div>
+}

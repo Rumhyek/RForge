@@ -2,21 +2,24 @@
 
 @using RForgeBlazor.Services
 
-<div class="modal @modalCss" style="@modalStyles">
-    <div class="modal-background"></div>
-    <div class="modal-content @modalContentCss">
-        <div class="image @imageContainerCss" style="@imageContainerStyles">
-            <img src="@ImageUrl" title="@ImageCaption" />
-        </div>
-        @if (string.IsNullOrWhiteSpace(ImageCaption) == false)
-        {
-            <div class="has-text-centered is-italic block mt-1 is-size-5">
-                @ImageCaption
+@if (IsVisible == true)
+{
+    <div class="modal @modalCss" style="@modalStyles">
+        <div class="modal-background"></div>
+        <div class="modal-content @modalContentCss">
+            <div class="image @imageContainerCss" style="@imageContainerStyles">
+                <img src="@ImageUrl" title="@ImageCaption" />
             </div>
+            @if (string.IsNullOrWhiteSpace(ImageCaption) == false)
+            {
+                <div class="has-text-centered is-italic block mt-1 is-size-5">
+                    @ImageCaption
+                </div>
+            }
+        </div>
+        @if (ShowCloseButton == true)
+        {
+            <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
         }
     </div>
-    @if(ShowCloseButton == true)
-    {
-        <button class="modal-close is-large" aria-label="close" @onclick="OnCloseClick"></button>
-    }
-</div>
+}
