@@ -18,8 +18,4 @@
     <ProjectReference Include="..\..\RForgeDocs.Abstractions\RForgeDocs.Abstractions.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Pages\Examples\TreeView\" />
-  </ItemGroup>
-
 </Project>

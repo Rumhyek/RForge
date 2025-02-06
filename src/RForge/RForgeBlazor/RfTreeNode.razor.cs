@@ -179,7 +179,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
             await Context.NodeExpandChange(this);
         }
 
-        if (Context.AllowSelection == true)
+        if (Context.AllowNodeClick == true)
         {
             await NodeClick.InvokeAsync(new TreeViewNodeOnClickEventArgs<TTreeItemData>()
             {

@@ -11,6 +11,11 @@ public class TreeViewBaseContext
     public bool AllowSelection { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether node can be clicked or not.
+    /// </summary>
+    public bool AllowNodeClick { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether expansion is allowed.
     /// </summary>
     public bool AllowExpand { get; set; }
