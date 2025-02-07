@@ -1,22 +1,29 @@
 ﻿
-
-.menu-list .button {
-    --bulma-menu-list-link-padding: .25em .6em;
-    --bulma-button-padding-horizontal: var(--bulma-menu-list-link-padding);
+.menu-list .button.is-expand-button {
+    --bulma-menu-list-link-padding: var(--rf-menu-expand-button-padding-vertical) calc(var(--rf-menu-expand-button-padding-horizontal));
+    --bulma-button-padding-horizontal: var(--rf-menu-expand-button-padding-vertical) calc(var(--rf-menu-expand-button-padding-horizontal));
     display: inline-block;
-    width: unset;
+    width: var(--rf-menu-expand-button-width);
+    text-align: center;
+}
+
+.menu-list a.no-expand-label {
+    padding-left: var(--rf-menu-no-expand-padding-left);
+}
+
+.menu-list a.is-expand-label {
+    padding-left: calc(var(--rf-menu-expand-button-padding-horizontal));
 }
 
 ul {
     display: none;
 }
 
-ul.is-open {
-    display: block;
-}
+    ul.is-open {
+        display: block;
+    }
 
 .menu-list .button.is-active {
-
     --bulma-button-h: var(--bulma-menu-item-h);
     --bulma-button-s: var(--bulma-menu-item-s);
     --bulma-button-l: var(--bulma-menu-item-l);

@@ -7,10 +7,11 @@
         case TreeNodeDisplayMode.Display:
         case TreeNodeDisplayMode.Loading:
             <div class="is-flex @NodeCss @Rf.ClassWhen(("with-left-expand", ShowExpandIcon))">
+
                 @if (ShowExpandIcon == true)
                 {
                     <button type="button"
-                            class="button @Rf.ClassWhen(("is-active", IsSelected), ("is-loading", IsLoading))"
+                            class="button is-expand-button @Rf.ClassWhen(("is-active", IsSelected), ("is-loading", IsLoading))"
                             disabled=@(MyAllowExpand != true)
                             title="@ExpandTitleText"
                             aria-expanded="@IsExpanded.ToString().ToLower()"
@@ -18,7 +19,7 @@
                             @onclick=OnToggleExpandClick
                             @onclick:stopPropagation="true"
                             @onclick:preventDefault="true">
-                        <span class="icon">
+                        <span class="">
 
                             @if (IsExpanded == true)
                             {
@@ -32,10 +33,11 @@
                     </button>
                 }
 
-                <a class="@Rf.ClassWhen(("is-active", IsSelected))"
+                <a class="@Rf.ClassWhen(("is-active", IsSelected),( "is-expand-label", ShowExpandIcon), ( "no-expand-label", ShowExpandIcon == false))"
                    @onclick=OnNodeClickCallback href="@LinkUrl">
                     <span>@Node(NodeData)</span>
                 </a>
+
             </div>
 
 

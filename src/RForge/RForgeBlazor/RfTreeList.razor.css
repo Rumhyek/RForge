@@ -1,0 +1,7 @@
+﻿.menu-list {
+    --rf-menu-expand-button-width: 1.25rem;
+    --rf-menu-expand-button-padding-vertical: .25rem;
+    --rf-menu-expand-button-padding-horizontal: .25rem;
+    --rf-menu-expand-label-padding-left: var(--bulma-menu-nested-list-padding-left);
+    --rf-menu-no-expand-padding-left: calc(var(--rf-menu-expand-button-width) + calc(var(--rf-menu-expand-button-padding-horizontal) ))
+}
