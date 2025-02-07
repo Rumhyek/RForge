@@ -27,6 +27,12 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     public EventCallback<bool> IsSelectedChanged { get; set; }
 
     /// <summary>
+    /// if null <see cref="RfTreeView.AllowSelection"/> is used. Otherwise, this value is used.
+    /// </summary>
+    [Parameter]
+    public bool? AllowSelection { get; set; }
+
+    /// <summary>
     /// Gets or sets the CSS class for the node.
     /// </summary>
     [Parameter]
@@ -42,6 +48,19 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     /// </summary>
     [Parameter]
     public EventCallback<bool> IsExpandedChanged { get; set; }
+
+    /// <summary>
+    /// if null <see cref="RfTreeView.AllowExpand"/> is used. Otherwise, this value is used.
+    /// </summary>
+    [Parameter]
+    public bool? AllowExpand { get; set; }
+
+
+    /// <summary>
+    /// if null <see cref="RfTreeView.AllowClick"/> is used. Otherwise, this value is used.
+    /// </summary>
+    [Parameter]
+    public bool? AllowClick { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the node is loading.
@@ -179,7 +198,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
             await Context.NodeExpandChange(this);
         }
 
-        if (Context.AllowNodeClick == true)
+        if (MyAllowClick == true)
         {
             await NodeClick.InvokeAsync(new TreeViewNodeOnClickEventArgs<TTreeItemData>()
             {
@@ -204,7 +223,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
             return false;
         }
 
-        if (Context.AllowExpand == false)
+        if (MyAllowExpand == false)
         {
             return false;
         }
@@ -230,7 +249,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
     private async Task<bool> ChangeSelection(bool isSelecting)
     {
-        if (Context.AllowSelection == false) return false;
+        if (MyAllowSelection == false) return false;
         if (IsSelected == isSelecting) return false;
 
         IsSelected = isSelecting;
@@ -277,8 +296,52 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         }
     }
 
+    private bool MyAllowSelection
+    {
+        get
+        {
+            if (AllowSelection.HasValue == true)
+            {
+                return AllowSelection.Value;
+            }
+
+            return Context.AllowSelection;
+        }
+    }
+
+    private bool MyAllowExpand
+    {
+        get
+        {
+            if(AllowExpand.HasValue == true)
+            {
+                return AllowExpand.Value;
+            }
+
+            return Context.AllowExpand;
+        }
+    }
+
+    private bool MyAllowClick
+    {
+        get
+        {
+            if (AllowClick.HasValue == true)
+            {
+                return AllowClick.Value;
+            }
+
+            return Context.AllowNodeClick;
+        }
+    }
+
     private TreeNodeDisplayMode GetDisplayMode()
     {
+        if(Context == null)
+        {
+            return TreeNodeDisplayMode.TreeViewPrerender;
+        }
+
         if (Context.ShowAsPrerender == true)
         {
             return TreeNodeDisplayMode.TreeViewPrerender;

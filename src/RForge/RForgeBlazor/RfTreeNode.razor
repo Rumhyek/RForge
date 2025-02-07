@@ -11,7 +11,7 @@
                 {
                     <button type="button"
                             class="button @Rf.ClassWhen(("is-active", IsSelected), ("is-loading", IsLoading))"
-                            disabled=@(Context.AllowExpand != true)
+                            disabled=@(Context.MyAllowExpand != true)
                             title="@ExpandTitleText"
                             aria-expanded="@IsExpanded.ToString().ToLower()"
                             aria-controls="@ChildrenId"
