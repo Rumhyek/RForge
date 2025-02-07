@@ -83,12 +83,12 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     /// Gets or sets the CSS class for the expanded icon.
     /// </summary>
     [Parameter]
-    public string ExpandedIconCss { get; set; } = "fa-solid fa-chevron-down";
+    public string ExpandedIconCss { get; set; } = "fa-solid fa-chevron-down fa-sm";
     /// <summary>
     /// Gets or sets the CSS class for the collapsed icon.
     /// </summary>
     [Parameter]
-    public string CollapsedIconCss { get; set; } = "fa-solid fa-chevron-right";
+    public string CollapsedIconCss { get; set; } = "fa-solid fa-chevron-right fa-sm";
 
     /// <summary>
     /// Gets or sets the render fragment for the node.
