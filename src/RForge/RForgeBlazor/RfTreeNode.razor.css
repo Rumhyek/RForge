@@ -2,6 +2,7 @@
 
 .menu-list .button {
     --bulma-menu-list-link-padding: .25em .6em;
+    --bulma-button-padding-horizontal: var(--bulma-menu-list-link-padding);
     display: inline-block;
     width: unset;
 }
