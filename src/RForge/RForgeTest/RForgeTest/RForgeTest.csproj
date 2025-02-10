@@ -21,11 +21,5 @@
     <ItemGroup>
         <Folder Include="wwwroot\lib\" />
     </ItemGroup>
-    
-    <ItemGroup>
-      <Content Update="Components\Pages\TreeDesignPage.razor">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-    </ItemGroup>
 
 </Project>
