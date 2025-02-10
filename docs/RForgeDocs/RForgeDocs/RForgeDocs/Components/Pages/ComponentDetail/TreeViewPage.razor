@@ -11,6 +11,7 @@
             <ul class="menu-list">
                 @ComponentDetail.SideLink(("RfTreeView.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeView.razor"))
                 @ComponentDetail.SideLink(("RfTreeView.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeView.razor.cs"))
+                @ComponentDetail.SideLink(("RfTreeView.razor.css", TagInfo.Css, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTreeView.razor.css"))
                 @ComponentDetail.SpacerLink()
                 @ComponentDetail.SideLink(("TreeViewBaseContext.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/TreeViewBaseContext.cs"))
                 @ComponentDetail.SideLink(("TreeViewContext.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/TreeViewContext.cs"))
@@ -89,8 +90,8 @@
 
             <h4>Allow Selection</h4>
             <p>
-                When set to true all sub <code>RfTreeNode</code> when clicked will be marked as active. 
-                <code>RfTreeView</code> supports only one selection at a time. 
+                When set to true all sub <code>RfTreeNode</code> when clicked will be marked as active.
+                <code>RfTreeView</code> supports only one selection at a time.
                 The event <code>RfTreeNode.NodeSelectChange</code> will fire for both selections and deselections.
             </p>
             <div class="notification">
@@ -104,7 +105,7 @@
             </p>
             <div class="notification">
                 <strong>NOTE:</strong> Setting this to false will disable the expand/collapse functionality for all nodes.
-                The nodes will still show the expand / collapse icon but mark them as disabled. 
+                The nodes will still show the expand / collapse icon but mark them as disabled.
                 The <code>RfTreeNode.NodeClick</code> event will still fire when clicking on the node.
             </div>
 
@@ -208,15 +209,6 @@
         </div>
 
         <div class="block">
-            <h5 class="subtitle mb-2">ShowExpandIcon</h5>
-            <div class="tags mb-2">
-                <span class="tag is-info">bool</span>
-                <span class="tag">default: false</span>
-            </div>
-            <p>Required to support children nodes. Currently this cannot be inferred and must be set if expandability is needed.</p>
-        </div>
-
-        <div class="block">
             <h5 class="subtitle mb-2">IsExpanded</h5>
             <div class="tags mb-2">
                 <span class="tag is-info">bool</span>
@@ -260,12 +252,12 @@
         </div>
 
         <div class="block">
-            <h5 class="subtitle mb-2">CollapsedIconCss</h5>
+            <h5 class="subtitle mb-2">IconCss</h5>
             <div class="tags mb-2">
                 <span class="tag is-info">string</span>
-                <span class="tag">default: fa-solid fa-chevron-right</span>
+                <span class="tag">default: null</span>
             </div>
-            <p>The css icons to show on the expand button while collapsed.</p>
+            <p>The css icons to show on the expand button while collapsed or an icon to show while the node is a leaf node.</p>
         </div>
 
         <div class="block">
@@ -281,7 +273,7 @@
             <div class="tags mb-2">
                 <span class="tag is-info">RenderFragment</span>
             </div>
-            <p>The render fragment used to render the children nodes.</p>
+            <p>The render fragment used to render the children nodes. This will convert the node icon into an expander toggle.</p>
         </div>
 
         <div class="block">
@@ -319,21 +311,22 @@
             <p>An event that is called when the <code>RfTreeNode.IsSelected</code> changes within the <code>RfTreeView</code> component.</p>
         </div>
 
+        <div class="content">
 
-        <h3>Prerendering Entire Tree</h3>
-        <p>
-            <code>RfTreeView</code> supports two forms of skeleton. First you can make use of <code>RfTreeView.PrerenderNodes</code> render fragment to render
-            an example of the tree view. To use the prerender render fragment the <code>RfTreeView.ShowAsPrerender</code> must be set to true.
-        </p>
-        <p>
-            Use the same set of sub components when building out the <code>PrerenderNodes</code>.
-        </p>
+            <h3>Prerendering Entire Tree</h3>
+            <p>
+                <code>RfTreeView</code> supports two forms of skeleton. First you can make use of <code>RfTreeView.PrerenderNodes</code> render fragment to render
+                an example of the tree view. To use the prerender render fragment the <code>RfTreeView.ShowAsPrerender</code> must be set to true.
+            </p>
+            <p>
+                Use the same set of sub components when building out the <code>PrerenderNodes</code>.
+            </p>
 
-        <h4>Example</h4>
-        <p>
-            Below shows a simple example of setting up <code>RfTreeView.ShowAsPrerender</code> making use of a label and four nodes.
-        </p>
-        <pre><code>&lt;RfTreeView ShowAsPrerender="true" TTreeItemData="object"&gt;
+            <h4>Example</h4>
+            <p>
+                Below shows a simple example of setting up <code>RfTreeView.ShowAsPrerender</code> making use of a label and four nodes.
+            </p>
+            <pre><code>&lt;RfTreeView ShowAsPrerender="true" TTreeItemData="object"&gt;
     &lt;PrerenderNodes&gt;
         &lt;RfTreeLabel /&gt;
         &lt;RfTreeNode TTreeItemData="object" /&gt;
@@ -345,6 +338,46 @@
         &lt;/RfTreeNode&gt;
     &lt;/PrerenderNodes&gt;
 &lt;/RfTreeView&gt;</code></pre>
+
+
+            <h2>CSS Variables</h2>
+
+            <p>
+                <code>RfTreeView</code> adds additional CSS variables applied at the root <code>.menu.rf-treeview</code>.
+            </p>
+
+            <table class="table is-fullwidth is-striped">
+
+                <thead>
+                    <tr>
+                        <th>CSS Variable</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>--bulma-menu-nested-list-padding-left</code></td>
+                        <td><code>.25em</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--rf-menu-list-link-label-padding-left</code></td>
+                        <td><code>.25em</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--rf-menu-list-link-icon-padding-horizontal</code></td>
+                        <td><code>.5em</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--rf-menu-list-link-icon-width</code></td>
+                        <td><code>1.25em</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--rf-menu0list-link-icon-font-size</code></td>
+                        <td><code>.75em</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
     </BasicUsage>
 
