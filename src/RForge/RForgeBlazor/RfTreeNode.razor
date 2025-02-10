@@ -6,12 +6,13 @@
     {
         case TreeNodeDisplayMode.Display:
         case TreeNodeDisplayMode.Loading:
-            <div class="is-flex @NodeCss @Rf.ClassWhen(("with-left-expand", ShowExpandIcon))">
 
-                @if (ShowExpandIcon == true)
-                {
+            @if (HasChildren == true)
+            {
+                <div class="tree-node @Rf.ClassWhen(("is-active", IsSelected))">
+
                     <button type="button"
-                            class="button is-expand-button @Rf.ClassWhen(("is-active", IsSelected), ("is-loading", IsLoading))"
+                            class="button node-icon @Rf.ClassWhen(("is-loading", IsLoading))"
                             disabled=@(MyAllowExpand != true)
                             title="@ExpandTitleText"
                             aria-expanded="@IsExpanded.ToString().ToLower()"
@@ -19,31 +20,20 @@
                             @onclick=OnToggleExpandClick
                             @onclick:stopPropagation="true"
                             @onclick:preventDefault="true">
-                        <span class="">
 
-                            @if (IsExpanded == true)
-                            {
-                                <i class="@ExpandedIconCss"></i>
-                            }
-                            else
-                            {
-                                <i class="@CollapsedIconCss"></i>
-                            }
-                        </span>
+                        @if (HasIcon() == true)
+                        {
+                            <i class="@GetIconCss()" />
+                        }
+
                     </button>
-                }
 
-                <a class="@Rf.ClassWhen(("is-active", IsSelected),( "is-expand-label", ShowExpandIcon), ( "no-expand-label", ShowExpandIcon == false))"
-                   @onclick=OnNodeClickCallback href="@LinkUrl">
-                    <span>@Node(NodeData)</span>
-                </a>
+                    <a class="node-label"
+                       href="@LinkUrl"
+                       @onclick=OnNodeClickCallback>@Node(NodeData)</a>
+                </div>
 
-            </div>
-
-
-            @if (ShowExpandIcon == true)
-            {
-                <ul class="mr-0 @Rf.ClassWhen(("is-open", IsExpanded))"
+                <ul class="@Rf.ClassWhen(("is-open", IsExpanded))"
                     id="@ChildrenId">
                     @if (IsLoading == true)
                     {
@@ -60,15 +50,34 @@
                     }
                 </ul>
             }
+            else
+            {
+                <a class="tree-node @Rf.ClassWhen(("is-active", IsSelected))"
+                   href="@LinkUrl"
+                   @onclick=OnNodeClickCallback>
+
+                    <span class="node-icon">
+                        @if (HasIcon() == true)
+                        {
+                            <i class="@GetIconCss()" />
+                        }
+                    </span>
+
+                    <span class="node-label">@Node(NodeData)</span>
+                </a>
+            }
 
             break;
 
         case TreeNodeDisplayMode.TreeViewPrerender:
             <a class="is-skeleton">&nbsp;</a>
-            <ul class="mr-0 is-open"
-                id="@ChildrenId">
-                @Children
-            </ul>
+            @if (HasChildren == true)
+            {
+                <ul class="is-open"
+                    id="@ChildrenId">
+                    @Children
+                </ul>
+            }
             break;
     }
 

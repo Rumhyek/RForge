@@ -27,7 +27,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     public EventCallback<bool> IsSelectedChanged { get; set; }
 
     /// <summary>
-    /// if null <see cref="RfTreeView.AllowSelection"/> is used. Otherwise, this value is used.
+    /// if null <see cref="RfTreeView{TTreeItemData}.AllowSelection"/> is used. Otherwise, this value is used.
     /// </summary>
     [Parameter]
     public bool? AllowSelection { get; set; }
@@ -50,14 +50,13 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     public EventCallback<bool> IsExpandedChanged { get; set; }
 
     /// <summary>
-    /// if null <see cref="RfTreeView.AllowExpand"/> is used. Otherwise, this value is used.
+    /// if null <see cref="RfTreeView{TTreeItemData}.AllowExpand"/> is used. Otherwise, this value is used.
     /// </summary>
     [Parameter]
     public bool? AllowExpand { get; set; }
 
-
     /// <summary>
-    /// if null <see cref="RfTreeView.AllowClick"/> is used. Otherwise, this value is used.
+    /// if null <see cref="RfTreeView{TTreeItemData}.AllowClick"/> is used. Otherwise, this value is used.
     /// </summary>
     [Parameter]
     public bool? AllowClick { get; set; }
@@ -74,21 +73,15 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     public int LoadingNodeCount { get; set; } = 3;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to show the expand icon.
-    /// </summary>
-    [Parameter]
-    public bool ShowExpandIcon { get; set; }
-
-    /// <summary>
     /// Gets or sets the CSS class for the expanded icon.
     /// </summary>
     [Parameter]
-    public string ExpandedIconCss { get; set; } = "fa-solid fa-chevron-down fa-sm";
+    public string ExpandedIconCss { get; set; } = "fa-solid fa-chevron-down";
     /// <summary>
     /// Gets or sets the CSS class for the collapsed icon.
     /// </summary>
     [Parameter]
-    public string CollapsedIconCss { get; set; } = "fa-solid fa-chevron-right fa-sm";
+    public string IconCss { get; set; }
 
     /// <summary>
     /// Gets or sets the render fragment for the node.
@@ -129,9 +122,12 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     [CascadingParameter]
     private TreeViewContext<TTreeItemData> Context { get; set; }
 
+
+    private bool HasChildren => Children != null;
     private string ChildrenId { get; set; }
     private bool ExpansionChangeOcurred = false;
     private bool selectionChangeOcurred = false;
+    private readonly string defaultIconCss = "fa-solid fa-chevron-right";
 
     /// <summary>
     /// Method invoked when the component is initialized.
@@ -218,7 +214,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
     private async Task<bool> ChangeExpansion(bool isExpanding)
     {
-        if (ShowExpandIcon == false)
+        if (HasChildren == false)
         {
             return false;
         }
@@ -282,7 +278,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     {
         get
         {
-            if (ShowExpandIcon == false)
+            if (HasChildren == false)
             {
                 return null;
             }
@@ -334,6 +330,24 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
             return Context.AllowNodeClick;
         }
     }
+
+    private string GetIconCss()
+    {
+        if(HasChildren == false) 
+            return IconCss;
+        
+        //Handle expanded
+        if(IsExpanded == true)
+            return ExpandedIconCss;
+
+        //handle collapsed (reuss IconCss)
+        if (string.IsNullOrWhiteSpace(IconCss) == true) 
+            return defaultIconCss;
+
+        return IconCss;
+    }
+
+    private bool HasIcon() => string.IsNullOrWhiteSpace(GetIconCss()) == false;
 
     private TreeNodeDisplayMode GetDisplayMode()
     {

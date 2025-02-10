@@ -1,0 +1,86 @@
+﻿
+
+.menu.rf-treeview {
+    --bulma-menu-nested-list-padding-left: .25em;
+    --rf-menu-list-link-label-padding-left: .25em;
+    --rf-menu-list-link-icon-padding-horizontal: .5em;
+    --rf-menu-list-link-icon-width: 1.25em;
+    --rf-menu0list-link-icon-font-size: .75em;
+}
+
+::deep .menu.rf-treeview .tree-node {
+    display: flex;
+    align-content: center;
+    flex-wrap: nowrap;
+    padding: 0;
+}
+
+::deep .menu.rf-treeview .node-icon {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    box-sizing: content-box;
+    font-size: var(--rf-menu0list-link-icon-font-size);
+    width: var(--rf-menu-list-link-icon-width);
+    padding: var(--bulma-menu-list-link-padding);
+    padding-inline-start: var(--rf-menu-list-link-icon-padding-horizontal);
+    padding-inline-end: var(--rf-menu-list-link-icon-padding-horizontal);
+}
+
+::deep .menu.rf-treeview .node-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    padding: var(--bulma-menu-list-link-padding);
+    padding-inline-start: var(--rf-menu-list-link-label-padding-left);
+}
+
+
+::deep .menu.rf-treeview .tree-node.is-active button, .menu.rf-treeview .tree-node.is-active a {
+    --bulma-menu-item-h: var(--bulma-menu-item-selected-h);
+    --bulma-menu-item-s: var(--bulma-menu-item-selected-s);
+    --bulma-menu-item-l: var(--bulma-menu-item-selected-l);
+    --bulma-menu-item-background-l: var(--bulma-menu-item-selected-background-l);
+    --bulma-menu-item-color-l: var(--bulma-menu-item-selected-color-l);
+}
+
+::deep .menu.rf-treeview .tree-node.is-active button {
+    border-radius: var(--bulma-menu-item-radius) 0 0 var(--bulma-menu-item-radius);
+}
+
+::deep .menu.rf-treeview .tree-node.is-active a {
+    border-radius: 0 var(--bulma-menu-item-radius) var(--bulma-menu-item-radius) 0;
+}
+
+::deep .menu.rf-treeview .menu-label {
+    padding-inline-start: var(--rf-menu-list-link-icon-padding-horizontal);
+}
+
+::deep .menu.rf-treeview li .menu-label {
+    margin-top: var(--bulma-menu-label-spacing);
+}
+
+::deep .menu.rf-treeview .menu-list ul {
+    display: none;
+    margin-right: 0;
+}
+
+::deep .menu.rf-treeview ul.is-open {
+    display: block;
+}
+
+
+/* Skeleton */
+
+.menu.rf-treeview .is-skeleton {
+    background-color: var(--bulma-skeleton-background);
+    border-radius: var(--bulma-skeleton-radius);
+    display: block;
+    margin-bottom: var(--bulma-menu-nested-list-margin);
+}
+
+.menu.rf-treeview .menu-label.is-skeleton {
+    margin-bottom: calc(var(--bulma-menu-label-spacing) / 2);
+    
+}

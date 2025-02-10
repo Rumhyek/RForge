@@ -1,12 +1,8 @@
 
-<p class="menu-label @CssClass">
-
-    @if (Context?.ShowAsPrerender == true)
+<p class="menu-label @CssClass @Rf.ClassWhen(("is-skeleton", Context?.ShowAsPrerender == true))">
+    @ChildContent
+    @if (Context?.ShowAsPrerender == true && ChildContent == null)
     {
-        <div class="is-skeleton">&nbsp; @ChildContent</div>
-    }
-    else
-    {
-        @ChildContent
+        <span>&nbsp;</span>
     }
 </p>
