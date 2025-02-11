@@ -184,7 +184,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
     private async Task OnNodeClickCallback()
     {
-        if (await ChangeSelection(true) == true)
+        if (await ChangeSelection(IsSelected == false) == true)
         {
             await Context.NodeSelectionChange(this);
         }
