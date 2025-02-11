@@ -52,9 +52,6 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
     public bool ShowAsPrerender { get; set; }
 
     private TreeViewContext<TTreeItemData> Context { get; set; }
-    private RfTreeNode<TTreeItemData> SelectedNode { get; set; }
-    private RfTreeNode<TTreeItemData> ExpandedNode { get; set; }
-
     /// <summary>
     /// Method invoked when the component is initialized.
     /// </summary>
@@ -68,8 +65,8 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
             AllowNodeClick = AllowClick
         };
 
-        Context.OnExpandedChange += Context_OnExpanded;
-        Context.OnSelectedChange += Context_OnSelected;
+        Context.OnExpandedChange += Context_OnExpandedChange;
+        Context.OnSelectedChange += Context_OnSelectedChange;
 
         base.OnInitialized();
     }
@@ -86,15 +83,13 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
         base.OnParametersSet();
     }
 
-    private async Task Context_OnSelected(object sender, RfTreeNode<TTreeItemData> selectedNode)
+    private Task Context_OnSelectedChange(object sender, RfTreeNode<TTreeItemData> selectedNode)
     {
-        if (SelectedNode != null && selectedNode != SelectedNode)
-            await SelectedNode.Deselect();
-
-        SelectedNode = selectedNode;
+        //Currently there is nothing plan for this event. Though adding something here would be nice.
+        return Task.CompletedTask;
     }
 
-    private Task Context_OnExpanded(object sender, RfTreeNode<TTreeItemData> expandedNode)
+    private Task Context_OnExpandedChange(object sender, RfTreeNode<TTreeItemData> expandedNode)
     {
         //Currently there is nothing plan for this event. Though adding something here would be nice.
         return Task.CompletedTask;
@@ -105,8 +100,8 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
     {
         if (Context != null)
         {
-            Context.OnExpandedChange -= Context_OnExpanded;
-            Context.OnSelectedChange -= Context_OnSelected;
+            Context.OnExpandedChange -= Context_OnExpandedChange;
+            Context.OnSelectedChange -= Context_OnSelectedChange;
         }
     }
 }

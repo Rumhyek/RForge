@@ -184,7 +184,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
     private async Task OnNodeClickCallback()
     {
-        if (await ChangeSelection(true) == true)
+        if (await ChangeSelection(IsSelected == false) == true)
         {
             await Context.NodeSelectionChange(this);
         }
@@ -262,18 +262,6 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         });
 
         return true;
-    }
-
-    internal async Task Deselect()
-    {
-        if(await ChangeSelection(false) == true)
-            await Context.NodeSelectionChange(this);
-    }
-
-    internal async Task Collapse()
-    {
-        if (await ChangeExpansion(false) == true)
-            await Context.NodeExpandChange(this);
     }
 
     private string ExpandTitleText
