@@ -264,18 +264,6 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         return true;
     }
 
-    internal async Task Deselect()
-    {
-        if(await ChangeSelection(false) == true)
-            await Context.NodeSelectionChange(this);
-    }
-
-    internal async Task Collapse()
-    {
-        if (await ChangeExpansion(false) == true)
-            await Context.NodeExpandChange(this);
-    }
-
     private string ExpandTitleText
     {
         get
