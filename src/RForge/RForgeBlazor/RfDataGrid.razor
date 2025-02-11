@@ -105,11 +105,19 @@
                         var rowCss = "";
                         if (AllowSelection == true && currentSelection.Contains(row) == true)
                         {
-                            rowCss += " selected is-primary";
+                            rowCss += "selected is-primary";
                         }
 
                         <tr class="@rowCss" @onclick=@(async ()=> await OnRowClick(row))>
                             @Cells(row)
+                        </tr>
+                    }
+
+                    
+                    @if(Data.Any() == false)
+                    {
+                        <tr class="@EmptyContentCss">
+                            @EmptyContent
                         </tr>
                     }
                 }

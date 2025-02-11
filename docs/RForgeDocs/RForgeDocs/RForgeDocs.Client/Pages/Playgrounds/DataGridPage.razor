@@ -84,6 +84,16 @@
             <InputText @bind-Value=@CssClass class="input" />
         </BulmaInput>
 
+        <BulmaInput Label="EmptyContentCss"
+                    HelpText="The css class to add to the empty content message.">
+            <InputText @bind-Value=@EmptyContentCss class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="EmptyContent"
+                    HelpText="This is an example of an empty content message.">
+            <InputText @bind-Value=@EmptyContentMessage class="input" />
+        </BulmaInput>
+
         <BulmaInput Label="PagerCssClass"
                     HelpText="A Css class to add to the pager wrapping div.">
             <InputText @bind-Value=@PagerCssClass class="input" />
@@ -99,6 +109,13 @@
             <InputCheckbox @bind-Value=@IsFullWidth class="checkbox" />
         </BulmaCheckbox>
 
+
+        <BulmaInput Label="PreRenderRowCount"
+                    HelpText="How many rows to render while showing the skeleton mode. Default = PageSize or 4 if both are null.">
+            <InputNumber @bind-Value=@PreRenderRowCount class="input" />
+        </BulmaInput>
+
+
     </Parameters>
 
     <Display>
@@ -109,6 +126,7 @@
                     AllowFilters=@AllowFilters
                     AllowSelection=@AllowSelection
                     MaxSelection=@MaxSelection
+                    EmptyContentCss=@EmptyContentCss
                     @bind-SortKey=@SortKey
                     @bind-SortKey:after=@(() => Logger.AddLog($"SortKey:after({SortKey})"))
                     @bind-SortOrder=@SortOrder
@@ -150,6 +168,10 @@
                 <td>@context.DateCreated.ToShortDateString()</td>
             </Cells>
 
+            <EmptyContent>
+                <td colspan="4">@EmptyContentMessage</td>
+            </EmptyContent>
+
         </RfDataGrid>
 
 
@@ -157,6 +179,7 @@
 
             <button class="button" @onclick=OnUnloadClick>Unload</button>
             <button class="button" @onclick=OnLoad>Force Reload</button>
+            <button class="button" @onclick=OnClearClick>Clear List</button>
 
         </div>
 
@@ -175,6 +198,11 @@
     /// How many columns to render while showing the skeleton mode. Deafult = 4;
     /// </summary>
     public int PreRenderColumnCount { get; set; } = 4;
+
+    /// <summary>
+    /// The css class to add to the empty content message.
+    /// </summary>
+    public string EmptyContentCss { get; set; } = "has-text-centered has-text-grey has-text-weight-bold";
 
     /// <summary>
     /// How many rows to render while showing the skeleton mode. Default = null;
@@ -251,24 +279,31 @@
     /// Should the table take up 100% of the space or not.
     /// </summary>
     public bool IsFullWidth { get; set; } = true;
+
+    /// <summary>
+    /// An example of an empty content in a simple message.
+    /// </summary>
+    public string EmptyContentMessage { get; set; } = "An empty content message";
+
+
     #endregion
 
     private async Task OnLoad()
     {
         var response = await userDataGridPageProcessor.GetPage(new UserDataGridGetPageData()
+        {
+            PageIndex = CurrentPageIndex,
+            PageSize = PageSize,
+            SortKey = SortKey,
+            SortOrder = SortOrder,
+            Filters = new()
             {
-                PageIndex = CurrentPageIndex,
-                PageSize = PageSize,
-                SortKey = SortKey,
-                SortOrder = SortOrder,
-                Filters = new()
-                {
-                    FullName = Filters.FullName,
-                    DateCreated = Filters.DateCreated,
-                    Email = Filters.Email,
-                    Id = Filters.Id
-                }
-            });
+                FullName = Filters.FullName,
+                DateCreated = Filters.DateCreated,
+                Email = Filters.Email,
+                Id = Filters.Id
+            }
+        });
 
         TotalCount = response.TotalCount;
         Data = response.Data;
@@ -287,6 +322,11 @@
         TotalCount = 0;
     }
 
+    private void OnClearClick()
+    {
+        Data = [];
+        TotalCount = 0;
+    }
 
 
     private class UserFiltersData
