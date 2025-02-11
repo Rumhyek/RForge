@@ -37,7 +37,7 @@
 }
 
 
-::deep.menu.rf-treeview .tree-node.is-active button, .menu.rf-treeview .tree-node.is-active a {
+::deep.menu.rf-treeview .tree-node.is-active button, ::deep.menu.rf-treeview .tree-node.is-active a {
     --bulma-menu-item-h: var(--bulma-menu-item-selected-h);
     --bulma-menu-item-s: var(--bulma-menu-item-selected-s);
     --bulma-menu-item-l: var(--bulma-menu-item-selected-l);
