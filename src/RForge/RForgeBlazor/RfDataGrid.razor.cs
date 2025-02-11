@@ -372,6 +372,9 @@ public partial class RfDataGrid<TRowData>
                 case nameof(EmptyContent):
                     EmptyContent = (RenderFragment)parameter.Value;
                     break;
+                case nameof(EmptyContentCss):
+                    EmptyContentCss = (string)parameter.Value;
+                    break;
                 case nameof(Cells):
                     Cells = (RenderFragment<TRowData>)parameter.Value;
                     break;

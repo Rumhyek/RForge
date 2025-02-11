@@ -273,6 +273,43 @@
         &lt;td&gt;@@context.Email&lt;/td&gt;
     &lt;/Cells&gt;    
 &lt;/RfDataGrid&gt;</code></pre>
+
+            <h2>Empty Content</h2>
+
+            <p>
+                If the <code>Data</code> is empty, the <code>RfDataGrid</code> will render a <code>EmptyContent</code> wrapped in a <code>tr</code>.
+                This is useful to show a message to the user that there is no data to display.
+            </p>
+
+            <h3>Example</h3>
+            <pre><code>&lt;RfDataGrid OnLoadData="OnLoadData"
+            Data="UserCollection"
+            TotalCount="TotalCount"
+            bind-CurrentPageIndex="CurrentPageIndex"
+            bind-SortOrder="CurrentSortOrder"
+            bind-SortKey="CurrentSortKey"&gt;
+
+    &lt;Headers&gt;
+        &lt;RfDgHeader SortKey="Id"&gt;Id&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader SortKey="FirstName"&gt;First Name&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader SortKey="LastName"&gt;Last Name&lt;/RfDgHeader&gt;
+        &lt;RfDgHeader SortKey="Email"&gt;Email&lt;/RfDgHeader&gt;
+    &lt;/Headers&gt;
+
+    &lt;Cells&gt;
+        &lt;td&gt;@@context.Id&lt;/td&gt;
+        &lt;td&gt;@@context.FirstName&lt;/td&gt;
+        &lt;td&gt;@@context.LastName&lt;/td&gt;
+        &lt;td&gt;@@context.Email&lt;/td&gt;
+    &lt;/Cells&gt;
+
+    &lt;EmptyContent&gt;
+        &lt;tr&gt;
+            &lt;td colspan="4"&gt;No data available.&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/EmptyContent&gt;
+
+&lt;/RfDataGrid&gt;</code></pre>
         </div>
 
     </BasicUsage>
