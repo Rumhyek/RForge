@@ -230,6 +230,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         }
 
         IsExpanded = isExpanding;
+        await IsExpandedChanged.InvokeAsync(IsExpanded); 
 
         StateHasChanged();
 
@@ -249,6 +250,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
         if (IsSelected == isSelecting) return false;
 
         IsSelected = isSelecting;
+        await IsSelectedChanged.InvokeAsync(IsSelected);
 
         StateHasChanged();
 
