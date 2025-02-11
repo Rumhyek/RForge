@@ -1,12 +1,14 @@
 ﻿@page "/data-grid"
 @using RForge.Abstractions
+@using RForgeBlazor
+
 @rendermode InteractiveAuto
 
 @inject IGetFakeUsers getFakeUsers
 
-<h1 class="title">Data Grid</h1>
+<h1 class="title">Data Grid test</h1>
 
-<RfDataGrid @rendermode="InteractiveAuto"
+<RfDataGrid
             TRowData="UserRowData"
             @bind-SortKey=SortKey
             @bind-SortOrder=SortOrder
@@ -38,7 +40,9 @@
         <td>@context.LastName</td>
         <td>@context.Email</td>
     </Cells>
-
+    <EmptyContent>
+        <td colspan="4">Could not find any Users</td>
+    </EmptyContent>
 </RfDataGrid>
 
 @code {

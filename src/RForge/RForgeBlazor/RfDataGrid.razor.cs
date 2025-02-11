@@ -165,6 +165,12 @@ public partial class RfDataGrid<TRowData>
     public RenderFragment EmptyContent { get; set; }
 
     /// <summary>
+    /// The css class to add to the empty content message.
+    /// </summary>
+    [Parameter]
+    public string EmptyContentCss { get; set; } = "has-text-centered has-text-grey has-text-weight-bold";
+
+    /// <summary>
     /// A Css class to add to the base table.
     /// </summary>
     [Parameter]
@@ -362,6 +368,9 @@ public partial class RfDataGrid<TRowData>
                     break;
                 case nameof(Filters):
                     Filters = (RenderFragment)parameter.Value;
+                    break;
+                case nameof(EmptyContent):
+                    EmptyContent = (RenderFragment)parameter.Value;
                     break;
                 case nameof(Cells):
                     Cells = (RenderFragment<TRowData>)parameter.Value;
