@@ -159,6 +159,12 @@ public partial class RfDataGrid<TRowData>
     public RenderFragment<TRowData> Cells { get; set; }
 
     /// <summary>
+    /// The template section to add a custom message when <see cref="Data"/> is empty but not null.
+    /// </summary>
+    [Parameter]
+    public RenderFragment EmptyContent { get; set; }
+
+    /// <summary>
     /// A Css class to add to the base table.
     /// </summary>
     [Parameter]

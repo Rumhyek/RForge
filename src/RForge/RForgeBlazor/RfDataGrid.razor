@@ -112,6 +112,11 @@
                             @Cells(row)
                         </tr>
                     }
+
+                    @if(Data.Any() == true && EmptyContent != null)
+                    {
+                        @EmptyContent
+                    }
                 }
             </tbody>
         </table>
