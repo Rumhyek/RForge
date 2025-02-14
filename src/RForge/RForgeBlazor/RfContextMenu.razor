@@ -1,0 +1,21 @@
+<div class="dropdown @CssClass @DropDownDirectionCss @PositionCss @Rf.ClassWhen(("is-active", IsActive), ("is-hoverable", IsHoverable))">
+    <div class="dropdown-trigger">
+        <button class="button @TriggerButtonCss @Rf.ClassWhen((IsActiveTriggerButtonCss, IsActive))"
+                @onclick=ToggleIsActiveClick
+                aria-haspopup="true" 
+                aria-controls="context-menu-@DropDownId">
+            @if(string.IsNullOrWhiteSpace(TriggerText) == false)
+            {
+                <span>@TriggerText</span>
+            }
+            <span class="icon is-small">
+                <i class="@DropDownIcon" aria-hidden="true"></i>
+            </span>
+        </button>
+    </div>
+    <div class="dropdown-menu" id="context-menu-@DropDownId" role="menu">
+        <div class="dropdown-content">
+            @ChildContent
+        </div>
+    </div>
+</div>

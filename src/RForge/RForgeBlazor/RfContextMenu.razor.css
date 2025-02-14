@@ -1,0 +1,29 @@
+﻿
+
+.dropdown {
+    --rf-position-spacing: 0;
+}
+
+    .dropdown.is-top-right {
+        position: absolute;
+        top: var(--rf-position-spacing);
+        right: var(--rf-position-spacing);
+    }
+
+    .dropdown.is-top-left {
+        position: absolute;
+        top: var(--rf-position-spacing);
+        left: var(--rf-position-spacing);
+    }
+
+    .dropdown.is-bottom-right {
+        position: absolute;
+        bottom: var(--rf-position-spacing);
+        right: var(--rf-position-spacing);
+    }
+
+    .dropdown.is-bottom-left {
+        position: absolute;
+        bottom: var(--rf-position-spacing);
+        left: var(--rf-position-spacing);
+    }
