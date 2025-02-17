@@ -1,0 +1,143 @@
+﻿@page "/context-menu/details"
+
+<ComponentDetail Title="Context Menu"
+                 PlaygroundUrl="/context-menu/playground"
+                 SubTitle="A drop down of actions to declutter the UI">
+
+    <Examples>
+        @ComponentDetail.SideLink(("Basic example", TagInfo.Empty, "/context-menu/example/basic-example"))
+        @ComponentDetail.SideLink(("Lazy loading example", TagInfo.Empty, "/context-menu/example/lazy-loading-example"))
+        @ComponentDetail.SideLink(("In a list example", TagInfo.Empty, "/context-menu/example/list-example"))
+
+    </Examples>
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("RfContextMenu.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfContextMenu.razor"))
+        @ComponentDetail.SideLink(("RfContextMenu.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfContextMenu.razor.cs"))
+        @ComponentDetail.SideLink(("RfContextMenu.razor.css", TagInfo.Css, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfContextMenu.razor.css"))
+        @ComponentDetail.SpacerLink()
+        @ComponentDetail.SideLink(("RfContextMenuDivider.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfContextMenuDivider.razor"))
+        @ComponentDetail.SideLink(("RfContextMenuDivider.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfContextMenuDivider.razor.cs"))
+        @ComponentDetail.SpacerLink()
+        @ComponentDetail.SideLink(("RfContextMenuItem.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfContextMenuItem.razor"))
+        @ComponentDetail.SideLink(("RfContextMenuItem.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfContextMenuItem.razor.cs"))
+        @ComponentDetail.SpacerLink()
+        @ComponentDetail.SideLink(("RfContextMenuLink.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfContextMenuLink.razor"))
+        @ComponentDetail.SideLink(("RfContextMenuLink.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfContextMenuLink.razor.cs"))
+        @ComponentDetail.SpacerLink()
+        @ComponentDetail.SideLink(("RfDropDownPosition.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/DropDowns/RfDropDownPosition.cs"))
+        @ComponentDetail.SideLink(("RfPosition.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/DropDowns/RfPosition.cs"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                The Context Menu component is a versatile and interactive UI element designed to enhance user experience by providing
+                a context-specific menu of actions or options. It makes uses of Bulma `.dropdown` classes to create a dropdown menu.
+            </p>
+
+            <h3>When to Use</h3>
+            <p>
+                Use the Context Menu component when you need to offer users a set of actions or options that are relevant to a specific
+                context or element on the page. It is particularly useful for:
+            </p>
+            <ul>
+                <li>Providing additional options for a selected item or element.</li>
+                <li>Offering context-specific actions without cluttering the UI.</li>
+                <li>Enhancing user interaction by displaying relevant choices based on the current context.</li>
+            </ul>
+
+        </div>
+    </Purpose>
+
+    <BasicUsage>
+        <div class="content">
+            <p>
+                To activate the context menu the user must left click or press enter on the trigger element.
+            </p>
+
+            <p>
+                By default the menu will be positioned inline and will open to the bottom left
+                of the trigger element on hover or stay open if the trigger element is clicked.
+                The context menu also shows the icon <code>fa-solid fa-ellipsis</code> with no text by default.
+                Both of these can be changed by setting the <code>TriggerText</code> and <code>TriggerButtonCss</code> parameters.
+            </p>
+
+            <p>
+                The menu can be configured to open in different directions by setting the <code>RfContextMenu.DropDownPosition</code> parameter.
+                The menu can be positioned in the four corners based on <code>RfContextMenu.Position</code> parameter.
+            </p>
+
+            <p>
+                The <code>ChildContent</code> of the <code>RfContextMenu</code> component can contain any number of <code>RfContextMenuItem</code>
+                and <code>RfContextMenuLink</code> components. The <code>RfContextMenuDivider</code> component can be used to create a divider
+                between groups of menu items.
+            </p>
+
+            <pre><code>&lt;RfContextMenu &gt;
+    &lt;RfContextMenuItem&gt;Some Text&lt;/RfContextMenuItem&gt;
+    &lt;RfContextMenuItem&gt;Some other text&lt;/RfContextMenuItem&gt;
+    &lt;RfContextMenuDivider /&gt;
+    &lt;RfContextMenuLink Href="#"&gt;Link&lt;/RfContextMenuLink&gt;
+&lt;/RfContextMenu&gt;</code></pre>
+
+            <h3>RfContextMenuItem</h3>
+            <p>
+                The <code>RfContextMenuItem</code> is used to add no interactive text to the menu. 
+                You can add any content you want inside the component including something that is interactive.
+            </p>
+            <h3>RfContextMenuLink</h3>
+            <p>
+                The <code>RfContextMenuLink</code> component supports the <code>OnClick</code> event as well as all the parameters of the <code>&lt;a&gt;</code> tag.
+            </p>
+
+            <h3>Dynamic / Lazy Loading</h3>
+            <p>
+                You can make the menu dynamically load items by binding to <code>@@bind-IsActive:after</code>.
+                However, you will have to set <code>IsHoverable</code> to false because the hover action is controlled by css and a event cannot be triggered on hover.
+                In the same way you can add a the css class <code>.is-loading</code> to the <code>TriggerButtonCss</code> during the loading state to show a loading spinner.
+            </p>
+            <h4>Dynamic Loading Example</h4>
+            <pre><code>&lt;RfContextMenu @@bind-IsActive:after=@@LoadContextMenu 
+    TriggerButtonCss="@@Rf.ClassWhen(("is-loading", IsLoaded))"&gt;
+    @@if(IsLoaded == true)
+    {
+        &lt;RfContextMenuItem&gt;Some Text&lt;/RfContextMenuItem&gt;
+        &lt;RfContextMenuItem&gt;Some other text&lt;/RfContextMenuItem&gt;
+        &lt;RfContextMenuDivider /&gt;
+        &lt;RfContextMenuLink Href="#"&gt;Link&lt;/RfContextMenuLink&gt;
+    }
+&lt;/RfContextMenu&gt;</code></pre>
+
+            <h2>CSS Variables</h2>
+            <p>
+                <code>RfContextMenu</code> adds additional CSS variables applied at the root <code>.dropdown</code>.
+            </p>
+
+            <table class="table is-fullwidth is-striped">
+
+                <thead>
+                    <tr>
+                        <th>CSS Variable</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>--rf-position-spacing</code></td>
+                        <td><code>0</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </BasicUsage>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+</ComponentDetail>
+
+@code {
+
+}

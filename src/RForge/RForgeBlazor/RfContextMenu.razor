@@ -1,6 +1,6 @@
 <div class="dropdown @CssClass @DropDownDirectionCss @PositionCss @Rf.ClassWhen(("is-active", IsActive), ("is-hoverable", IsHoverable))">
     <div class="dropdown-trigger">
-        <button class="button @TriggerButtonCss @Rf.ClassWhen((IsActiveTriggerButtonCss, IsActive))"
+        <button type="button" class="button @TriggerButtonCss @Rf.ClassWhen((IsActiveTriggerButtonCss, IsActive))"
                 @onclick=ToggleIsActiveClick
                 aria-haspopup="true" 
                 aria-controls="context-menu-@DropDownId">

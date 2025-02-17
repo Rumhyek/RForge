@@ -1,0 +1,107 @@
+﻿@page "/context-menu/example/list-example"
+@using RForgeBlazor.Services
+@using RForgeDocs.Abstractions
+@using RForge.Abstractions.DropDowns
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+
+@rendermode InteractiveAuto
+
+<ExampleDetail Title="Repeating Menu Example"
+SubTitle="Context menu per row"
+ComponentName="Context Menu"
+PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/ContextMenu/ListItemExamplePage.razor")"
+ComponentDetailsUrl="/context-menu/details" />
+
+<div class="container">
+    <div class="columns">
+        <div class="column is-4">
+            <article class="section">
+
+                <div class="content">
+                    <p>
+                        This example showcases a context menu per row in a list.
+                    </p>
+                </div>
+            </article>
+        </div>
+        <div class="column">
+
+            <table class="table is-fulwidth">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Is Admin</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var user in Users)
+                    {
+                        <tr>
+                            <td>@user.FirstName @user.LastName</td>
+                            <td>@user.IsAdmin</td>
+                            <td>
+                                <RfContextMenu AllowIsActiveToggleClick=false TriggerButtonCss="is-small" >
+                                    <RfContextMenuLink OnClick=@(() => SwapUserName(user))>Swap first and last name</RfContextMenuLink>
+
+                                    @if(user.IsAdmin)
+                                    {
+                                        <RfContextMenuLink OnClick=@(() => MakeUserNonAdmin(user))>Make non-admin</RfContextMenuLink>
+                                    }
+                                    else
+                                    {
+                                        <RfContextMenuLink OnClick=@(() => MakeUserAdmin(user))>Make admin</RfContextMenuLink>
+                                    }
+
+                                </RfContextMenu>
+
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+<RfNotificationManager />
+
+@code {
+
+    [Inject]
+    private IFindUsersProcessor FindUsersProcessor { get; set; }
+    [Inject]
+    public INotificationManager NotificationManager { get; set; }
+
+    public List<UserData> Users { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await FindUsersProcessor.Find(null, 10);
+    }
+
+    private void SwapUserName(UserData user)
+    {
+        var temp = user.FirstName;
+        user.FirstName = user.LastName;
+        user.LastName = temp;
+        
+        NotificationManager.AddSuccess("Users first and last name have been swapped.", "Successfully Swapped!");
+    }
+
+    private void MakeUserAdmin(UserData user)
+    {
+        user.IsAdmin = true;
+        NotificationManager.AddSuccess("User is now an admin.", "Successfully Promoted!");
+    }
+
+    private void MakeUserNonAdmin(UserData user)
+    {
+        user.IsAdmin = false;
+        NotificationManager.AddSuccess("User is no longer an admin.", "Successfully Demoted!");
+    }
+
+}

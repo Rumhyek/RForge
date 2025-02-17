@@ -1,0 +1,192 @@
+﻿@page "/context-menu/playground"
+@using RForge.Abstractions
+@using RForge.Abstractions.DropDowns
+@using RForgeBlazor.Services
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+@rendermode InteractiveAuto
+
+@inject IFindUsersProcessor findUsersProcessor
+
+<PlaygroundDetails 
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/ContextMenuPage.razor")"
+                   HasEvents=false
+                   MakeDisplaySticky=false
+                   SubTitle="Context Menu"
+                   ComponentName="Context Menu"
+                   Title="Playground"
+                   ComponentDetailsUrl="/context-menu/details">
+
+    <Parameters>
+
+        <BulmaCheckbox Label="IsActive"
+                       HelpText="Gets or sets a value indicating whether the context menu is active.">
+            <InputCheckbox @bind-Value=@IsActive class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaCheckbox Label="AllowIsActiveToggleClick"
+                       HelpText="Gets or sets a value indicating whether the context menu allows toggling its active state on click. Default is true.">
+            <InputCheckbox @bind-Value=@AllowIsActiveToggleClick class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaCheckbox Label="IsHoverable"
+                       HelpText="Gets or sets a value indicating whether the context menu is hoverable.">
+            <InputCheckbox @bind-Value=@IsHoverable class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaInput Label="Position"
+                    HelpText="Gets or sets the position of the context menu.">
+            <div class="select is-primary">
+                <select @bind=Position>
+                    @foreach (var position in Enum.GetValues(typeof(RfPosition)))
+                    {
+                        <option value="@position">@position</option>
+                    }
+                </select>
+            </div>
+        </BulmaInput>
+
+        <BulmaInput Label="CssClass"
+                    HelpText="Gets or sets the CSS class for the context menu.">
+            <InputText @bind-Value="CssClass" type="text" class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="TriggerButtonCss"
+                    HelpText="Gets or sets the CSS class for the trigger button.">
+            <InputText @bind-Value="TriggerButtonCss" type="text" class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="DropDownPosition"
+                    HelpText="Gets or sets the position of the dropdown.">
+            <div class="select is-primary">
+                <select @bind=DropDownPosition>
+                    @foreach (var dropDownPosition in Enum.GetValues(typeof(RfDropDownPosition)))
+                    {
+                        <option value="@dropDownPosition">@dropDownPosition</option>
+                    }
+                </select>
+            </div>
+        </BulmaInput>
+
+        <BulmaInput Label="DropDownIcon"
+                    HelpText="Gets or sets the icon for the dropdown.">
+            <InputText @bind-Value="DropDownIcon" type="text" class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="IsActiveTriggerButtonCss"
+                    HelpText="Gets or sets the CSS class for the active trigger button.">
+            <InputText @bind-Value="IsActiveTriggerButtonCss" type="text" class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="TriggerText"
+                    HelpText="Gets or sets the text for the trigger button.">
+            <InputText @bind-Value="TriggerText" type="text" class="input" />
+        </BulmaInput>
+
+    </Parameters>
+
+    <Display>
+
+        <div class="box is-relative" style="width: 100%; height: 500px;">
+            <RfContextMenu 
+                            @bind-IsActive=IsActive
+                           AllowIsActiveToggleClick=AllowIsActiveToggleClick
+                           IsHoverable=IsHoverable
+                           CssClass=@CssClass
+                           TriggerButtonCss=@TriggerButtonCss
+                           DropDownPosition=@DropDownPosition
+                           DropDownIcon=@DropDownIcon
+                           IsActiveTriggerButtonCss=@IsActiveTriggerButtonCss
+                           TriggerText=@TriggerText
+                           Position=Position>
+
+                <RfContextMenuItem>Some Text</RfContextMenuItem>
+                <RfContextMenuItem>Some other text</RfContextMenuItem>
+                <RfContextMenuLink OnClick=OnContextMenuLinkClick>Show Alert!</RfContextMenuLink>
+                <RfContextMenuDivider />
+                <RfContextMenuLink Href="https://rforge.azurewebsites.net/context-menu/details">Back to Details</RfContextMenuLink>
+
+            </RfContextMenu>
+        </div>
+
+    </Display>
+
+</PlaygroundDetails>
+
+<RfNotificationManager />
+
+@code {
+
+    [Inject]
+    public INotificationManager NotificationManager { get; set; }
+
+    private void OnContextMenuLinkClick()
+    {
+        NotificationManager.AddSuccess("You clicked the link!");
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the context menu is active.
+    /// </summary>
+
+    public bool IsActive { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the context menu allows toggling its active state on click. Default is true.
+    /// You can still manually set the IsActive parameter to control the state programmatically.
+    /// </summary>
+
+    public bool AllowIsActiveToggleClick { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the callback that is invoked when the IsActive property changes.
+    /// </summary>
+
+    public EventCallback<bool> IsActiveChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the context menu is hoverable.
+    /// </summary>
+
+    public bool IsHoverable { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the position of the context menu.
+    /// </summary>
+
+    public RfPosition Position { get; set; } = RfPosition.Unset;
+
+    /// <summary>
+    /// Gets or sets the CSS class for the context menu.
+    /// </summary>
+
+    public string CssClass { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CSS class for the trigger button.
+    /// </summary>
+
+    public string TriggerButtonCss { get; set; }
+
+    /// <summary>
+    /// Gets or sets the position of the dropdown.
+    /// </summary>
+
+    public RfDropDownPosition DropDownPosition { get; set; } = RfDropDownPosition.LeftDown;
+
+    /// <summary>
+    /// Gets or sets the icon for the dropdown.
+    /// </summary>
+
+    public string DropDownIcon { get; set; } = "fa-solid fa-ellipsis";
+
+
+    public string IsActiveTriggerButtonCss { get; set; } = "is-primary";
+
+    /// <summary>
+    /// Gets or sets the text for the trigger button.
+    /// </summary>
+
+    public string TriggerText { get; set; }
+
+}

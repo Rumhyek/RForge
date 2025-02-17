@@ -61,7 +61,10 @@ public partial class RfContextMenu
     /// </summary>
     [Parameter]
     public string DropDownIcon { get; set; } = "fa-solid fa-ellipsis";
-
+    
+    /// <summary>
+    /// Gets or sets the CSS class for the trigger button when the context menu is active.
+    /// </summary>
     [Parameter]
     public string IsActiveTriggerButtonCss { get; set; } = "is-primary";
 
