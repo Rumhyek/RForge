@@ -1,0 +1,79 @@
+﻿@page "/context-menu/example/basic-example"
+@using RForgeBlazor.Services
+@using RForgeDocs.Abstractions
+@using RForge.Abstractions.DropDowns
+@rendermode InteractiveAuto
+
+<ExampleDetail Title="Basic Example"
+               SubTitle="Basic / Static"
+               ComponentName="Context Menu"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/ContextMenu/BasicExamplePage.razor")"
+               ComponentDetailsUrl="/context-menu/details" />
+
+<div class="container">
+    <div class="columns">
+        <div class="column is-4">
+            <article class="section">
+
+                <div class="content">
+                    <p>
+                        This example showcases a static list of actions as part of a page heading.
+                    </p>
+                </div>
+            </article>
+        </div>
+        <div class="column">
+            <div class="is-flex is-justify-content-space-between">
+
+            <h1 class="title">Some Web Page</h1>
+                <RfContextMenu DropDownPosition=RfDropDownPosition.RightDown
+                               TriggerButtonCss=@Rf.ClassWhen(("is-loading", IsLoading == true))>
+
+                    <RfContextMenuLink OnClick=OnSaveClick>Save</RfContextMenuLink>
+                    <RfContextMenuLink Href="https://google.com" Target="_blank">Go to google.com</RfContextMenuLink>
+                    <RfContextMenuDivider />
+                    <RfContextMenuLink OnClick=OnArchiveClick>Archive</RfContextMenuLink>
+
+                    <RfContextMenuDivider />
+                    <RfContextMenuItem>
+
+                        <div class="has-text-centered">
+                            <span class="tag is-primary">Need Help</span> If you need any help please don't hesitate to contact us!
+                        </div>
+
+                    </RfContextMenuItem>
+
+                </RfContextMenu>
+            </div>
+        </div>
+    </div>
+</div>
+
+<RfNotificationManager />
+
+@code {
+
+    private bool IsLoading { get; set; }
+
+    [Inject]
+    public INotificationManager NotificationManager { get; set; }
+
+    private async Task OnSaveClick()
+    {
+        IsLoading = true;
+        StateHasChanged();
+        await Task.Delay(1000);
+
+        NotificationManager.AddSuccess("Successfully saved!");
+        IsLoading = false;
+    }
+
+    private async Task OnArchiveClick()
+    {
+        IsLoading = true;
+        await Task.Delay(1000);
+        NotificationManager.AddSuccess("Successfully archived!");
+        IsLoading = false;
+    }
+
+}

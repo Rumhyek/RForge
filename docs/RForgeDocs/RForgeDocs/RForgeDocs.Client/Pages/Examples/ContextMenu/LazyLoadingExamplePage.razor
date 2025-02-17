@@ -1,0 +1,104 @@
+﻿@page "/context-menu/example/lazy-loading-example"
+@using RForgeBlazor.Services
+@using RForgeDocs.Abstractions
+@using RForge.Abstractions.DropDowns
+@rendermode InteractiveAuto
+
+<ExampleDetail Title="Lazy Loading Example"
+               SubTitle="Loading Menu on Click"
+               ComponentName="Context Menu"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/ContextMenu/LazyLoadingExamplePage.razor")"
+               ComponentDetailsUrl="/context-menu/details" />
+
+<div class="container">
+    <div class="columns">
+        <div class="column is-6">
+            <article class="section">
+
+                <div class="content">
+                    <p>
+                        This example showcases how to load the menu on click instead of having a static list of actions.
+                    </p>
+                    
+                    <p>
+                        This is accomplished by:
+
+                    </p>
+
+                    <ul>
+                        <li>Using the <code>@@bind-IsActive:after</code> parameter to trigger an async method.</li>
+                        <li>Loading the menu items in the async method.</li>
+                        <li>Setting the <code>IsHoverable</code> parameter to false so the menu open on hover only by clicking on the trigger button.</li>
+                        <li>Applying <code>.is-loading</code> to <code>TriggerButtonCss</code> when <code>IsActive == true && LoadedMenuItems == null</code></li>
+                    </ul>
+                </div>
+            </article>
+        </div>
+        <div class="column">
+            <div class="is-flex is-justify-content-space-between">
+
+                <h1 class="title">Some Web Page</h1>
+                <RfContextMenu DropDownPosition=RfDropDownPosition.RightDown
+                               IsHoverable=false
+                               @bind-IsActive=IsActive
+                               @bind-IsActive:after=OnContextMenuOpen
+                               TriggerButtonCss=@Rf.ClassWhen(("is-loading", IsActive == true && LoadedMenuItems == null))>
+
+                    @if (LoadedMenuItems != null)
+                    {
+                        <RfContextMenuItem>
+                            Choose your browser of choice!
+                        </RfContextMenuItem>
+                        <RfContextMenuDivider />
+
+                        foreach (var menuItem in LoadedMenuItems.OrderBy(o => o.Text))
+                        {
+                            <RfContextMenuLink Href=@menuItem.Url Target="_blank">@menuItem.Text</RfContextMenuLink>
+                        }
+                    }
+
+                </RfContextMenu>
+            </div>
+        </div>
+    </div>
+</div>
+
+<RfNotificationManager />
+
+@code {
+
+
+    [Inject]
+    public INotificationManager NotificationManager { get; set; }
+    private List<MenuItem> LoadedMenuItems { get; set; }
+    private bool IsActive { get; set; }
+
+    private async Task OnContextMenuOpen()
+    {
+        if (LoadedMenuItems == null)
+        {
+            await Task.Delay(4000);
+            LoadedMenuItems = new List<MenuItem>
+            {
+                new MenuItem{ Text = "Arc Browser", Url = "https://arc.net/download" },
+                new MenuItem{ Text = "Brave", Url = "https://brave.com/download/" },
+                new MenuItem{ Text = "DuckDuckGo", Url = "https://duckduckgo.com/" },
+                new MenuItem{ Text = "Google Chrome", Url = "https://www.google.com/chrome/bsem/download/en_us" },
+                new MenuItem{ Text = "Mozilla Firefox", Url = "https://www.mozilla.org/en-US/firefox/" },
+                new MenuItem{ Text = "Microsoft Edge", Url = "https://www.microsoft.com/en-us/edge/" },
+                new MenuItem{ Text = "Opera", Url = "https://www.opera.com/computer/" },
+                new MenuItem{ Text = "Safari", Url = "https://www.apple.com/safari/" },
+                new MenuItem{ Text = "Vivaldi", Url = "https://vivaldi.com/" },
+                new MenuItem{ Text = "Waterfox", Url = "https://www.waterfox.net/" },
+            };
+        }
+    }
+
+
+    private class MenuItem
+    {
+        public string Text { get; set; }
+        public string Url { get; set; }
+    }
+
+}

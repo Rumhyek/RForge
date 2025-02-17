@@ -1,0 +1,78 @@
+﻿@page "/context-menu"
+@using RForge.Abstractions.DropDowns
+@rendermode InteractiveAuto
+
+<PageTitle>Context Menu</PageTitle>
+
+<h1>Context Menu</h1>
+
+
+
+<div class="box is-relative is-flex is-justify-content-center is-align-content-center" style="width: 500px; height: 500px;">
+    <div>
+        <button style="@Rf.StyleWhen(("--button-active-color", "red", true))" class="button">Free Money</button>
+        <RfContextMenu DropDownIcon="fa-solid fa-question" TriggerButtonCss="is-ghost" DropDownPosition=RfDropDownPosition.LeftDown AllowIsActiveToggleClick=false>
+            <RfContextMenuItem>
+                <p class="help">THis is the best button to press whenyou want to get free money.</p>
+            </RfContextMenuItem>
+        </RfContextMenu>
+
+    </div>
+    <RfContextMenu Position=RfPosition.TopLeft IsHoverable=false>
+        <RfContextMenuItem>Item 1</RfContextMenuItem>
+        <RfContextMenuItem>Item 2</RfContextMenuItem>
+        <RfContextMenuItem>Item 3</RfContextMenuItem>
+        <RfContextMenuItem>Item 4</RfContextMenuItem>
+        <RfContextMenuItem>Item 5</RfContextMenuItem>
+        <RfContextMenuItem>Item 6</RfContextMenuItem>
+        <RfContextMenuItem>Item 7</RfContextMenuItem>
+    </RfContextMenu>
+
+    <RfContextMenu Position=RfPosition.TopRight DropDownPosition=RfDropDownPosition.RightDown CssClass="@Rf.ClassWhen((Test, false == true), (Test2, true == true))">
+        <RfContextMenuLink Href="#1">Item 1</RfContextMenuLink>
+        <RfContextMenuLink Href="#2">Item 2</RfContextMenuLink>
+        <RfContextMenuLink Href="#3">Item 3</RfContextMenuLink>
+        <RfContextMenuLink Href="#4">Item 4</RfContextMenuLink>
+        <RfContextMenuLink Href="#5">Item 5</RfContextMenuLink>
+        <RfContextMenuLink Href="#6">Item 6</RfContextMenuLink>
+        <RfContextMenuLink OnClick=@(() => Console.WriteLine("OnClick"))>Item 7</RfContextMenuLink>
+    </RfContextMenu>
+    <RfContextMenu Position=RfPosition.BottomLeft DropDownPosition=RfDropDownPosition.LeftUp>
+
+        <RfContextMenuItem>
+            <p style="@Rf.StyleWhen(("color", Test, Test == Test2))">
+                You can insert <strong>any type of content</strong> within the
+                dropdown menu.
+            </p>
+        </RfContextMenuItem>
+
+        <RfContextMenuDivider />
+        <RfContextMenuItem>
+            <p>You simply need to use a <code>&lt;div&gt;</code> instead.</p>
+        </RfContextMenuItem>
+        <RfContextMenuDivider />
+        <RfContextMenuLink Href="#"> This is a link </RfContextMenuLink>
+    </RfContextMenu>
+    <RfContextMenu Position=RfPosition.BottomRight DropDownPosition=RfDropDownPosition.RightUp>
+
+        <div class="dropdown-item">
+            <p>
+                You can insert <strong>any type of content</strong> within the
+                dropdown menu.
+            </p>
+        </div>
+        <hr class="dropdown-divider" />
+        <div class="dropdown-item">
+            <p>You simply need to use a <code>&lt;div&gt;</code> instead.</p>
+        </div>
+        <hr class="dropdown-divider" />
+        <a href="#" class="dropdown-item"> This is a link </a>
+
+    </RfContextMenu>
+</div>
+
+
+@code {
+    public string Test { get; set; } = "est";
+    public string Test2 { get; set; } = "est";
+}
