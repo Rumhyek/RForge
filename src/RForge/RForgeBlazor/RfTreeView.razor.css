@@ -29,9 +29,7 @@
 }
 
 ::deep.menu.rf-treeview .node-label {
-    display: flex;
-    flex-wrap: wrap;
-    align-content: center;
+    flex-grow: 1;
     padding: var(--bulma-menu-list-link-padding);
     padding-inline-start: var(--rf-menu-list-link-label-padding-left);
 }
