@@ -62,7 +62,7 @@
                             showAtTop = true;
                             break;
                         case RfShowSelectionInDropDown.OnlyWhenNotInList:
-                            showAtTop = Items.Any(i => IsSelected(i) == true) == false;
+                            showAtTop = Items == null || Items.Any(i => IsSelected(i) == true) == false;
                             break;
                     }
                 }
