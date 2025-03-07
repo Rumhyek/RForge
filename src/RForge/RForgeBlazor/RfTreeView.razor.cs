@@ -6,8 +6,7 @@ namespace RForgeBlazor;
 /// <summary>
 /// Represents a tree view component.
 /// </summary>
-/// <typeparam name="TTreeItemData">The type of the tree item data.</typeparam>
-public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable where TTreeItemData : class
+public partial class RfTreeView : ComponentBase, IDisposable
 {
     /// <summary>
     /// Gets or sets the child content to be rendered inside the tree view.
@@ -51,13 +50,13 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
     [Parameter]
     public bool ShowAsPrerender { get; set; }
 
-    private TreeViewContext<TTreeItemData> Context { get; set; }
+    private TreeViewContext Context { get; set; }
     /// <summary>
     /// Method invoked when the component is initialized.
     /// </summary>
     protected override void OnInitialized()
     {
-        Context = new TreeViewContext<TTreeItemData>()
+        Context = new TreeViewContext()
         {
             AllowSelection = AllowSelection,
             AllowExpand = AllowExpand,
@@ -83,13 +82,13 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
         base.OnParametersSet();
     }
 
-    private Task Context_OnSelectedChange(object sender, RfTreeNode<TTreeItemData> selectedNode)
+    private Task Context_OnSelectedChange(object sender, RfTreeNode selectedNode)
     {
         //Currently there is nothing plan for this event. Though adding something here would be nice.
         return Task.CompletedTask;
     }
 
-    private Task Context_OnExpandedChange(object sender, RfTreeNode<TTreeItemData> expandedNode)
+    private Task Context_OnExpandedChange(object sender, RfTreeNode expandedNode)
     {
         //Currently there is nothing plan for this event. Though adding something here would be nice.
         return Task.CompletedTask;

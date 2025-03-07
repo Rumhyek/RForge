@@ -3,7 +3,7 @@ using RForgeBlazor.Models;
 
 namespace RForgeBlazor;
 /// <summary>
-/// Represents a label in the <see cref="RfTreeView{TTreeItemData}" /> component.
+/// Represents a label in the <see cref="RfTreeView" /> component.
 /// </summary>
 public partial class RfTreeLabel
 {
@@ -23,5 +23,5 @@ public partial class RfTreeLabel
     /// Gets or sets the context for the tree view.
     /// </summary>
     [CascadingParameter]
-    public TreeViewBaseContext Context { get; set; }
+    public TreeViewContext Context { get; set; }
 }
