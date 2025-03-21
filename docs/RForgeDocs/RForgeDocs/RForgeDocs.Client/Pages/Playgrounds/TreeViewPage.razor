@@ -1,0 +1,296 @@
+﻿@page "/treeview/playground"
+@using RForge.Abstractions
+@using RForge.Abstractions.DropDowns
+@using RForgeBlazor.Models
+@using RForgeBlazor.Services
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+@rendermode InteractiveAuto
+
+@inject IFindUsersProcessor findUsersProcessor
+
+<PlaygroundDetails PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/TreeViewPage.razor")"
+                   HasEvents=false
+                   MakeDisplaySticky=false
+                   SubTitle="Tree View"
+                   ComponentName="TreeView"
+                   Title="Playground"
+                   ComponentDetailsUrl="/treeview/details">
+
+    <Parameters>
+
+        <BulmaCheckbox Label="AllowSelection"
+                       HelpText="Gets or sets a value indicating whether selection is allowed.">
+            <InputCheckbox @bind-Value=@AllowSelection class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaCheckbox Label="AllowExpand"
+                       HelpText="Gets or sets a value indicating whether expansion is allowed.">
+            <InputCheckbox @bind-Value=@AllowExpand class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaCheckbox Label="AllowClick"
+                       HelpText="Gets or sets a value indicating whether a node can be clicked. This is seperate from being selected. Default is true.">
+            <InputCheckbox @bind-Value=@AllowClick class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaCheckbox Label="ShowAsPrerender"
+                       HelpText="Gets or sets a value indicating whether the tree view is in prerender mode or not. Default is false.">
+            <InputCheckbox @bind-Value=@ShowAsPrerender class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaInput Label="CssClass"
+                    HelpText="Gets or sets the CSS class for the tree view.">
+            <InputText @bind-Value="CssClass" type="text" class="input" />
+        </BulmaInput>
+
+    </Parameters>
+
+    <Display>
+
+        <div class="mb-4">
+            <RfTreeView AllowClick="@AllowClick"
+                        AllowExpand="@AllowExpand"
+                        AllowSelection="@AllowSelection"
+                        CssClass=@CssClass
+                        ShowAsPrerender="ShowAsPrerender">
+
+                <Nodes>
+                    @foreach (var rootNode in RootNodes)
+                    {
+                        <RfTreeLabel>@rootNode.Text</RfTreeLabel>
+                        <RfTreeList>
+                            @renderNode(rootNode)
+                        </RfTreeList>
+                    }
+                </Nodes>
+
+                <PrerenderNodes>
+                    <RfTreeList>
+                        <RfTreeNode />
+                        <RfTreeNode />
+                        <RfTreeNode />
+                        <RfTreeNode>
+                            <Children>
+                                <RfTreeLabel />
+                                <RfTreeNode />
+                                <RfTreeNode />
+                                <RfTreeNode />
+                            </Children>
+                        </RfTreeNode>
+                    </RfTreeList>
+                </PrerenderNodes>
+            </RfTreeView>
+        </div>
+        <div class="buttons">
+            <button class="button" @onclick=OnAddRootNodeClick>Add Root Node</button>
+            <button class="button" @onclick=OnAddChildNodeClick>Add Child Node</button>
+            <button class="button" @onclick=OnAddNodeAboveClick>Add Node Above</button>
+            <button class="button" @onclick=OnAddNodeBelowClick>Add Node Below</button>
+        </div>
+
+    </Display>
+
+</PlaygroundDetails>
+
+<RfNotificationManager />
+<RfDialogManager />
+
+@code {
+
+    public RenderFragment renderNode(Node node) => __builder =>
+    {
+        @if (node.HasChildren == true)
+        {
+            <RfTreeNode NodeClick=@(() => OnNodeClick(node))
+                        NodeSelectChange=@((e) => OnNodeSelectChange(e, node))
+                        @bind-IsSelected=node.IsSelected
+                        @bind-IsExpanded=node.IsExpanded>
+                <Node>
+                    @node.Text
+                </Node>
+
+                <Children>
+                    @foreach (var child in node.Children)
+                    {
+                        @renderNode(child)
+                    }
+                </Children>
+
+            </RfTreeNode>
+        }
+        else
+        {
+            <RfTreeNode NodeClick=@(() => OnNodeClick(node))
+                        NodeSelectChange=@((e) => OnNodeSelectChange(e, node))
+                        @bind-IsSelected=node.IsSelected
+                        @bind-IsExpanded=node.IsExpanded>
+                <Node>@node.Text</Node>
+
+            </RfTreeNode>
+        }
+    };
+
+    [Inject]
+    public INotificationManager NotificationManager { get; set; }
+
+    [Inject]
+    public IDialogManager DialogManager { get; set; }
+
+    private List<Node> RootNodes { get; set; } = [];
+    private Node SelectedNode { get; set; }
+
+    public void OnNodeClick(Node node)
+    {
+        NotificationManager.AddSuccess($"You clicked the node '{node.Text}'!");
+    }
+
+    public void OnNodeSelectChange(TreeViewNodeIsSelectedEventArgs eventArgs, Node node)
+    {
+        if (SelectedNode != null)
+        {
+            SelectedNode.IsSelected = false;
+        }
+
+        if (eventArgs.IsSelected == true)
+        {
+            SelectedNode = node;
+            SelectedNode.IsExpanded = true;
+        }
+        else
+        {
+            SelectedNode = null;
+        }
+    }
+
+    public void OnAddRootNodeClick()
+    {
+        DialogManager.Prompt("Add new root node", "What is the node called?", (name) =>
+        {
+            if (name != null)
+            {
+                RootNodes.Add(new Node
+                    {
+                        Text = name
+                    });
+                StateHasChanged();
+            }
+            return Task.CompletedTask;
+        }, "Add", "Cancel");
+    }
+
+    public void OnAddChildNodeClick()
+    {
+        if (SelectedNode == null) return;
+
+        DialogManager.Prompt("Add new child node", "What is the node called?", (name) =>
+        {
+            if (name != null)
+            {
+                SelectedNode.Children.Add(new Node
+                    {
+                        Text = name,
+                        ParentNode = SelectedNode
+                    });
+                StateHasChanged();
+            }
+            return Task.CompletedTask;
+        }, "Add", "Cancel");
+    }
+
+    public void OnAddNodeAboveClick()
+    {
+        if (SelectedNode == null) return;
+
+        DialogManager.Prompt("Add new node above", "What is the node called?", (name) =>
+        {
+            if (name != null)
+            {
+                if (SelectedNode.ParentNode != null)
+                {
+                    var index = SelectedNode.ParentNode.Children.IndexOf(SelectedNode);
+                    SelectedNode.ParentNode.Children.Insert(index, new Node
+                        {
+                            Text = name,
+                            ParentNode = SelectedNode
+                        });
+                    StateHasChanged();
+                }
+                else
+                {
+                    var index = RootNodes.IndexOf(SelectedNode);
+                    RootNodes.Insert(index, new Node { Text = name, ParentNode = SelectedNode });
+                    StateHasChanged();
+                }
+
+            }
+            return Task.CompletedTask;
+        }, "Add", "Cancel");
+    }
+
+    public void OnAddNodeBelowClick()
+    {
+        if (SelectedNode == null) return;
+
+        DialogManager.Prompt("Add new node below", "What is the node called?", (name) =>
+        {
+            if (SelectedNode.ParentNode != null)
+            {
+                var index = SelectedNode.ParentNode.Children.IndexOf(SelectedNode);
+                SelectedNode.ParentNode.Children.Insert(index + 1, new Node
+                    {
+                        Text = name,
+                        ParentNode = SelectedNode
+                    });
+                StateHasChanged();
+            }
+            else
+            {
+                var index = RootNodes.IndexOf(SelectedNode);
+                RootNodes.Insert(index + 1, new Node
+                    {
+                        Text = name,
+                        ParentNode = SelectedNode
+                    });
+                StateHasChanged();
+            }
+            return Task.CompletedTask;
+        }, "Add", "Cancel");
+    }
+
+    /// <summary>
+    /// Gets or sets the CSS class for the tree view.
+    /// </summary>
+    public string CssClass { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether selection is allowed.
+    /// </summary>
+    public bool AllowSelection { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether expansion is allowed.
+    /// </summary>
+    public bool AllowExpand { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether a node can be clicked. This is seperate from being selected.
+    /// </summary>
+    public bool AllowClick { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the tree view is in prerender mode or not.
+    /// </summary>
+    public bool ShowAsPrerender { get; set; }
+
+    public class Node
+    {
+        public string Text { get; set; }
+
+        public bool IsSelected { get; set; }
+        public bool IsExpanded { get; set; }
+        public Node ParentNode { get; set; }
+        public List<Node> Children { get; set; } = [];
+        public bool HasChildren => Children.Any();
+    }
+}
