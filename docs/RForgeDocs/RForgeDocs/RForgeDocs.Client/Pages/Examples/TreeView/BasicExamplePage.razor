@@ -8,10 +8,10 @@
 @inject INotificationManager NotificationManager
 
 <ExampleDetail Title="Basic Example"
-               SubTitle="Tree View"
-               ComponentName="Tree View"
-               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/TreeView/BasicExamplePage.razor")"
-               ComponentDetailsUrl="/treeview/details" />
+SubTitle="Tree View"
+ComponentName="Tree View"
+PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/TreeView/BasicExamplePage.razor")"
+ComponentDetailsUrl="/treeview/details" />
 
 <div class="columns">
     <div class="column is-4">
@@ -33,103 +33,100 @@
     <div class="column">
         <article class="section">
 
-            <RfTreeView TTreeItemData="object" AllowSelection=false>
-                <Nodes>
+            <RfTreeView AllowSelection=false>
 
-                    <RfTreeLabel>Movies by Genre</RfTreeLabel>
-                    <RfTreeList>
-                        <RfTreeNode TTreeItemData=object>
-                            <Node>Action</Node>
-                            <Children>
+                <RfTreeLabel>Movies by Genre</RfTreeLabel>
+                <RfTreeList>
+                    <RfTreeNode>
+                        <Node>Action</Node>
+                        <Children>
 
-                                <RfTreeNode TTreeItemData=object>
-                                    <Node>War</Node>
-                                    <Children>
-                                        <RfTreeNode TTreeItemData=object NodeData=@BuildMovie("War") NodeClick="OnNodeClick">
-                                            <Node>Add New</Node>
-                                        </RfTreeNode>
-                                    </Children>
-                                </RfTreeNode>
-                                <RfTreeNode TTreeItemData=object>
-                                    <Node>Superhero</Node>
-                                    <Children>
-                                        <RfTreeNode TTreeItemData=object LinkUrl="https://www.imdb.com/title/tt1877830/">
-                                            <Node>Batman</Node>
-                                        </RfTreeNode>
-                                        <RfTreeNode TTreeItemData=object LinkUrl="https://www.imdb.com/title/tt0371746/">
-                                            <Node>Ironman</Node>
-                                        </RfTreeNode>
-                                        <RfTreeNode TTreeItemData=object LinkUrl="https://www.imdb.com/title/tt5950044/">
-                                            <Node>Superman</Node>
-                                        </RfTreeNode>
-                                        <RfTreeNode TTreeItemData=object NodeData=@BuildMovie("Superhero") NodeClick="OnNodeClick" IconCss="fa-solid fa-plus">
-                                            <Node>Add New</Node>
-                                        </RfTreeNode>
-                                    </Children>
-                                </RfTreeNode>
-                            </Children>
-                        </RfTreeNode>
-                        <RfTreeNode TTreeItemData=object>
-                            <Node>Animation</Node>
-                            <Children>
-                                <RfTreeNode TTreeItemData=object NodeData=@BuildMovie("Animation") NodeClick="OnNodeClick">
-                                    <Node>Add New</Node>
-                                </RfTreeNode>
-                            </Children>
-                        </RfTreeNode>
-                        <RfTreeNode TTreeItemData=object>
-                            <Node>Comedy</Node>
-                            <Children>
-                                <RfTreeNode TTreeItemData=object NodeData=@BuildMovie("Comedy") NodeClick="OnNodeClick">
-                                    <Node>Add New</Node>
-                                </RfTreeNode>
-                            </Children>
-                        </RfTreeNode>
-                        <RfTreeNode TTreeItemData=object>
-                            <Node>Crime</Node>
-                            <Children>
-                                <RfTreeNode TTreeItemData=object NodeData=@BuildMovie("Crime") NodeClick="OnNodeClick">
-                                    <Node>Add New</Node>
-                                </RfTreeNode>
-                            </Children>
-                        </RfTreeNode>
-                        <RfTreeNode TTreeItemData=object>
-                            <Node>Drama</Node>
-                            <Children>
-                                <RfTreeNode TTreeItemData=object NodeData=@BuildMovie("Drama") NodeClick="OnNodeClick">
-                                    <Node>Add New</Node>
-                                </RfTreeNode>
-                            </Children>
-                        </RfTreeNode>
-                        <RfTreeNode TTreeItemData=object>
-                            <Node>Horror</Node>
-                            <Children>
-                                <RfTreeNode TTreeItemData=object NodeData=@BuildMovie("Horror") NodeClick="OnNodeClick">
-                                    <Node>Add New</Node>
-                                </RfTreeNode>
-                            </Children>
-                        </RfTreeNode>
+                            <RfTreeNode>
+                                <Node>War</Node>
+                                <Children>
+                                    <RfTreeNode NodeClick="@(() => OnNodeClick("War"))">
+                                        <Node>Add New</Node>
+                                    </RfTreeNode>
+                                </Children>
+                            </RfTreeNode>
+                            <RfTreeNode>
+                                <Node>Superhero</Node>
+                                <Children>
+                                    <RfTreeNode LinkUrl="https://www.imdb.com/title/tt1877830/">
+                                        <Node>Batman</Node>
+                                    </RfTreeNode>
+                                    <RfTreeNode LinkUrl="https://www.imdb.com/title/tt0371746/">
+                                        <Node>Ironman</Node>
+                                    </RfTreeNode>
+                                    <RfTreeNode LinkUrl="https://www.imdb.com/title/tt5950044/">
+                                        <Node>Superman</Node>
+                                    </RfTreeNode>
+                                    <RfTreeNode NodeClick="@(() => OnNodeClick("Superhero"))" IconCss="fa-solid fa-plus">
+                                        <Node>Add New</Node>
+                                    </RfTreeNode>
+                                </Children>
+                            </RfTreeNode>
+                        </Children>
+                    </RfTreeNode>
+                    <RfTreeNode>
+                        <Node>Animation</Node>
+                        <Children>
+                            <RfTreeNode NodeClick="@(() => OnNodeClick("Animation"))">
+                                <Node>Add New</Node>
+                            </RfTreeNode>
+                        </Children>
+                    </RfTreeNode>
+                    <RfTreeNode>
+                        <Node>Comedy</Node>
+                        <Children>
+                            <RfTreeNode  NodeClick="@(() => OnNodeClick("Comedy"))">
+                                <Node>Add New</Node>
+                            </RfTreeNode>
+                        </Children>
+                    </RfTreeNode>
+                    <RfTreeNode>
+                        <Node>Crime</Node>
+                        <Children>
+                            <RfTreeNode  NodeClick="@(() => OnNodeClick("Crime"))">
+                                <Node>Add New</Node>
+                            </RfTreeNode>
+                        </Children>
+                    </RfTreeNode>
+                    <RfTreeNode>
+                        <Node>Drama</Node>
+                        <Children>
+                            <RfTreeNode  NodeClick="@(() => OnNodeClick("Drama"))">
+                                <Node>Add New</Node>
+                            </RfTreeNode>
+                        </Children>
+                    </RfTreeNode>
+                    <RfTreeNode>
+                        <Node>Horror</Node>
+                        <Children>
+                            <RfTreeNode  NodeClick="@(() => OnNodeClick("Horror"))">
+                                <Node>Add New</Node>
+                            </RfTreeNode>
+                        </Children>
+                    </RfTreeNode>
 
-                        <RfTreeNode TTreeItemData=object>
-                            <Node>Romance</Node>
-                            <Children>
-                                <RfTreeNode TTreeItemData=object NodeData=@BuildMovie("Romance") NodeClick="OnNodeClick">
-                                    <Node>Add New</Node>
-                                </RfTreeNode>
-                            </Children>
-                        </RfTreeNode>
+                    <RfTreeNode>
+                        <Node>Romance</Node>
+                        <Children>
+                            <RfTreeNode  NodeClick="@(() => OnNodeClick("Romance"))">
+                                <Node>Add New</Node>
+                            </RfTreeNode>
+                        </Children>
+                    </RfTreeNode>
 
-                        <RfTreeNode TTreeItemData=object>
-                            <Node>Science Fiction</Node>
-                            <Children>
-                                <RfTreeNode TTreeItemData=object NodeData=@BuildMovie("Science Fiction") NodeClick="OnNodeClick">
-                                    <Node>Add New</Node>
-                                </RfTreeNode>
-                            </Children>
-                        </RfTreeNode>
-                    </RfTreeList>
-                </Nodes>
-
+                    <RfTreeNode>
+                        <Node>Science Fiction</Node>
+                        <Children>
+                            <RfTreeNode NodeClick="@(() => OnNodeClick("Science Fiction"))">
+                                <Node>Add New</Node>
+                            </RfTreeNode>
+                        </Children>
+                    </RfTreeNode>
+                </RfTreeList>
 
             </RfTreeView>
 
@@ -146,9 +143,9 @@
     private AddMovieData BuildMovie(string genre)
     {
         return new AddMovieData
-        {
-            Genre = genre
-        };
+            {
+                Genre = genre
+            };
     }
 
     private class AddMovieData
@@ -156,17 +153,16 @@
         public string Genre { get; set; }
     }
 
-    private void OnNodeClick(RForgeBlazor.Models.TreeViewNodeOnClickEventArgs<object> node)
+    private void OnNodeClick(string genre)
     {
-        if (node.NodeData is AddMovieData addMovieData)
-        {
-            DialogManager.Prompt($"Add new movie for genre: {addMovieData.Genre}", "What is the movie called?", OnAddMovie, "Add", "Cancel");
-        }
+        DialogManager.Prompt($"Add new movie for genre: {genre}", "What is the movie called?", OnAddMovie, "Add", "Cancel");
     }
 
     private Task OnAddMovie(string movieName)
     {
-        NotificationManager.AddSuccess($"Successfully added {movieName}!");
+        if (movieName == null) return Task.CompletedTask;
+
+        NotificationManager.AddSuccess("Nothing actually was added to keep this page simple.", $"Successfully added {movieName}!");
         return Task.CompletedTask;
     }
 }

@@ -15,6 +15,12 @@ public partial class RfTreeView : ComponentBase, IDisposable
     public RenderFragment Nodes { get; set; }
 
     /// <summary>
+    /// Gets or sets the child content to be rendered inside the tree view. This will be overriden by <see cref="Nodes"/> if set.
+    /// </summary>
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
     /// Gets or sets the child content to be rendered before the nodes. Use this to render the skeleton view of this tree. To show set <see cref="ShowAsPrerender"/> to true.
     /// </summary>
     [Parameter] 
@@ -27,25 +33,25 @@ public partial class RfTreeView : ComponentBase, IDisposable
     public string CssClass { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether selection is allowed.
+    /// Gets or sets a value indicating whether selection is allowed. Default is true.
     /// </summary>
     [Parameter]
     public bool AllowSelection { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether expansion is allowed.
+    /// Gets or sets a value indicating whether expansion is allowed. Default is true.
     /// </summary>
     [Parameter]
     public bool AllowExpand { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether a node can be clicked. This is seperate from being selected.
+    /// Gets or sets a value indicating whether a node can be clicked. This is seperate from being selected. Default is true.
     /// </summary>
     [Parameter]
     public bool AllowClick { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the tree view is in prerender mode or not.
+    /// Gets or sets a value indicating whether the tree view is in prerender mode or not. Default is false.
     /// </summary>
     [Parameter]
     public bool ShowAsPrerender { get; set; }
@@ -77,6 +83,7 @@ public partial class RfTreeView : ComponentBase, IDisposable
     {
         Context.AllowSelection = AllowSelection;
         Context.AllowExpand = AllowExpand;
+        Context.AllowNodeClick = AllowClick;
         Context.ShowAsPrerender = ShowAsPrerender;
 
         base.OnParametersSet();

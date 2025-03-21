@@ -1,6 +1,6 @@
 
 <aside class="menu rf-treeview @CssClass">
- 
+
     <CascadingValue Value=Context>
         @if (ShowAsPrerender == true)
         {
@@ -8,7 +8,14 @@
         }
         else
         {
-            @Nodes
+            if (Nodes != null)
+            {
+                @Nodes
+            }
+            else
+            {
+                @ChildContent
+            }
         }
     </CascadingValue>
 
