@@ -1,0 +1,16 @@
+@inherits RfDgFilterInput<DateTimeOffset?>
+
+<th>
+    <input type="datetime-local"
+           placeholder="@Placeholder"
+           value="@Value"
+           @onchange=OnChange
+           name="@Name"
+           title="@Title"
+           class="input is-small @CssClass"
+           min="@MinValue"
+           max="@MaxValue"
+           aria-label="@AriaLabelValue" />
+</th>
+
+
