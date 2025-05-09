@@ -5,15 +5,9 @@ namespace RForgeBlazor;
 /// <summary>
 /// Represents a tree node component.
 /// </summary>
-/// <typeparam name="TTreeItemData">The type of the tree item data.</typeparam>
-public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemData : class
+public partial class RfTreeNode : ComponentBase
 {
     #region Parameters
-    /// <summary>
-    /// Gets or sets the node data.
-    /// </summary>
-    [Parameter]
-    public TTreeItemData NodeData { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the node is selected.
@@ -27,7 +21,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     public EventCallback<bool> IsSelectedChanged { get; set; }
 
     /// <summary>
-    /// if null <see cref="RfTreeView{TTreeItemData}.AllowSelection"/> is used. Otherwise, this value is used.
+    /// if null <see cref="RfTreeView.AllowSelection"/> is used. Otherwise, this value is used.
     /// </summary>
     [Parameter]
     public bool? AllowSelection { get; set; }
@@ -50,13 +44,13 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     public EventCallback<bool> IsExpandedChanged { get; set; }
 
     /// <summary>
-    /// if null <see cref="RfTreeView{TTreeItemData}.AllowExpand"/> is used. Otherwise, this value is used.
+    /// if null <see cref="RfTreeView.AllowExpand"/> is used. Otherwise, this value is used.
     /// </summary>
     [Parameter]
     public bool? AllowExpand { get; set; }
 
     /// <summary>
-    /// if null <see cref="RfTreeView{TTreeItemData}.AllowClick"/> is used. Otherwise, this value is used.
+    /// if null <see cref="RfTreeView.AllowClick"/> is used. Otherwise, this value is used.
     /// </summary>
     [Parameter]
     public bool? AllowClick { get; set; }
@@ -87,7 +81,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     /// Gets or sets the render fragment for the node.
     /// </summary>
     [Parameter]
-    public RenderFragment<TTreeItemData> Node { get; set; }
+    public RenderFragment Node { get; set; }
     /// <summary>
     /// Gets or sets the render fragment for the children.
     /// </summary>
@@ -104,23 +98,23 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     /// Gets or sets the callback for the node click event.
     /// </summary>
     [Parameter]
-    public EventCallback<TreeViewNodeOnClickEventArgs<TTreeItemData>> NodeClick { get; set; }
+    public EventCallback<TreeViewNodeOnClickEventArgs> NodeClick { get; set; }
 
     /// <summary>
     /// Called when the node's <see cref="IsExpanded"/> value changes from within the component.
     /// </summary>
     [Parameter]
-    public EventCallback<TreeViewNodeIsExpandEventArgs<TTreeItemData>> NodeExpandChange { get; set; }
+    public EventCallback<TreeViewNodeIsExpandEventArgs> NodeExpandChange { get; set; }
     /// <summary>
     /// Called when the node's <see cref="IsSelected"/> value changes from within the component.
     /// </summary>
     [Parameter]
-    public EventCallback<TreeViewNodeIsSelectedEventArgs<TTreeItemData>> NodeSelectChange { get; set; }
+    public EventCallback<TreeViewNodeIsSelectedEventArgs> NodeSelectChange { get; set; }
 
     #endregion
 
     [CascadingParameter]
-    private TreeViewContext<TTreeItemData> Context { get; set; }
+    private TreeViewContext Context { get; set; }
 
 
     private bool HasChildren => Children != null;
@@ -164,7 +158,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     {
         if (Context == null)
         {
-            throw new InvalidOperationException($"{nameof(RfTreeNode<TTreeItemData>)} must be a child of {nameof(RfTreeView<TTreeItemData>)}");
+            throw new InvalidOperationException($"{nameof(RfTreeNode)} must be a child of {nameof(RfTreeView)}");
         }
         else
         {
@@ -196,9 +190,8 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
         if (MyAllowClick == true)
         {
-            await NodeClick.InvokeAsync(new TreeViewNodeOnClickEventArgs<TTreeItemData>()
+            await NodeClick.InvokeAsync(new TreeViewNodeOnClickEventArgs()
             {
-                NodeData = NodeData,
                 NodeReference = this
             });
         }
@@ -234,10 +227,9 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
         StateHasChanged();
 
-        await NodeExpandChange.InvokeAsync(new TreeViewNodeIsExpandEventArgs<TTreeItemData>()
+        await NodeExpandChange.InvokeAsync(new TreeViewNodeIsExpandEventArgs()
         {
             IsExpanded = IsExpanded,
-            NodeData = NodeData,
             NodeReference = this
         });
 
@@ -254,10 +246,9 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
 
         StateHasChanged();
 
-        await NodeSelectChange.InvokeAsync(new TreeViewNodeIsSelectedEventArgs<TTreeItemData>()
+        await NodeSelectChange.InvokeAsync(new TreeViewNodeIsSelectedEventArgs()
         {
             IsSelected = IsSelected,
-            NodeData = NodeData,
             NodeReference = this
         });
 

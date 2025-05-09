@@ -1,20 +1,14 @@
 ﻿namespace RForgeBlazor.Models;
 
 /// <summary>
-/// Provides data for the <see cref="RfTreeNode{TTreeItemData}.NodeSelectChange" /> event callback.
+/// Provides data for the <see cref="RfTreeNode.NodeSelectChange" /> event callback.
 /// </summary>
-/// <typeparam name="TTreeItemData">The type of the tree item data.</typeparam>
-public class TreeViewNodeIsSelectedEventArgs<TTreeItemData> where TTreeItemData : class
+public class TreeViewNodeIsSelectedEventArgs
 {
     /// <summary>
-    /// The reference to the instance of <see cref="RfTreeNode{TTreeItemData}" />.
+    /// The reference to the instance of <see cref="RfTreeNode" />.
     /// </summary>
-    public RfTreeNode<TTreeItemData> NodeReference { get; internal set; }
-
-    /// <summary>
-    /// The current data of the tree node. <see cref="RfTreeNode{TTreeItemData}.NodeData"/>
-    /// </summary>
-    public TTreeItemData NodeData { get; internal set; }
+    public RfTreeNode NodeReference { get; internal set; }
 
     /// <summary>
     /// A value indicating whether the node is selected.
