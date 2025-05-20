@@ -1,24 +1,21 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Publish Prerelease RForge Package
+name: Publish new RForge Package
 
 on:
   # Runs on pushes targeting the `main` branch
-  # when src/** is updated on any release branch
+  # when src/** is updated on the main branch
   push:
-    branches: [release]
+    branches: [main]
     paths:
       - 'src/**'
+  release:
+    types:
+      - published
   # Allows for running manually from Actions tab
   workflow_dispatch:
   
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: blazor-rforge
-  cancel-in-progress: false
-
 defaults:
   run:
     working-directory: src/RForge
@@ -42,34 +39,24 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: |
+            8.x
+            9.x
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
-        
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.0.0
-        with:
-          versionSpec: '6.0.x'
       
       - name: Set up GitHub Nuget Repository
         run: dotnet nuget add source --username USERNAME --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Rumhyek/index.json"
-
-      # Determine the version
-      - id: version
-        name: Determine Version
-        uses: gittools/actions/gitversion/execute@v3.0.0
         
       # Pack all packages at the given version
       - name: Package Pack
-        run: dotnet pack --output ${{env.DOTNET_ROOT}}/artifacts --configuration Release -p:Version=${{ steps.version.outputs.fullSemVer }}
+        run: dotnet pack --output ${{env.DOTNET_ROOT}}/artifacts --configuration Release -p:Version=${{ github.event.release.tag_name }}
       
       # Publish the packages to github under RForge
-      - name: Publish Packages
-        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github
-
-      # Create the release as draft so I can add more details if needed.
-      - name: Github Release
-        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes --prerelease
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Publish Packages to GitHub
+        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github --skip-duplicate
+      
+      # Publish the packages to nuget under RForge
+      - name: Publish Packages (Nuget)
+        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --ApiKey ${{ secrets.NUGET_TOKEN }} --skip-duplicate

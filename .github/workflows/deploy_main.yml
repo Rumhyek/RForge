@@ -56,19 +56,30 @@ jobs:
       
       - name: Set up GitHub Nuget Repository
         run: dotnet nuget add source --username USERNAME --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Rumhyek/index.json"
-
+        
+      # Determine the pre-release version
+      - id: preReleaseVersion
+        name: Determine Version (Pre-Release)
+        uses: gittools/actions/gitversion/execute@v3.0.0
+        with:
+          additionalArguments: '/preReleaseTag rc' 
+        
       # Determine the version
       - id: version
-        name: Determine Version
+        name: Determine Version (Release)
         uses: gittools/actions/gitversion/execute@v3.0.0
         
       # Pack all packages at the given version
       - name: Package Pack
-        run: dotnet pack --output ${{env.DOTNET_ROOT}}/artifacts --configuration Release -p:Version=${{ steps.version.outputs.fullSemVer }}
+        run: dotnet pack --output ${{env.DOTNET_ROOT}}/artifacts --configuration Release -p:Version=${{ steps.preReleaseVersion.outputs.fullSemVer }}
       
       # Publish the packages to github under RForge
-      - name: Publish Packages
-        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github
+      - name: Publish Packages (Github)
+        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github --skip-duplicate
+        
+      # Publish the packages to nuget under RForge
+      - name: Publish Packages (Nuget)
+        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --ApiKey ${{ secrets.NUGET_TOKEN }} --skip-duplicate
 
       # Create the release as draft so I can add more details if needed.
       - name: Github Release
