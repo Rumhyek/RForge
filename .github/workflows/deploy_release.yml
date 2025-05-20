@@ -59,4 +59,4 @@ jobs:
       
       # Publish the packages to nuget under RForge
       - name: Publish Packages (Nuget)
-        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate
+        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate
