@@ -51,7 +51,7 @@ jobs:
         
       # Pack all packages at the given version
       - name: Package Pack
-        run: dotnet pack --output ${{env.DOTNET_ROOT}}/artifacts --configuration Release -p:Version=${{ github.event.release.tag_name }}
+        run: dotnet pack --output ${{env.DOTNET_ROOT}}/artifacts --configuration Release -p:Version=0.9.0
       
       # Publish the packages to github under RForge
       - name: Publish Packages to GitHub
