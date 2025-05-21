@@ -1,0 +1,31 @@
+﻿@page "/double-click"
+@rendermode InteractiveAuto
+
+<PageTitle>Double Click</PageTitle>
+
+<h1>Double Click</h1>
+
+<p role="status">Current count: @currentCount</p>
+<div>
+    Click once for 1 twice for 10.
+</div>
+
+<div>
+    <RfDoubleClick class="button is-primary" OnClick="IncrementCount" OnDoubleClick="IncrementDoubleCount">Click Me</RfDoubleClick>
+</div>
+
+<RfDoubleClick class="button is-primary" OnClick="IncrementCount" OnDoubleClick="IncrementDoubleCount" Element="a">A TAG</RfDoubleClick>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private void IncrementDoubleCount()
+    {
+        currentCount += 10;
+    }
+}

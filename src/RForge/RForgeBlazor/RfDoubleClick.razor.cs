@@ -42,10 +42,10 @@ public class RfDoubleClick : ComponentBase
 
     /// <summary>
     /// The delay in milliseconds to distinguish between single and double clicks.
-    /// Default is 250ms.
+    /// Default is 400ms.
     /// </summary>
     [Parameter]
-    public int ClickDelay { get; set; } = 250;
+    public int ClickDelay { get; set; } = 400;
 
     /// <summary>
     /// The content to be rendered inside the element.
