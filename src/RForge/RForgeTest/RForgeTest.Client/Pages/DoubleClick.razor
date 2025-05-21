@@ -15,6 +15,10 @@
 </div>
 
 <RfDoubleClick class="button is-primary" OnClick="IncrementCount" OnDoubleClick="IncrementDoubleCount" Element="a">A TAG</RfDoubleClick>
+<br />
+<RfDoubleClick class="button is-primary" OnClick="IncrementCount" Element="div">SINGLE CLICK ONLY</RfDoubleClick>
+<br />
+<RfDoubleClick class="button is-primary" OnDoubleClick="IncrementDoubleCount" Element="div">DOUBLE CLICK ONLY</RfDoubleClick>
 
 @code {
     private int currentCount = 0;
