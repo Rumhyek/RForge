@@ -384,6 +384,9 @@ public partial class RfDataGrid<TRowData>
                 case nameof(OnRowDoubleClick):
                     OnRowDoubleClick = (EventCallback<TRowData>)parameter.Value;
                     break;
+                case nameof(DoubleClickDelay):
+                    DoubleClickDelay = (int)parameter.Value;
+                    break;
                 case nameof(OnLoadData):
                     OnLoadData = (EventCallback)parameter.Value;
                     break;
@@ -560,7 +563,11 @@ public partial class RfDataGrid<TRowData>
     /// <param name="row">The row data.</param>
     private async Task onRowClick(TRowData row)
     {
-        if (AllowSelection == false || MaxSelection <= 0) return;
+        if (AllowSelection == false || MaxSelection <= 0)
+        {
+            await OnRowClick.InvokeAsync(row);
+            return;
+        }
 
         if (currentSelection.Contains(row) == true)
         {
