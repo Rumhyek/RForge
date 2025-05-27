@@ -1,0 +1,220 @@
+﻿@page "/data-grid/example/double-click"
+
+@using RForge.Abstractions
+@using RForgeDocs.Abstractions
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+
+@inject IUserDataGridPageProcessor userDataGridPageProcessor
+
+@rendermode InteractiveAuto
+
+<ExampleDetail Title="Basic Double Click Example"
+               SubTitle="Data Grid"
+               ComponentName="Data Grid"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/DataGrid/DoubleClickExamplePage.razor")"
+               ComponentDetailsUrl="/data-grid/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This example is a focuses on the use of <code>OnRowDoubleClick</code>. 
+                        Double clicking a row will display a modal of that user with additional details.
+                    </p>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <RfDataGrid TRowData="UserData"
+                        Data=Data
+                        @bind-CurrentPageIndex=@CurrentPageIndex
+                        @bind-SortKey=@CurrentSortKey
+                        @bind-SortOrder=@CurrentSortOrder
+                        PageSize=@PageSize
+                        TotalCount=@TotalCount
+                        OnRowDoubleClick=OnShowUserDetails
+                        OnLoadData=OnLoad>
+
+                <Headers>
+
+                    <RfDgHeader AllowSorting=false>Id</RfDgHeader>
+                    <RfDgHeader SortKey="FirstName">First Name</RfDgHeader>
+                    <RfDgHeader SortKey="LastName">Last Name</RfDgHeader>
+                    <RfDgHeader SortKey="IsAdmin">Is Admin</RfDgHeader>
+
+                </Headers>
+
+                <Filters>
+                    <RfDgFilterInputInt @bind-Value=Filters.Id MinValue=0 />
+                    <RfDgFilterInputText @bind-Value=Filters.FirstName Placeholder="Contains" />
+                    <RfDgFilterNone />
+                    <RfDgFilterInputBool @bind-Value=Filters.IsAdmin Placeholder="True / False" />
+                </Filters>
+
+                <Cells>
+                    <td>@context.Id</td>
+                    <td>@context.FirstName</td>
+                    <td>@context.LastName</td>
+                    <td>@context.IsAdmin</td>
+                </Cells>
+
+                <EmptyContent>
+
+                    <td colspan="4">No users were found with the current search results.</td>
+
+                </EmptyContent>
+
+            </RfDataGrid>
+
+        </article>
+    </div>
+</div>
+
+<RfModal @bind-IsVisible=ShowModal>
+
+    @if (ShownUser == null)
+    {
+        <article class="media">
+            <figure class="media-left">
+                <p class="image is-64x64 is-skeleton">
+                    <img class="is-rounded" src="https://bulma.io/assets/images/placeholders/128x128.png" />
+                </p>
+            </figure>
+            <div class="media-content">
+                <div class="mb-1"><strong class="is-skeleton">First Last Name</strong> <small class="is-skeleton">@@Username</small></div>
+                <div class="tags mb-2">
+                    <span class="tag is-light is-skeleton">Role</span>
+                    <span class="tag is-info is-skeleton">SomeEmail@someemail.com</span>
+                </div>
+                <p class="mb-2 is-skeleton" style="min-height: 50px">&nbsp;</p>
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item">
+                            <span class="icon is-small is-skeleton"><i class="fas fa-reply"></i></span>
+                        </a>
+                        <a class="level-item">
+                            <span class="icon is-small is-skeleton"><i class="fas fa-retweet"></i></span>
+                        </a>
+                        <a class="level-item">
+                            <span class="icon is-small is-skeleton"><i class="fas fa-heart"></i></span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </article>
+    }
+    else
+    {
+        <article class="media">
+            <figure class="media-left">
+                <p class="image is-64x64">
+                    <img class="is-rounded" src="https://bulma.io/assets/images/placeholders/128x128.png" />
+                </p>
+            </figure>
+            <div class="media-content">
+                <div class="mb-1"><strong>@ShownUser.FirstName @ShownUser.LastName</strong> <small>@@@ShownUser.Username</small></div>
+                <div class="tags mb-2">
+                    @if (ShownUser.IsAdmin)
+                    {
+                        <span class="tag is-success">Admin</span>
+                    }
+                    else
+                    {
+                        <span class="tag">User</span>
+                    }
+                    <span class="tag">@ShownUser.Email</span>
+                </div>
+                <p class="mb-2" title="@ShownUser.Bio">
+                    @if (ShownUser.Bio.Length > 400)
+                    {
+                        @ShownUser.Bio.Substring(0, 400)
+
+                        <span>&hellip;</span>
+                    }
+                    else
+                    {
+                        @ShownUser.Bio
+                    }
+                </p>
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item">
+                            <span class="icon is-small"><i class="fas fa-reply"></i></span>
+                        </a>
+                        <a class="level-item">
+                            <span class="icon is-small"><i class="fas fa-retweet"></i></span>
+                        </a>
+                        <a class="level-item">
+                            <span class="icon is-small"><i class="fas fa-heart"></i></span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </article>
+    }
+
+</RfModal>
+
+@code {
+
+    private int TotalCount { get; set; }
+    private int PageSize { get; set; } = 10;
+    private int CurrentPageIndex { get; set; }
+    private string CurrentSortKey { get; set; }
+    private RfSortOrder CurrentSortOrder { get; set; }
+    private FilterData Filters { get; set; } = new();
+    private List<UserData> Data { get; set; }
+
+    private bool ShowModal { get; set; }
+    private UserData ShownUser { get; set; }
+
+    public async Task OnLoad()
+    {
+        var response = await userDataGridPageProcessor.GetPage(new UserDataGridGetPageData()
+        {
+            Filters = new UserDataGridFilterData()
+            {
+                Id = Filters.Id,
+                IsAdmin = Filters.IsAdmin,
+                FirstName = Filters.FirstName,
+            },
+            PageIndex = CurrentPageIndex,
+            SortKey = CurrentSortKey,
+            PageSize = PageSize,
+            SortOrder = CurrentSortOrder
+        });
+
+        Data = response.Data;
+        TotalCount = response.TotalCount;
+        StateHasChanged();
+    }
+
+    public async Task OnShowUserDetails(UserData user)
+    {
+        // Prevent opening the modal if it's already shown
+        if (ShowModal == true) return;
+        ShownUser = null;
+
+        //In a real application, you would likely fetch more details about the user here.
+        ShowModal = true;
+        StateHasChanged();
+
+        await Task.Delay(1000); // Simulate a delay for fetching user details
+
+        ShownUser = user;
+    }
+
+    private class FilterData
+    {
+        public int? Id { get; set; }
+        public string FirstName { get; set; }
+        public bool? IsAdmin { get; set; }
+    }
+
+}
