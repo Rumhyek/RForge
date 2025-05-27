@@ -83,7 +83,7 @@ else
                                       rows="15">
                                 @for (int i = log.Count - 1; i >= 0; i--)
                                 {
-                                    @log[i]
+                                    @i.ToString("D3") @LineNumberSeparator @log[i]
                                 }</textarea>
                         </div>
                     </div>
@@ -126,7 +126,7 @@ else
     [Parameter]
     public bool HasEvents { get; set; } = true;
 
-
+    private const string LineNumberSeparator = " ";
     private List<string> log { get; set; } = new List<string>();
 
     public void ClearLog() => log.Clear();
