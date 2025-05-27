@@ -1,0 +1,88 @@
+﻿@page "/double-click/playground"
+@using RForge.Abstractions
+@rendermode InteractiveAuto
+
+<PlaygroundDetails @ref="Logger"
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/DoubleClickPage.razor")"
+                   HasEvents=true
+                   SubTitle="Double Click"
+                   ComponentName="RfDoubleClick"
+                   Title="Playground"
+                   ComponentDetailsUrl="/double-click/details">
+
+    <Parameters>
+
+        <BulmaCheckbox Label="Has Click"
+                       HelpText="Adds a binding to OnSingleClick if true.">
+            <InputCheckbox @bind-Value=HasClick class="checkbox" />
+        </BulmaCheckbox>
+        <BulmaCheckbox Label="Has Double Click"
+                       HelpText="Adds a binding to OnDoubleClick if true.">
+            <InputCheckbox @bind-Value=HasDoubleClick class="checkbox" />
+        </BulmaCheckbox>
+        <BulmaInput Label="Css Class"
+                    HelpText="Add a class to the root element.">
+            <InputText type="text" @bind-Value=@CssClass class="input" />
+        </BulmaInput>
+        <BulmaInput Label="Element"
+                    HelpText="The element tag. (span, button, a, div, etc.)">
+            <InputText type="text" @bind-Value=@Element class="input" />
+        </BulmaInput>
+        <BulmaInput Label="Child Content"
+                    HelpText="The content to show within the component.">
+            <InputText type="text" @bind-Value=@Content class="input" />
+        </BulmaInput>
+        <BulmaInput Label="Click Delay (ms)"
+                    HelpText="The delay in milliseconds to distinguish between single and double clicks.">
+            <InputNumber @bind-Value=@ClickDelay class="input" />
+        </BulmaInput>
+    </Parameters>
+
+    <Display>
+
+        @if (HasClick == true && HasDoubleClick == true)
+        {
+            <RfDoubleClick Element=@Element OnSingleClick=OnClick OnDoubleClick=OnDoubleClick class="@CssClass" ClickDelay=ClickDelay>@Content</RfDoubleClick>
+        }
+        else if (HasClick == false && HasDoubleClick == true)
+        {
+            <RfDoubleClick Element=@Element OnDoubleClick=OnDoubleClick class="@CssClass" ClickDelay=ClickDelay>@Content</RfDoubleClick>
+        }
+        else if (HasClick == true && HasDoubleClick == false)
+        {
+            <RfDoubleClick Element=@Element OnSingleClick=OnClick class="@CssClass" ClickDelay=ClickDelay>@Content</RfDoubleClick>
+        }
+        else
+        {
+            <RfDoubleClick Element=@Element class="@CssClass" ClickDelay=ClickDelay>@Content</RfDoubleClick>
+        }
+
+        <RfDoubleClick />
+
+    </Display>
+
+</PlaygroundDetails>
+
+
+@code {
+
+    public PlaygroundDetails Logger { get; set; }
+
+    public bool HasClick { get; set; } = true;
+    public bool HasDoubleClick { get; set; } = true;
+    public string CssClass { get; set; } = "button is-primary";
+    public string Content { get; set; } = "Click Me";
+
+    public int ClickDelay { get; set; } = 400;
+
+    public string Element { get; set; } = "button";
+
+    public void OnClick()
+    {
+        Logger.AddLog("On Single Click");
+    }
+    public void OnDoubleClick(MouseEventArgs e)
+    {
+        Logger.AddLog($"On Double Click");
+    }
+}
