@@ -19,7 +19,46 @@
 
     <BasicUsage>
         <div class="content">
+            <p>
+                <code>RfDoubleClick</code> creates an element based on <code>RfDoubleClick.Element</code>. It supports the following parameters:
+            </p>
+            <ul>
+                <li><code>OnDoubleClick</code>: Event callback for double-click events.</li>
+                <li><code>OnSingleClick</code>: Event callback for single-click events.</li>
+                <li><code>Element</code>: The HTML element to render (default is "button").</li>
+                <li><code>ClickDelay</code>: The delay in milliseconds to distinguish between single and double clicks. (default is 400)</li>
+                <li>Supports additional uncaptured parameters and applies them to the root element.</li>
+            </ul>
+
+            <p>
+                <code>RfDoubleClick</code> makes uses of onclick event exclusively for double-click detection over the use of ondblclick.
+                This should add better support for touch devices and other platforms that may not support the ondblclick event properly.
+            </p>
+
+            <h3>Example</h3>
+
+            <pre><code>&lt;RfDoubleClick OnSingleClick="@@OnSingleClick"
+               OnDoubleClick="@@OnDoubleClick"
+               Element="button"
+               class="button is-primary"&gt;
+    Click or Double Click Me
+&lt;/RfDoubleClick&gt;
             
+&lt;p&gt;@@message&lt;/p&gt;
+
+@@code {
+    private string message = "Try single or double clicking the button above.";
+
+    private void OnSingleClick()
+    {
+        message = "Single click detected!";
+    }
+
+    private void OnDoubleClick()
+    {
+        message = "Double click detected!";
+    }
+}</code></pre>
         </div>
     </BasicUsage>
 
