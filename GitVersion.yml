@@ -8,4 +8,3 @@ branches:
     track-merge-target: false
     is-release-branch: true
     is-mainline: false
-    
