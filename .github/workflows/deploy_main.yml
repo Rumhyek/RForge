@@ -46,7 +46,7 @@ jobs:
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v3.0.0
         with:
-          versionSpec: '6.0.4'
+          versionSpec: '6.0.x'
 
         # Determine the next version. (rc is added based on GitVersion.yml settings)
       - name: Run GitVersion

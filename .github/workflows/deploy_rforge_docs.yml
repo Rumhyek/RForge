@@ -6,10 +6,9 @@ name: Build and deploy RForge Blazor Docs App
 on:
   # Runs on pushes targeting the `main` branch
   # when docs/** is updated
-  push:
-    branches: [main]
-    paths:
-      - 'docs/**'
+  release:
+    types:
+      - published
   # Allows for running manually from Actions tab
   workflow_dispatch:
   
