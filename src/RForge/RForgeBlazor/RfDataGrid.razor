@@ -108,13 +108,27 @@
                             rowCss += "selected is-primary";
                         }
 
-                        <tr class="@rowCss" @onclick=@(async ()=> await OnRowClick(row))>
-                            @Cells(row)
-                        </tr>
+                        @if (OnRowDoubleClick.HasDelegate == true)
+                        {
+                            <RfDoubleClick Element="tr" 
+                                class="@rowCss"
+                                OnSingleClick=@(async () => await onRowClick(row))
+                                OnDoubleClick=@(async () => await onRowDoubleClick(row))
+                                ClickDelay=@DoubleClickDelay>
+                                @Cells(row)
+                            </RfDoubleClick>
+                        }
+                        else
+                        {
+                            <tr class="@rowCss" @onclick=@(async () => await onRowClick(row))>
+                                @Cells(row)
+                            </tr>
+                        }
+
                     }
 
-                    
-                    @if(Data.Any() == false)
+
+                    @if (Data.Any() == false)
                     {
                         <tr class="@EmptyContentCss">
                             @EmptyContent
