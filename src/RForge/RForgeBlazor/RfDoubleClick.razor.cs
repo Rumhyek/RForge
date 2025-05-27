@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace RForgeBlazor;
 
@@ -25,13 +26,13 @@ public class RfDoubleClick : ComponentBase
     /// Callback invoked on a single click.
     /// </summary>
     [Parameter]
-    public EventCallback OnSingleClick { get; set; }
+    public EventCallback<MouseEventArgs> OnSingleClick { get; set; }
 
     /// <summary>
     /// Callback invoked on a double click.
     /// </summary>
     [Parameter]
-    public EventCallback OnDoubleClick { get; set; }
+    public EventCallback<MouseEventArgs> OnDoubleClick { get; set; }
 
     /// <summary>
     /// The HTML element to render (e.g., "button", "div", "span"). 
@@ -75,7 +76,7 @@ public class RfDoubleClick : ComponentBase
         // Optimize if they don't provide a double click.
         if (OnDoubleClick.HasDelegate == true)
         {
-            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, OnClickAndDoubleClick));
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, OnClickAndDoubleClick));
         }
         else
         {
@@ -91,7 +92,7 @@ public class RfDoubleClick : ComponentBase
     /// Handles click and double click logic, invoking the appropriate callback.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    private async Task OnClickAndDoubleClick()
+    private async Task OnClickAndDoubleClick(MouseEventArgs e)
     {
         currentClickCount++;
 
@@ -105,7 +106,7 @@ public class RfDoubleClick : ComponentBase
                 // Reset this back to 0 after this has fired.
                 currentClickCount = 0;
 
-                await OnSingleClick.InvokeAsync();
+                await OnSingleClick.InvokeAsync(e);
             }
             else
             {
@@ -116,7 +117,7 @@ public class RfDoubleClick : ComponentBase
         else if (currentClickCount >= 2)
         {
             // Double click
-            await OnDoubleClick.InvokeAsync();
+            await OnDoubleClick.InvokeAsync(e);
             currentClickCount = 0;
         }
     }
