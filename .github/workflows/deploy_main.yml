@@ -74,12 +74,7 @@ jobs:
         run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate
 
       # Create the release as draft so I can add more details if needed.
-      - name: Create Draft Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.gitversion.outputs.MajorMinorPatch }}
-          name: Release v${{ steps.gitversion.outputs.MajorMinorPatch }}
-          draft: true
-          prerelease: true
+      - name: Github Release
+        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes --draft
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
