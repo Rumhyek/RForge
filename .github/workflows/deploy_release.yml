@@ -4,12 +4,6 @@
 name: Publish new RForge Package
 
 on:
-  # Runs on pushes targeting the `main` branch
-  # when src/** is updated on the main branch
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
   release:
     types:
       - published
