@@ -135,6 +135,24 @@ public partial class RfDataGrid<TRowData>
     public EventCallback<TRowData> OnRowDeselect { get; set; }
 
     /// <summary>
+    /// Fires when a row is clicked returning the value of the row. Is called after <see cref="OnRowSelect"/> and <see cref="OnRowDeselect"/> events.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TRowData> OnRowClick { get; set; }
+
+    /// <summary>
+    /// Fires when a row is double clicked returning the value of the row. Is called after <see cref="OnRowSelect"/> and <see cref="OnRowDeselect"/> events.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TRowData> OnRowDoubleClick { get; set; }
+
+    /// <summary>
+    /// Sets the click delay for double click. This is used to determine if a click is a double click or not. Default = 250ms.
+    /// </summary>
+    [Parameter]
+    public int DoubleClickDelay { get; set; } = 250;
+
+    /// <summary>
     /// Called when the data grid believes new data should be shown.
     /// </summary>
     [Parameter]
@@ -360,6 +378,15 @@ public partial class RfDataGrid<TRowData>
                 case nameof(OnRowDeselect):
                     OnRowDeselect = (EventCallback<TRowData>)parameter.Value;
                     break;
+                case nameof(OnRowClick):
+                    OnRowClick = (EventCallback<TRowData>)parameter.Value;
+                    break;
+                case nameof(OnRowDoubleClick):
+                    OnRowDoubleClick = (EventCallback<TRowData>)parameter.Value;
+                    break;
+                case nameof(DoubleClickDelay):
+                    DoubleClickDelay = (int)parameter.Value;
+                    break;
                 case nameof(OnLoadData):
                     OnLoadData = (EventCallback)parameter.Value;
                     break;
@@ -534,14 +561,19 @@ public partial class RfDataGrid<TRowData>
     /// Handles the click event for a row.
     /// </summary>
     /// <param name="row">The row data.</param>
-    private async Task OnRowClick(TRowData row)
+    private async Task onRowClick(TRowData row)
     {
-        if (AllowSelection == false || MaxSelection <= 0) return;
+        if (AllowSelection == false || MaxSelection <= 0)
+        {
+            await OnRowClick.InvokeAsync(row);
+            return;
+        }
 
         if (currentSelection.Contains(row) == true)
         {
             currentSelection.Remove(row);
             await OnRowDeselect.InvokeAsync(row);
+            await OnRowClick.InvokeAsync(row);
         }
         else
         {
@@ -554,7 +586,13 @@ public partial class RfDataGrid<TRowData>
 
             currentSelection.Add(row);
             await OnRowSelect.InvokeAsync(row);
+            await OnRowClick.InvokeAsync(row);
         }
+    }
+
+    private async Task onRowDoubleClick(TRowData row)
+    {
+        await OnRowDoubleClick.InvokeAsync(row);
     }
 
     #endregion
