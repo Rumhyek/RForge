@@ -1,10 +1,11 @@
 workflow: GitHubFlow/v1
 branches:
   main:
-    mode: ContinuousDeployment
-  release:
     mode: ContinuousDelivery
     label: rc
-  feature:
-    mode: ContinuousDelivery
-    label: alpha
+    increment: Patch
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    is-release-branch: true
+    is-mainline: false
+    

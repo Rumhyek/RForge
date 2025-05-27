@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Pre Release RForge Release
+name: Create RForge Draft Release
 
 on:
   # Runs on pushes targeting the `main` branch
@@ -24,7 +21,7 @@ defaults:
     working-directory: src/RForge
 
 jobs:
-  build:
+  version-and-release:
     runs-on: ubuntu-latest
 
     permissions:
@@ -48,30 +45,25 @@ jobs:
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
-        
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.0.0
-        with:
-          versionSpec: '6.0.x'
       
       - name: Set up GitHub Nuget Repository
         run: dotnet nuget add source --username USERNAME --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Rumhyek/index.json"
         
-      # Determine the pre-release version
-      - id: preReleaseVersion
-        name: Determine Version (Pre-Release)
-        uses: gittools/actions/gitversion/execute@v3.0.0
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3
         with:
-          additionalArguments: '/preReleaseTag rc' 
-        
-      # Determine the version
-      - id: version
-        name: Determine Version (Release)
-        uses: gittools/actions/gitversion/execute@v3.0.0
-        
+          versionSpec: 6.x
+
+        # Determine the next version. (rc is added based on GitVersion.yml settings)
+      - name: Run GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v3
+        with:
+          versionSpec: '6.0.x'
+      
       # Pack all packages at the given version
       - name: Package Pack
-        run: dotnet pack --output ${{env.DOTNET_ROOT}}/artifacts --configuration Release -p:Version=${{ steps.preReleaseVersion.outputs.fullSemVer }}
+        run: dotnet pack --output ${{env.DOTNET_ROOT}}/artifacts --configuration Release -p:Version=${{ steps.gitversion.outputs.SemVer }}
       
       # Publish the packages to github under RForge
       - name: Publish Packages (Github)
@@ -82,7 +74,12 @@ jobs:
         run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate
 
       # Create the release as draft so I can add more details if needed.
-      - name: Github Release
-        run: gh release create v${{ steps.version.outputs.fullSemVer }} --generate-notes --draft
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.gitversion.outputs.MajorMinorPatch }}
+          name: Release v${{ steps.gitversion.outputs.MajorMinorPatch }}
+          draft: true
+          prerelease: true
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
