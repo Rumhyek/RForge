@@ -9,7 +9,7 @@ namespace RForgeBlazor;
 /// </summary>
 /// <example>
 /// <code>
-/// <RfDoubleClick OnClick="HandleClick" OnDoubleClick="HandleDoubleClick" Element="button">
+/// <RfDoubleClick OnSingleClick="HandleClick" OnDoubleClick="HandleDoubleClick" Element="button">
 ///     Click or Double Click Me
 /// </RfDoubleClick>
 ///
@@ -25,7 +25,7 @@ public class RfDoubleClick : ComponentBase
     /// Callback invoked on a single click.
     /// </summary>
     [Parameter]
-    public EventCallback OnClick { get; set; }
+    public EventCallback OnSingleClick { get; set; }
 
     /// <summary>
     /// Callback invoked on a double click.
@@ -74,9 +74,13 @@ public class RfDoubleClick : ComponentBase
 
         // Optimize if they don't provide a double click.
         if (OnDoubleClick.HasDelegate == true)
+        {
             builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, OnClickAndDoubleClick));
+        }
         else
-            builder.AddAttribute(2, "onclick", OnClick);
+        {
+            builder.AddAttribute(2, "onclick", OnSingleClick);
+        }
 
         builder.AddContent(4, ChildContent);
 
@@ -91,16 +95,23 @@ public class RfDoubleClick : ComponentBase
     {
         currentClickCount++;
 
-        // If this was clicked only once then fire off OnClick.
-        if (currentClickCount == 1 && OnClick.HasDelegate == true)
+        // If this was clicked only once then fire off OnSingleClick.
+        if (currentClickCount == 1)
         {
             await Task.Delay(ClickDelay);
 
-            if (currentClickCount == 1)
-                await OnClick.InvokeAsync();
+            if (currentClickCount == 1 && OnSingleClick.HasDelegate == true)
+            {
+                // Reset this back to 0 after this has fired.
+                currentClickCount = 0;
 
-            // Reset this back to 0 after this has fired.
-            currentClickCount = 0;
+                await OnSingleClick.InvokeAsync();
+            }
+            else
+            {
+                // Reset this back to 0 after this has fired.
+                currentClickCount = 0;
+            }
         }
         else if (currentClickCount >= 2)
         {
