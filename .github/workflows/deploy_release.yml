@@ -45,16 +45,14 @@ jobs:
         run: dotnet nuget add source --username USERNAME --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Rumhyek/index.json"
                 
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3
+        uses: gittools/actions/gitversion/setup@v3.0.0
         with:
-          versionSpec: 6.x
+          versionSpec: '6.0.x'
 
         # Determine the next version. (rc is removed due to release tag)
       - name: Run GitVersion
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v3
-        with:
-          versionSpec: '6.0.x'
+        uses: gittools/actions/gitversion/execute@v3.0.0
       
       - name: Echo GitVersion output
         run: |
