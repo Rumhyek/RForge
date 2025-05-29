@@ -41,7 +41,6 @@ public partial class RfDataGrid<TRowData>
     [Parameter]
     public int? PreRenderRowCount { get; set; }
 
-
     /// <summary>
     /// If true shows the filter row.
     /// </summary>
@@ -117,10 +116,15 @@ public partial class RfDataGrid<TRowData>
     public EventCallback<int?> PageSizeChanged { get; set; }
 
     /// <summary>
-    /// The max paging options to show in the bottom left. By default = 7
+    /// The max paging options to show in the bottom left. By default = 0
     /// </summary>
     [Parameter]
-    public int MaxPagingOptions { get; set; } = 7;
+    public int MaxPagingOptions { get; set; } = 0;
+
+    /// <summary>
+    /// Gets or sets the CSS class applied to the current page in a pagination control. Default is "is-primary".
+    /// </summary>
+    public string CurrentPagingCssClass { get; set; } = "is-primary";
 
     /// <summary>
     /// Fires when a row is selected return the value of the row.
@@ -211,18 +215,47 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public bool IsFullWidth { get; set; } = true;
-    #endregion
+
+    /// <summary>
+    /// If true the selection will be kept when the data is reloaded. Default = false.
+    /// </summary>
+    [Parameter]
+    public bool KeepSelection { get; set; } = false;
 
     /// <summary>
     /// The current selection of rows.
     /// </summary>
-    private List<TRowData> currentSelection { get; set; } = new List<TRowData>();
+    [Parameter]
+    public List<TRowData> CurrentSelection { get; set; } = new List<TRowData>();
+
+    /// <summary>
+    /// Fires when the current selection changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<List<TRowData>> CurrentSelectionChanged { get; set; }
+
+
+    /// <summary>  
+    /// Used to compare two rows to determine if they are the same. If not set, it will use <see cref="object.Equals(object?)"/> to compare the two rows.  
+    /// </summary>  
+    [Parameter]
+    public Func<TRowData, TRowData, bool> RowComparer { get; set; } 
+
+    /// <summary>
+    /// Adds a css class to the selected row. Default = "is-primary".
+    /// </summary>
+    [Parameter]
+    public string SelectedRowCssClass { get; set; } = "is-primary";
+    #endregion
+
+
+    private readonly Func<TRowData, TRowData, bool> _defaultRowComparer = (i1, i2) => i1.Equals(i2);
 
     /// <summary>
     /// The context for the data grid. Used to talk between the data grid and the children.
     /// </summary>
     private DataGridContext GridContext { get; set; }
-    
+
     /// <summary>
     /// If the sort order or key has been updated.
     /// </summary>
@@ -232,6 +265,8 @@ public partial class RfDataGrid<TRowData>
     /// If the current page index or page size has been updated.
     /// </summary>
     private bool onParameterSetReloadData { get; set; }
+
+    private ArgumentNullException CurrentSelectionIsNullException = new ArgumentNullException(nameof(CurrentSelection), "RForge RfDataGrid.CurrentSelection cannot be null.");
 
     /// <summary>
     /// The computed css class for the table.
@@ -243,19 +278,29 @@ public partial class RfDataGrid<TRowData>
             string css = "table";
 
             if (string.IsNullOrEmpty(CssClass) == false)
+            {
                 css += $" {CssClass}";
+            }
 
             if (IsFullWidth == true)
+            {
                 css += " is-fullwidth";
+            }
 
             if (AllowFilters == true && Filters != null)
+            {
                 css += " has-filters";
+            }
 
-            if (AllowSelection == true && Cells != null && Data != null)
-                css += " is-hoverable";
+            if ((AllowSelection == true || OnRowDoubleClick.HasDelegate == true || OnRowClick.HasDelegate == true) && Cells != null && Data != null)
+            {
+                css += " is-hoverable is-clickable";
+            }
 
             if (IsStriped == true)
+            {
                 css += " is-striped";
+            }
 
             return css;
         }
@@ -268,10 +313,15 @@ public partial class RfDataGrid<TRowData>
     {
         get
         {
-            if (PageSize == null && PreRenderRowCount == null) return 4;
+            if (PageSize == null && PreRenderRowCount == null)
+            {
+                return 4;
+            }
 
             if (PreRenderRowCount == null)
+            {
                 return PageSize.Value;
+            }
 
             return PreRenderRowCount.Value;
         }
@@ -282,11 +332,18 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     public async Task ReloadData()
     {
-        while (currentSelection.Count > 0)
+        if (KeepSelection == false)
         {
-            var removed = currentSelection[currentSelection.Count - 1];
-            currentSelection.RemoveAt(currentSelection.Count - 1);
-            await this.OnRowDeselect.InvokeAsync(removed);
+            bool hasChanged = CurrentSelection.Count > 0;
+            while (CurrentSelection.Count > 0)
+            {
+                var removed = CurrentSelection[CurrentSelection.Count - 1];
+                CurrentSelection.RemoveAt(CurrentSelection.Count - 1);
+                await this.OnRowDeselect.InvokeAsync(removed);
+            }
+
+            if (hasChanged == true)
+                await CurrentSelectionChanged.InvokeAsync(CurrentSelection);
         }
 
         await OnLoadData.InvokeAsync();
@@ -304,6 +361,7 @@ public partial class RfDataGrid<TRowData>
         };
         GridContext.OnSortChanged += OnSortChangedCallback;
         GridContext.OnFilterChanged += OnFilterChangedCallback;
+        RowComparer ??= _defaultRowComparer; //if not set use the default comparer
     }
 
     /// <summary>
@@ -372,6 +430,9 @@ public partial class RfDataGrid<TRowData>
                 case nameof(MaxPagingOptions):
                     MaxPagingOptions = (int)parameter.Value;
                     break;
+                case nameof(CurrentPagingCssClass):
+                    CurrentPagingCssClass = (string)parameter.Value;
+                    break;
                 case nameof(OnRowSelect):
                     OnRowSelect = (EventCallback<TRowData>)parameter.Value;
                     break;
@@ -389,6 +450,23 @@ public partial class RfDataGrid<TRowData>
                     break;
                 case nameof(OnLoadData):
                     OnLoadData = (EventCallback)parameter.Value;
+                    break;
+                case nameof(CurrentSelection):
+                    CurrentSelection = (List<TRowData>)parameter.Value;
+
+                    if (CurrentSelection == null)
+                        throw CurrentSelectionIsNullException;
+
+                    break;
+                case nameof(SelectedRowCssClass):
+                    SelectedRowCssClass = (string)parameter.Value;
+                    break;
+                case nameof(KeepSelection):
+                    KeepSelection = (bool)parameter.Value;
+                    break;
+                case nameof(RowComparer):
+                    RowComparer = (Func<TRowData, TRowData, bool>)parameter.Value;
+                    RowComparer ??= _defaultRowComparer; //if not set use the default comparer
                     break;
                 case nameof(Headers):
                     Headers = (RenderFragment)parameter.Value;
@@ -436,7 +514,7 @@ public partial class RfDataGrid<TRowData>
     /// <returns></returns>
     protected override async Task OnParametersSetAsync()
     {
-        if(onParameterSetUpdateSortOrder == true)
+        if (onParameterSetUpdateSortOrder == true)
         {
             //The parent component updated the parameter. Notify the children
             await GridContext.SortChanged(new DataGridSortBy()
@@ -446,8 +524,10 @@ public partial class RfDataGrid<TRowData>
             });
         }
 
-        if(onParameterSetReloadData == true)
+        if (onParameterSetReloadData == true)
+        {
             await OnLoadData.InvokeAsync();
+        }
     }
 
     /// <summary>
@@ -456,7 +536,9 @@ public partial class RfDataGrid<TRowData>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender == true && Data == null)
+        {
             await ReloadData();
+        }
     }
 
     #region paging
@@ -473,7 +555,10 @@ public partial class RfDataGrid<TRowData>
     {
         get
         {
-            if (ShowPaging == false) return 0;
+            if (ShowPaging == false)
+            {
+                return 0;
+            }
 
             return (int)Math.Ceiling(TotalCount / (decimal)PageSize.Value);
         }
@@ -486,7 +571,10 @@ public partial class RfDataGrid<TRowData>
     {
         get
         {
-            if (ShowPaging == false) return null;
+            if (ShowPaging == false)
+            {
+                return null;
+            }
 
             int totalPages = TotalPages;
             int[] pageIndexes = new int[Math.Min(totalPages, MaxPagingOptions)];
@@ -545,7 +633,10 @@ public partial class RfDataGrid<TRowData>
     /// <param name="pageIndex">The page index to navigate to.</param>
     public async Task OnPageIndexClick(int pageIndex)
     {
-        if (pageIndex == CurrentPageIndex) return;
+        if (pageIndex == CurrentPageIndex)
+        {
+            return;
+        }
 
         CurrentPageIndex = pageIndex;
         await CurrentPageIndexChanged.InvokeAsync(pageIndex);
@@ -569,22 +660,27 @@ public partial class RfDataGrid<TRowData>
             return;
         }
 
-        if (currentSelection.Contains(row) == true)
+        var selectedRows = CurrentSelection.Where(r => RowComparer(r, row)).ToList();
+
+        if (selectedRows.Any())
         {
-            currentSelection.Remove(row);
-            await OnRowDeselect.InvokeAsync(row);
+            foreach(var selectedRow in selectedRows)
+            {
+                CurrentSelection.Remove(selectedRow);
+                await OnRowDeselect.InvokeAsync(row);
+            }
             await OnRowClick.InvokeAsync(row);
         }
         else
         {
-            if (MaxSelection != null && currentSelection.Count + 1 > MaxSelection)
+            if (MaxSelection != null && CurrentSelection.Count + 1 > MaxSelection)
             {
-                var deselectFirst = currentSelection.First();
-                currentSelection.RemoveAt(0);
+                var deselectFirst = CurrentSelection.First();
+                CurrentSelection.RemoveAt(0);
                 await OnRowDeselect.InvokeAsync(deselectFirst);
             }
 
-            currentSelection.Add(row);
+            CurrentSelection.Add(row);
             await OnRowSelect.InvokeAsync(row);
             await OnRowClick.InvokeAsync(row);
         }
@@ -605,7 +701,9 @@ public partial class RfDataGrid<TRowData>
     private async Task OnFilterChangedCallback(object caller, DataGridFilterBy filter)
     {
         if (ShowPaging == true && CurrentPageIndex != 0)
+        {
             await CurrentPageIndexChanged.InvokeAsync(0);
+        }
 
         await ReloadData();
     }

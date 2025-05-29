@@ -103,18 +103,18 @@
                     @foreach (var row in Data)
                     {
                         var rowCss = "";
-                        if (AllowSelection == true && currentSelection.Contains(row) == true)
+                        if (CurrentSelection?.Any(selectedRow => RowComparer(selectedRow, row)) == true)
                         {
-                            rowCss += "selected is-primary";
+                            rowCss += $"selected {SelectedRowCssClass}".Trim();
                         }
 
                         @if (OnRowDoubleClick.HasDelegate == true)
                         {
-                            <RfDoubleClick Element="tr" 
-                                class="@rowCss"
-                                OnSingleClick=@(async () => await onRowClick(row))
-                                OnDoubleClick=@(async () => await onRowDoubleClick(row))
-                                ClickDelay=@DoubleClickDelay>
+                            <RfDoubleClick Element="tr"
+                                           class="@rowCss"
+                                           OnSingleClick=@(async () => await onRowClick(row))
+                                           OnDoubleClick=@(async () => await onRowDoubleClick(row))
+                                           ClickDelay=@DoubleClickDelay>
                                 @Cells(row)
                             </RfDoubleClick>
                         }
@@ -143,35 +143,40 @@
                 {
                     var pagingTabs = PagingTabs;
                     <div class="is-flex">
-                        <div class="button" @onclick="@OnFirstPageClick">
+                        <div class="button"
+                             @onclick="@OnFirstPageClick"
+                             title="First Page"
+                             disabled=@(CurrentPageIndex == 0)>
                             <span class="icon">
                                 <i class="fa-solid fa-angles-left"></i>
                             </span>
                         </div>
-                        <div class="button" @onclick="@OnPreviousPageClick">
+                        <div class="button" @onclick="@OnPreviousPageClick"
+                             title="Previous Page"
+                             disabled=@(CurrentPageIndex == 0)>
                             <span class="icon">
                                 <i class="fa-solid fa-angle-left"></i>
                             </span>
                         </div>
                         @foreach (var pageIndex in pagingTabs)
                         {
-                            string css = null;
-                            if (pageIndex == CurrentPageIndex)
-                            {
-                                css = "is-primary";
-                            }
-
-                            <div class="button @css" @onclick=@(async () => await OnPageIndexClick(pageIndex))>
+                            <div class="button @Rf.ClassWhen((CurrentPagingCssClass, pageIndex == CurrentPageIndex))"
+                                 @onclick=@(async () => await OnPageIndexClick(pageIndex))>
                                 @(pageIndex + 1)
                             </div>
-
                         }
-                        <div class="button" @onclick="@OnNextPageClick">
+                        <div class="button"
+                             @onclick="@OnNextPageClick"
+                             title="Next Page"
+                             disabled=@(CurrentPageIndex + 1 == TotalPages)>
                             <span class="icon">
                                 <i class="fa-solid fa-angle-right"></i>
                             </span>
                         </div>
-                        <div class="button" @onclick="@OnLastPageClick">
+                        <div class="button"
+                             @onclick="@OnLastPageClick"
+                             title="Last Page"
+                             disabled=@(CurrentPageIndex + 1 == TotalPages)>
                             <span class="icon">
                                 <i class="fa-solid fa-angles-right"></i>
                             </span>

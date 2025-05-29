@@ -21,6 +21,9 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
         if (options.Filters.Id.HasValue == true)
             query = query.Where(u => u.Id == options.Filters.Id.Value);
         
+        if(options.Filters.Ids != null)
+            query = query.Where(u => options.Filters.Ids.Contains(u.Id));
+
         if (options.Filters.IsAdmin.HasValue == true)
             query = query.Where(u => u.IsAdmin == options.Filters.IsAdmin.Value);
 
