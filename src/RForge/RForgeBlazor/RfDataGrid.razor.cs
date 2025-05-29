@@ -266,6 +266,8 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     private bool onParameterSetReloadData { get; set; }
 
+    private ArgumentNullException CurrentSelectionIsNullException = new ArgumentNullException(nameof(CurrentSelection), "RForge RfDataGrid.CurrentSelection cannot be null.");
+
     /// <summary>
     /// The computed css class for the table.
     /// </summary>
@@ -451,6 +453,10 @@ public partial class RfDataGrid<TRowData>
                     break;
                 case nameof(CurrentSelection):
                     CurrentSelection = (List<TRowData>)parameter.Value;
+
+                    if (CurrentSelection == null)
+                        throw CurrentSelectionIsNullException;
+
                     break;
                 case nameof(SelectedRowCssClass):
                     SelectedRowCssClass = (string)parameter.Value;
@@ -654,10 +660,15 @@ public partial class RfDataGrid<TRowData>
             return;
         }
 
-        if (CurrentSelection.Contains(row) == true)
+        var selectedRows = CurrentSelection.Where(r => RowComparer(r, row)).ToList();
+
+        if (selectedRows.Any())
         {
-            CurrentSelection.Remove(row);
-            await OnRowDeselect.InvokeAsync(row);
+            foreach(var selectedRow in selectedRows)
+            {
+                CurrentSelection.Remove(selectedRow);
+                await OnRowDeselect.InvokeAsync(row);
+            }
             await OnRowClick.InvokeAsync(row);
         }
         else

@@ -1,0 +1,195 @@
+﻿@page "/data-grid/example/view-selected-example"
+
+@using RForge.Abstractions
+@using RForgeDocs.Abstractions
+@using RForgeDocs.Abstractions.DataModels
+@using RForgeDocs.Abstractions.Services
+
+@inject IUserDataGridPageProcessor userDataGridPageProcessor
+
+@rendermode InteractiveAuto
+
+<ExampleDetail Title="View Selected Only"
+               SubTitle="Shows a way to toggle viewing all selected."
+               ComponentName="Data Grid"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/DataGrid/ViewSelectedPage.razor")"
+               ComponentDetailsUrl="/data-grid/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This example shows how to toggle between viewing all users and only the selected users in a data grid.
+                        It does this by maintaining two sets of settings: one for the default view (all users) and one for the selected view (only selected users) and 
+                        adding an additional filter option <code>Ids</code>.
+                    </p>
+                    <p>
+                        The "View Selected Users" button will show only the users that are currently selected, while the "View All Users" button will reset the view to show all users.
+                    </p>
+                    <p>
+                        The data grid supports filtering, sorting, and pagination. You can also clear filters and selection using the provided buttons.
+                    </p>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <div class="buttons">
+                <a class="button"
+                   @onclick=ClearFilters>
+                    Clear Filters
+                </a> 
+                <a class="button"
+                        @onclick=ClearSelection>
+                    Clear Selection
+                </a>
+                @if (IsDefaultSettings == true)
+                {
+                    <a class="button is-primary"
+                       @onclick="async () => await UpdateSettings(SelectedSettings)">
+                        View Selected Users
+                    </a>
+                }
+                else
+                {
+                    <a class="button is-primary"
+                       @onclick="async () => await UpdateSettings(DefaultSettings)">
+                        View All Users
+                    </a>
+                }
+
+
+            </div>
+
+            <RfDataGrid TRowData="UserData"
+                        Data=CurrentSettings.Data
+                        @bind-CurrentPageIndex=@CurrentSettings.CurrentPageIndex
+                        @bind-SortKey=@CurrentSettings.CurrentSortKey
+                        @bind-SortOrder=@CurrentSettings.CurrentSortOrder
+                        PageSize=@CurrentSettings.PageSize
+                        TotalCount=@CurrentSettings.TotalCount
+                        KeepSelection=true
+                        AllowSelection=true
+                        @bind-CurrentSelection=CurrentSelection
+                        RowComparer=@((r1, r2) => r1.Id == r2.Id)
+                        OnLoadData=OnLoad>
+
+                <Headers>
+
+                    <RfDgHeader AllowSorting=false>Id</RfDgHeader>
+                    <RfDgHeader SortKey="FirstName">First Name</RfDgHeader>
+                    <RfDgHeader SortKey="LastName">Last Name</RfDgHeader>
+                    <RfDgHeader SortKey="IsAdmin">Is Admin</RfDgHeader>
+
+                </Headers>
+
+                <Filters>
+                    <RfDgFilterInputInt @bind-Value=CurrentSettings.Filters.Id MinValue=0 />
+                    <RfDgFilterInputText @bind-Value=CurrentSettings.Filters.FirstName Placeholder="Contains" />
+                    <RfDgFilterNone />
+                    <RfDgFilterInputBool @bind-Value=CurrentSettings.Filters.IsAdmin Placeholder="True / False" />
+                </Filters>
+
+                <Cells>
+                    <td>@context.Id</td>
+                    <td>@context.FirstName</td>
+                    <td>@context.LastName</td>
+                    <td>@context.IsAdmin</td>
+                </Cells>
+
+                <EmptyContent>
+
+                    <td colspan="4">No users were found with the current search results.</td>
+
+                </EmptyContent>
+
+            </RfDataGrid>
+
+        </article>
+    </div>
+</div>
+
+@code {
+    private List<UserData> CurrentSelection { get; set; } = new();
+
+    private DataGridSettingsData DefaultSettings { get; set; } = new();
+    private DataGridSettingsData SelectedSettings { get; set; } = new();
+    private DataGridSettingsData CurrentSettings { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        CurrentSettings = DefaultSettings;
+    }
+
+    private bool IsDefaultSettings => CurrentSettings == DefaultSettings;
+
+    public async Task OnLoad()
+    {
+        var filters = new UserDataGridFilterData()
+        {
+            Id = CurrentSettings.Filters.Id,
+            IsAdmin = CurrentSettings.Filters.IsAdmin,
+            FirstName = CurrentSettings.Filters.FirstName,
+        };
+
+        if (CurrentSettings == SelectedSettings)
+            filters.Ids = CurrentSelection.Select(u => u.Id).ToList();
+
+        var response = await userDataGridPageProcessor.GetPage(new UserDataGridGetPageData()
+        {
+            Filters = filters,
+            PageIndex = CurrentSettings.CurrentPageIndex,
+            SortKey = CurrentSettings.CurrentSortKey,
+            PageSize = CurrentSettings.PageSize,
+            SortOrder = CurrentSettings.CurrentSortOrder
+        });
+
+        CurrentSettings.Data = response.Data;
+        CurrentSettings.TotalCount = response.TotalCount;
+    }
+
+    private async Task UpdateSettings(DataGridSettingsData settings)
+    {
+        CurrentSettings = settings;
+        await OnLoad();
+    }
+
+    private async Task ClearFilters()
+    {
+        CurrentSettings.Filters = new();
+        await OnLoad();
+    }
+
+    private async Task ClearSelection()
+    {
+        CurrentSelection.Clear();
+        await OnLoad();
+    }
+
+    private class FilterData
+    {
+        public int? Id { get; set; }
+        public string FirstName { get; set; }
+        public bool? IsAdmin { get; set; }
+
+    }
+
+    
+
+    private class DataGridSettingsData
+    {
+        public int TotalCount { get; set; }
+        public int PageSize { get; set; } = 10;
+        public int CurrentPageIndex { get; set; }
+        public string CurrentSortKey { get; set; }
+        public RfSortOrder CurrentSortOrder { get; set; }
+        public FilterData Filters { get; set; } = new();
+        public List<UserData> Data { get; set; }
+    }
+
+}

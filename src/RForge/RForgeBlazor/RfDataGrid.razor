@@ -103,7 +103,7 @@
                     @foreach (var row in Data)
                     {
                         var rowCss = "";
-                        if (CurrentSelection.Any(selectedRow => RowComparer(selectedRow, row)) == true)
+                        if (CurrentSelection?.Any(selectedRow => RowComparer(selectedRow, row)) == true)
                         {
                             rowCss += $"selected {SelectedRowCssClass}".Trim();
                         }
