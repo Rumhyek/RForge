@@ -1,0 +1,29 @@
+
+
+@typeparam TRowData
+
+
+<RfDataGrid TRowData="TRowData"
+            Data=@Data
+            TotalCount=@TotalCount
+            @bind-CurrentPageIndex=@CurrentPageIndex
+            @bind-CurrentSelection=@CurrentSelection
+            @bind-PageSize=@PageSize
+            @bind-SortKey=@SortKey
+            @bind-SortOrder=@SortOrder
+            PreRenderColumnCount=@Config.PreRenderColumnCount
+            PreRenderRowCount=@Config.PreRenderRowCount
+            AllowFilters=@Config.AllowFilters
+            AllowSelection=@Config.AllowSelection
+            MaxSelection=@Config.MaxSelection
+            DoubleClickDelay=@Config.DoubleClickDelay
+            KeepSelection=@Config.KeepSelection
+            MaxPagingOptions=@Config.MaxPagingOptions
+            IsStriped=@Style.IsStriped
+            IsFullWidth=@Style.IsFullWidth
+            EmptyContentCss=@Style.EmptyContentCss
+            CssClass=@Style.CssClass
+            PagerCssClass=@Style.PagerCssClass
+            CurrentPagingCssClass=@Style.CurrentPagingCssClass>
+
+</RfDataGrid>

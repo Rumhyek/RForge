@@ -124,6 +124,7 @@ public partial class RfDataGrid<TRowData>
     /// <summary>
     /// Gets or sets the CSS class applied to the current page in a pagination control. Default is "is-primary".
     /// </summary>
+    [Parameter]
     public string CurrentPagingCssClass { get; set; } = "is-primary";
 
     /// <summary>
