@@ -1,5 +1,6 @@
 ﻿@using RForge.Abstractions
 @using RForgeBlazor.Services
+@using RForge.Abstractions.Modal
 
 @inject IDialogManager dialogManager
 @inject INotificationManager notificationManager
@@ -39,6 +40,13 @@
     <a class="button" @onclick=@(() => ShowPrompt("message + title. Are you sure?", "Confirm Title"))>Messsage + Title</a>
     <a class="button" @onclick=@(() => ShowPrompt("message + title + Custom Ok. Are you sure?", "Confirm Title", "Yes", "No"))>Messsage + Title + Custom Ok</a>
     <a class="button" @onclick=@(() => ShowPromptCustomRender())>Custom Render</a>
+</div>
+
+<h4 class="is-size-4">Multi Action</h4>
+<div class="buttons">
+    <a class="button" @onclick=@(() => ShowMultiAction("Message only"))>Messsage</a>
+    <a class="button" @onclick=@(() => ShowMultiAction("message + title. Are you sure?", "Multi Action Title"))>Messsage + Title</a>
+    <a class="button" @onclick=@(() => ShowMultiActionCustomRender())>Custom Render</a>
 </div>
 
 <h4 class="is-size-4">Advanced</h4>
@@ -84,6 +92,48 @@
             </div>
         </article>
     };
+
+    private RfDialogMultiActionButtonOptions[] multiActionButtons { get; set; } =
+    [
+        new RfDialogMultiActionButtonOptions("String"),
+        new RfDialogMultiActionButtonOptions()
+        {
+            Action = "Object Version",
+            Text = "OV",
+            CssClass = "is-link",
+            Data = 1,
+        },
+        new RfDialogMultiActionButtonOptions()
+        {
+            Action = "Icon Version - User",
+            Text = "IP",
+            Icon = "fas fa-user",
+            Data = 2,
+        },
+        new RfDialogMultiActionButtonOptions()
+        {
+            Action = "Icon Version - Users",
+            Text = "IP",
+            Icon = "fas fa-users",
+            IconOnLeft = false,
+            Data = 3,
+        },
+        new RfDialogMultiActionButtonOptions()
+        {
+            Action = "Icon Only",
+            Icon = "fas fa-file",
+            Data = 4,
+        },
+
+        new RfDialogMultiActionButtonOptions()
+        {
+            Action = "Icon sized - Users",
+            Icon = "fas fa-circle",
+            IconWrapperCss = "is-small",
+            Data = 5,
+        },
+    ];
+
 
     public void ShowAlertCustomNoCallback()
     {
@@ -140,7 +190,7 @@
     {
         await Task.Delay(2000);
 
-        if(confirmed == true) 
+        if (confirmed == true)
             ShowAlertNoCallback("Confirmed!");
         else
             ShowAlertNoCallback("Cancelled!");
@@ -173,11 +223,31 @@
             notificationManager.AddSuccess($"Mesage: {message}", "Successfully Saved!", options => options.Position = RForge.Abstractions.Notifications.RfNotificationPosition.BottomRight);
     }
 
+    public void ShowMultiAction(string message, string title = null)
+    {
+
+        dialogManager.MultiAction(message, OnActionCallback, multiActionButtons);
+
+    }
+    public void ShowMultiActionCustomRender()
+    {
+
+        dialogManager.MultiAction(CustomAlert, OnActionCallback, multiActionButtons);
+
+    }
+
+    public async Task OnActionCallback(RfDialogMultiActionButtonOptions action)
+    {
+        await Task.Delay(2000);
+
+        notificationManager.AddInfo($"Action: {action.Action}, Data: {action.Data}");
+    }
+
     public void ShowMultiple()
     {
-        for(int i = 4; i > 0; i--)
+        for (int i = 4; i > 0; i--)
             dialogManager.Alert($"Showing 4 alerts queued. ({i} reamining)");
-        
+
     }
 
 }

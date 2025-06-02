@@ -64,7 +64,7 @@
                 <div class="buttons is-right">
                     @foreach (var action in multiActionOptions.Actions)
                     {
-                        <button class="buttons @action.CssClass @IsLoadingCss"
+                        <button class="button @action.CssClass @IsLoadingCss"
                                 disabled=@action.IsDisabled
                                 @onclick=@(async () => await OnMultiActionClick(action))>
 
