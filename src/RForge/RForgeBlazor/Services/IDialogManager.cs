@@ -23,7 +23,7 @@ public interface IDialogManager : IDialogManagerBackend
     /// <param name="confirmText">The text for the confirm button.</param>
     /// <param name="cancelText">The text for the cancel button.</param>
     void Confirm(RenderFragment message, Func<bool, Task> onConfirm, string confirmText = "Ok", string cancelText = "Cancel");
-    
+
     /// <summary>
     /// Shows an alert dialog with the specified options.
     /// </summary>
@@ -57,6 +57,38 @@ public interface IDialogManager : IDialogManagerBackend
     /// <param name="confirmText">The text for the confirm button.</param>
     /// <param name="cancelText">The text for the cancel button.</param>
     void Prompt(RenderFragment message, Func<string, Task> onPrompt, string confirmText = "Ok", string cancelText = "Cancel");
+
+    /// <summary>
+    /// Displays a message and executes one of multiple actions based on user input.
+    /// </summary>
+    /// <remarks>This method allows the caller to define multiple actions and handle user selection
+    /// dynamically.  Ensure that <paramref name="actions"/> contains valid identifiers, as they will be used to
+    /// determine the available options.</remarks>
+    /// <param name="message">The content to render as the message displayed to the user.</param>
+    /// <param name="onAction">A callback function that is invoked when an action is selected. The function receives the selected action's
+    /// options.</param>
+    /// <param name="actions">An array of action identifiers representing the available actions. Must not be null or empty.</param>
+    void MultiAction(RenderFragment message, Func<RfDialogMultiActionButtonOptions, Task> onAction, string[] actions);
+
+    /// <summary>
+    /// Displays a dialog with multiple action buttons and a custom message.
+    /// </summary>
+    /// <remarks>Use this method to create a dialog with multiple actionable buttons, allowing users to choose
+    /// from predefined options.  Ensure that the <paramref name="actions"/> array is not null or empty, and that each
+    /// option is properly configured.</remarks>
+    /// <param name="message">The content to render as the message displayed to the user.</param>
+    /// <param name="onAction">A callback function that is invoked when an action is selected. The function receives the selected action's
+    /// options.</param>
+    /// <param name="actions">An array of action button options to display in the dialog. Each option defines the behavior and appearance of a
+    /// button.</param>
+    void MultiAction(RenderFragment message, Func<RfDialogMultiActionButtonOptions, Task> onAction, RfDialogMultiActionButtonOptions[] actions);
+
+    /// <summary>
+    /// Shows a multi-action dialog with the specified options.
+    /// </summary>
+    /// <remarks>Use this method to give the user multiple option buttons.</remarks>
+    /// <param name="options">The options for the multi-action dialog.</param>
+    void MultiAction(RfDialogOptionMultiAction options);
 
     /// <summary>
     /// Registers the dialog manager with the specified dialog manager instance.

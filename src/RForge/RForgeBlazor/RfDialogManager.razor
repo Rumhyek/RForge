@@ -55,6 +55,54 @@
                 </EditForm>
             </RfModal>
             break;
+        case RfDialogType.MulitAction:
+            RfDialogOptionMultiAction multiActionOptions = ActiveDialog as RfDialogOptionMultiAction;
+            <RfModal IsVisible="true" ShowCloseButton="false" Width="30rem">
+                <div class="block">
+                    @multiActionOptions.Message
+                </div>
+                <div class="buttons is-right">
+                    @foreach (var action in multiActionOptions.Actions)
+                    {
+                        <button class="buttons @action.CssClass @IsLoadingCss"
+                                disabled=@action.IsDisabled
+                                @onclick=@(async () => await OnMultiActionClick(action))>
+
+                            @if (string.IsNullOrEmpty(action.Icon) == false)
+                            {
+                                if (string.IsNullOrWhiteSpace(action.Text) == true)
+                                {
+                                    <span class="icon @action.IconWrapperCss">
+                                        <i class="@action.Icon"></i>
+                                    </span>
+                                }
+                                else
+                                {
+                                    if (action.IconOnLeft == true)
+                                    {
+                                        <span class="icon @action.IconWrapperCss">
+                                            <i class="@action.Icon"></i>
+                                        </span>
+                                        <span>@action.Text</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@action.Text</span>
+                                        <span class="icon @action.IconWrapperCss">
+                                            <i class="@action.Icon"></i>
+                                        </span>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                @action.Text
+                            }
+                        </button>
+                    }
+                </div>
+            </RfModal>
+            break;
     }
 }
 

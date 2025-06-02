@@ -18,5 +18,10 @@ public enum RfDialogType
     /// <summary>
     /// Represents a prompt dialog.
     /// </summary>
-    Prompt
+    Prompt,
+
+    /// <summary>
+    /// Represents a dialog with multiple actions.
+    /// </summary>
+    MulitAction
 }

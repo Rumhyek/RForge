@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using RForge.Abstractions;
+using RForge.Abstractions.Modal;
 using RForgeBlazor.Models;
 using RForgeBlazor.Services;
 using System.ComponentModel.DataAnnotations;
@@ -145,6 +146,32 @@ public partial class RfDialogManager : IDisposable
 
         IsLoading = false;
 
+        StateHasChanged();
+    }
+
+    private async Task OnMultiActionClick( RfDialogMultiActionButtonOptions action)
+    {
+        if (IsLoading == true) return;
+        IsLoading = true;
+        
+        StateHasChanged();
+        
+        var dialog = ActiveDialog as RfDialogOptionMultiAction;
+        
+        try
+        {
+            await dialog.OnAction(action);
+        }
+        catch
+        {
+        }
+
+        if (PendingDialogs.Count > 0)
+            ActiveDialog = PendingDialogs.Dequeue();
+        else
+            ActiveDialog = null;
+
+        IsLoading = false;
         StateHasChanged();
     }
 
