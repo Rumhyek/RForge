@@ -30,6 +30,44 @@ public class RfDialogMultiActionButtonOptions
         Action = actionText;
         Data = actionText;
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RfDialogMultiActionButtonOptions"/> class with the specified action
+    /// text and CSS class.
+    /// </summary>
+    /// <param name="actionText">The text displayed on the action button. Cannot be null or empty.</param>
+    /// <param name="cssClass">The CSS class applied to the action button for styling purposes. Can be null or empty if no specific styling is required.</param>
+    public RfDialogMultiActionButtonOptions(string actionText, string cssClass)
+        : this(actionText)
+    {
+        CssClass = cssClass;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RfDialogMultiActionButtonOptions"/> class with the specified action
+    /// text, CSS class, and placement.
+    /// </summary>
+    /// <param name="actionText">The text displayed on the action button. Cannot be null or empty.</param>
+    /// <param name="cssClass">The CSS class applied to the action button for styling purposes. Can be null or empty if no specific styling is required.</param>
+    /// <param name="placement">The placement of the button within the dialog. Default is <see cref="RfPlacement.Right"/>.</param>
+    public RfDialogMultiActionButtonOptions(string actionText, string cssClass, RfPlacement placement)
+        : this(actionText, cssClass)
+    {
+        Placement = placement;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RfDialogMultiActionButtonOptions"/> class with the specified action
+    /// text and CSS class.
+    /// </summary>
+    /// <param name="actionText">The text displayed on the action button. Cannot be null or empty.</param>
+    /// <param name="placement">The placement of the button within the dialog. Default is <see cref="RfPlacement.Right"/>.</param>
+    public RfDialogMultiActionButtonOptions(string actionText, RfPlacement placement)
+        : this(actionText)
+    {
+        Placement = placement;
+    }
+
     /// <summary>
     /// Gets or sets the text content associated with this instance.
     /// </summary>
@@ -63,6 +101,11 @@ public class RfDialogMultiActionButtonOptions
     /// Gets or sets a value indicating whether the icon should be displayed on the left side or right side of the button. true for left, false for right.
     /// </summary>
     public bool IconOnLeft { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the placement of the button within the dialog. Default is <see cref="RfPlacement.Right"/>.
+    /// </summary>
+    public RfPlacement Placement { get; set; } = RfPlacement.Right;
 
     /// <summary>
     /// Gets or sets the data associated with the current action.

@@ -22,6 +22,10 @@
         @ComponentDetail.SideLink(("RfDialogOptionAlert.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionAlert.cs"))
         @ComponentDetail.SideLink(("RfDialogOptionConfirm.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionConfirm.cs"))
         @ComponentDetail.SideLink(("RfDialogOptionPrompt.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionPrompt.cs"))
+        @ComponentDetail.SideLink(("RfDialogOptionMultiAction.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionMultiAction.cs"))
+        @ComponentDetail.SpacerLink()
+        @ComponentDetail.SideLink(("RfDialogMultiActionButtonOptions.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Modal/RfDialogMultiActionButtonOptions.cs"))
+        @ComponentDetail.SideLink(("RfPlacement.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Modal/RfPlacement.cs"))
     </RepoLinks>
 
     <Purpose>
@@ -43,6 +47,7 @@
                 <li><strong>Confirm</strong> when confirming an item should be deleted.</li>
                 <li><strong>Prompt</strong> when asking the user for a simple comment in during a saving process.</li>
                 <li><strong>Alert</strong> when you want to make sure they read something and would like it to be confirmed before going forward.</li>
+                <li><strong>Multi Action</strong> when you need to present the user with more than two choices, such as "Save", "Don't Save", or "Cancel", allowing for more complex decision flows than a simple confirm dialog.</li>
             </ul>
 
             <h4>When not to Use</h4>
@@ -70,7 +75,7 @@
 
             <p>
                 It takes two parts to use <code>RfDialogManager</code>.
-                First the page will need to have an <pre><code><xmp><RfDialogManager /></xmp></code></pre> registered somewhere that isn't inside of a overflow hidden element.
+                First the page will need to have an <pre><code>&lt;RfDialogManager /&gt;</code></pre> registered somewhere that isn't inside of a overflow hidden element.
                 Pererrabley it should be as high up the DOM tree to ensure some CSS rule doesn't affect it.
             </p>
             <p>

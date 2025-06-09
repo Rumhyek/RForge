@@ -237,6 +237,17 @@ public partial class RfDialogManager : IDisposable
         }
     }
 
+    private string ButtonCssByPlacement(RfPlacement placement)
+    {
+        return placement switch
+        {
+            RfPlacement.Right => "is-right",
+            RfPlacement.Left => string.Empty,
+            RfPlacement.Center => "flex-grow",
+            _ => "is-right"
+        };
+    }
+
     #endregion
 
     /// <summary>
@@ -276,6 +287,62 @@ public partial class RfDialogManager : IDisposable
                 return "valid";
 
             return "invalid";
+        }
+    }
+
+    private class MultiActionLayoutData
+    {
+        public RfDialogOptionMultiAction Options { get; }
+
+        public string ContainerCss { get; set; }
+        public bool HasSubContainers { get; set; }
+        public MultiActionLayoutData(RfDialogOptionMultiAction options)
+        {
+            Options = options;
+        }
+
+        public void BuildOutLayout()
+        {
+            bool hasLeft = Options.Actions.Any(a => a.Placement == RfPlacement.Left);
+            bool hasCenter = Options.Actions.Any(a => a.Placement == RfPlacement.Center);
+            bool hasRight = Options.Actions.Any(a => a.Placement == RfPlacement.Right);
+          
+            if(hasLeft == false && hasCenter == false && hasRight == true)
+            {
+                ContainerCss = "buttons is-right";
+            }
+            else if (hasLeft == true && hasCenter == false && hasRight == false)
+            {
+                ContainerCss = "buttons";
+            }
+            else if (hasLeft == false && hasCenter == true && hasRight == false)
+            {
+                ContainerCss = "buttons is-centered";
+            }
+            else if (hasLeft == true && hasCenter == false && hasRight == true)
+            {
+                ContainerCss = "is-flex is-justify-content-space-between";
+                HasSubContainers = true;
+            }
+            else if (hasLeft == true && hasCenter == true && hasRight == false)
+            {
+                ContainerCss = "is-flex";
+                HasSubContainers = true;
+            }
+            else if (hasLeft == false && hasCenter == true && hasRight == true)
+            {
+                ContainerCss = "is-flex";
+                HasSubContainers = true;
+            }
+            else if (hasLeft == true && hasCenter == true && hasRight == true)
+            {
+                ContainerCss = "is-flex is-justify-content-space-between";
+                HasSubContainers = true;
+            }
+            //else //if (hasLeft == false && hasCenter == false && hasRight == false)
+            //{
+            //    //do nothing, no actions to show
+            //}
         }
     }
 }

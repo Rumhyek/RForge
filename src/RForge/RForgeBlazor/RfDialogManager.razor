@@ -28,8 +28,8 @@
                     @confirmOptions.Message
                 </div>
                 <div class="buttons is-right">
-                    <button class="button is-primary @IsLoadingCss" @onclick="@OnConfirmClick">@confirmOptions.ConfirmText</button>
-                    <button class="button @IsLoadingCss" @onclick="@OnCancelClick">@confirmOptions.CancelText</button>
+                    <button type="button" class="button is-primary @IsLoadingCss" @onclick="@OnConfirmClick">@confirmOptions.ConfirmText</button>
+                    <button type="button" class="button @IsLoadingCss" @onclick="@OnCancelClick">@confirmOptions.CancelText</button>
                 </div>
             </RfModal>
             break;
@@ -57,48 +57,49 @@
             break;
         case RfDialogType.MulitAction:
             RfDialogOptionMultiAction multiActionOptions = ActiveDialog as RfDialogOptionMultiAction;
+            MultiActionLayoutData layoutData = new(multiActionOptions);
+            layoutData.BuildOutLayout();
             <RfModal IsVisible="true" ShowCloseButton="false" Width="30rem">
                 <div class="block">
                     @multiActionOptions.Message
                 </div>
-                <div class="buttons is-right">
-                    @foreach (var action in multiActionOptions.Actions)
+                <div class="@layoutData.ContainerCss">
+                    @foreach (var placementGroup in multiActionOptions.Actions
+                        .GroupBy(a => a.Placement)
+                        .OrderBy(pg => pg.Key))
                     {
-                        <button class="button @action.CssClass @IsLoadingCss"
-                                disabled=@action.IsDisabled
-                                @onclick=@(async () => await OnMultiActionClick(action))>
 
-                            @if (string.IsNullOrEmpty(action.Icon) == false)
+                        @if (layoutData.HasSubContainers == true)
+                        {
+                            string subContainerCss = "is-flex-shrink-0";
+                            if (placementGroup.Key == RfPlacement.Center)
                             {
-                                if (string.IsNullOrWhiteSpace(action.Text) == true)
-                                {
-                                    <span class="icon @action.IconWrapperCss">
-                                        <i class="@action.Icon"></i>
-                                    </span>
-                                }
-                                else
-                                {
-                                    if (action.IconOnLeft == true)
-                                    {
-                                        <span class="icon @action.IconWrapperCss">
-                                            <i class="@action.Icon"></i>
-                                        </span>
-                                        <span>@action.Text</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@action.Text</span>
-                                        <span class="icon @action.IconWrapperCss">
-                                            <i class="@action.Icon"></i>
-                                        </span>
-                                    }
-                                }
+                                subContainerCss = "is-flex-grow-1 is-centered";
                             }
-                            else
+                            <div class="buttons mb-0 @subContainerCss">
+                                @foreach (var action in placementGroup)
+                                {
+                                    <button class="button @action.CssClass @IsLoadingCss"
+                                            disabled=@action.IsDisabled
+                                            type="button"
+                                            @onclick=@(async () => await OnMultiActionClick(action))>
+                                        @RenderActionButton(action)
+                                    </button>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var action in placementGroup)
                             {
-                                @action.Text
+                                <button class="button @action.CssClass @IsLoadingCss"
+                                        disabled=@action.IsDisabled
+                                        type="button"
+                                        @onclick=@(async () => await OnMultiActionClick(action))>
+                                    @RenderActionButton(action)
+                                </button>
                             }
-                        </button>
+                        }
                     }
                 </div>
             </RfModal>
@@ -118,4 +119,40 @@
         <div class="block is-size-4"><strong>@notification.Title</strong></div>
         @notification.Message
     };
+
+    private static RenderFragment RenderActionButton(RForge.Abstractions.Modal.RfDialogMultiActionButtonOptions action) => __builder =>
+    {
+
+        @if (string.IsNullOrEmpty(action.Icon) == false)
+        {
+            if (string.IsNullOrWhiteSpace(action.Text) == true)
+            {
+                <span class="icon @action.IconWrapperCss">
+                    <i class="@action.Icon"></i>
+                </span>
+            }
+            else
+            {
+                if (action.IconOnLeft == true)
+                {
+                    <span class="icon @action.IconWrapperCss">
+                        <i class="@action.Icon"></i>
+                    </span>
+                    <span>@action.Text</span>
+                }
+                else
+                {
+                    <span>@action.Text</span>
+                    <span class="icon @action.IconWrapperCss">
+                        <i class="@action.Icon"></i>
+                    </span>
+                }
+            }
+        }
+        else
+        {
+            @action.Text
+        }
+    };
+
 }
