@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using RForge.Abstractions.Modal;
 using RForgeBlazor.Models;
 
 namespace RForgeBlazor.Services;
@@ -43,6 +44,17 @@ public class DialogManager : IDialogManager
             return;
         }
 
+        _dialogManager.Show(options);
+    }
+
+    /// <inheritdoc/>
+    public void MultiAction(RfDialogOptionMultiAction options)
+    {
+        if (_dialogManager == null)
+        {
+            _dialogOptions.Enqueue(options);
+            return;
+        }
         _dialogManager.Show(options);
     }
 
@@ -144,6 +156,63 @@ public class DialogManager : IDialogManager
     }
     #endregion
 
+    #region Multi Action
+
+    /// <inheritdoc/>
+    public void MultiAction(RenderFragment message, Func<RfDialogMultiActionButtonOptions, Task> onAction, RfDialogMultiActionButtonOptions[] actions)
+    {
+        MultiAction(new RfDialogOptionMultiAction()
+        {
+            Message = message,
+            OnAction = onAction,
+            Actions = actions
+        });
+    }
+
+    /// <inheritdoc/>
+    public void MultiAction(RenderFragment message, Func<RfDialogMultiActionButtonOptions, Task> onAction, string[] actions)
+    {
+        var actionsOptions = actions
+            .Select(action => new RfDialogMultiActionButtonOptions(action))
+            .ToArray();
+
+        MultiAction(message, onAction, actionsOptions);
+    }
+
+
+    /// <inheritdoc/>
+    public void MultiAction(string message, string title, Func<RfDialogMultiActionButtonOptions, Task> onAction, string[] actions)
+    {
+        var actionsOptions = actions
+            .Select(action => new RfDialogMultiActionButtonOptions(action))
+            .ToArray();
+
+        MultiAction(RfDialogManager.MessageAndTitle((message, title)), onAction, actionsOptions);
+    }
+
+    /// <inheritdoc/>
+    public void MultiAction(string message, Func<RfDialogMultiActionButtonOptions, Task> onAction, string[] actions)
+    {
+        var actionsOptions = actions
+            .Select(action => new RfDialogMultiActionButtonOptions(action))
+            .ToArray();
+
+        MultiAction(RfDialogManager.MessageOnly(message), onAction, actionsOptions);
+    }
+
+    /// <inheritdoc/>
+    public void MultiAction(string message, string title, Func<RfDialogMultiActionButtonOptions, Task> onAction, RfDialogMultiActionButtonOptions[] actions)
+    {
+        MultiAction(RfDialogManager.MessageAndTitle((message, title)), onAction, actions);
+    }
+
+    /// <inheritdoc/>
+    public void MultiAction(string message, Func<RfDialogMultiActionButtonOptions, Task> onAction, RfDialogMultiActionButtonOptions[] actions)
+    {
+        MultiAction(RfDialogManager.MessageOnly(message), onAction, actions);
+    }
+    #endregion
+
     /// <inheritdoc/>
     public void RegisterDm(RfDialogManager dialogManager)
     {
@@ -160,4 +229,6 @@ public class DialogManager : IDialogManager
     {
         _dialogManager = null;
     }
+
+
 }

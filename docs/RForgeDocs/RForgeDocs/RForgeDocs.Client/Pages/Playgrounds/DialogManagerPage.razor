@@ -1,5 +1,8 @@
 ﻿@page "/dialog-manager/playground"
 @using RForgeBlazor.Services
+@using RForge.Abstractions.Modal
+@using RForge.Abstractions
+
 @rendermode InteractiveAuto
 
 @inject IDialogManager dialogManager
@@ -52,8 +55,7 @@ void Alert(RenderFragment message, string buttonText = "Ok");
 void Alert(string message, Func&lt;Task&gt; onAlert);
 void Alert(string message);
 void Alert(string message, string title, string confirmText = "Ok");
-void Alert(string message, string title, Func&lt;Task&gt; onAlert, string confirmText = "Ok");
-</code></pre>
+void Alert(string message, string title, Func&lt;Task&gt; onAlert, string confirmText = "Ok");</code></pre>
 
         </div>
 
@@ -75,8 +77,7 @@ void Confirm(RenderFragment message, Func&lt;bool, Task&gt; onConfirm, string co
 
 //IDialogManagerBackend.cs
 void Confirm(string message, Func&lt;bool, Task&gt; onConfirm);
-void Confirm(string message, string title, Func&lt;bool, Task&gt; onConfirm, string confirmText = "Ok", string cancelText = "Cancel");
-</code></pre>
+void Confirm(string message, string title, Func&lt;bool, Task&gt; onConfirm, string confirmText = "Ok", string cancelText = "Cancel");</code></pre>
 
         </div>
 
@@ -98,8 +99,31 @@ void Prompt(RenderFragment message, Func&lt;string, Task&gt; onPrompt, string co
 
 //IDialogManagerBackend.cs    
 void Prompt(string message, Func&lt;string, Task&gt; onPrompt);
-void Prompt(string message, string title, Func&lt;string, Task&gt; onPrompt, string confirmText = "Ok", string cancelText = "Cancel");
-</code></pre>
+void Prompt(string message, string title, Func&lt;string, Task&gt; onPrompt, string confirmText = "Ok", string cancelText = "Cancel");</code></pre>
+
+        </div>
+
+
+        @* ----------- Multi Action ------------- *@
+        <div class="content">
+            <h2>Mult Actions</h2>
+            <p>Below shows various multi action. Note: <code>IDialogManager.cs</code> inherits from <code>IDialogManagerBackend.cs</code></p>
+            <div class="buttons">
+                <a class="button" @onclick=@(() => ShowMultiAction("Message only"))>Messsage</a>
+                <a class="button" @onclick=@(() => ShowMultiAction("message + title. Are you sure?", "Multi Action Title"))>Messsage + Title</a>
+                <a class="button" @onclick=@(() => ShowMultiActionCustomRender())>Custom Render</a>
+            </div>
+
+<pre><code>//IDialogManager.cs
+void MultiAction(RfDialogOptionMultiAction options);
+void MultiAction(RenderFragment message, Func&lt;RfDialogMultiActionButtonOptions, Task&gt; onAction, string[] actions);
+void MultiAction(RenderFragment message, Func&lt;RfDialogMultiActionButtonOptions, Task&gt; onAction, RfDialogMultiActionButtonOptions[] actions);
+
+//IDialogManagerBackend.cs       
+void MultiAction(string message, string title, Func&lt;RfDialogMultiActionButtonOptions, Task&gt; onAction, string[] actions);
+void MultiAction(string message, Func&lt;RfDialogMultiActionButtonOptions, Task&gt; onAction, string[] actions);
+void MultiAction(string message, string title, Func&lt;RfDialogMultiActionButtonOptions, Task&gt; onAction, RfDialogMultiActionButtonOptions[] actions);
+void MultiAction(string message, Func&lt;RfDialogMultiActionButtonOptions, Task&gt; onAction, RfDialogMultiActionButtonOptions[] actions);</code></pre>
 
         </div>
     </Display>
@@ -114,43 +138,60 @@ void Prompt(string message, string title, Func&lt;string, Task&gt; onPrompt, str
 
 @code {
 
+
+    private RfDialogMultiActionButtonOptions[] multiActionButtons { get; set; } =
+    [
+        new RfDialogMultiActionButtonOptions("Save", RfPlacement.Left),
+        new RfDialogMultiActionButtonOptions()
+        {
+            Action = "Email",
+            Text = "Send Email",
+            CssClass = "is-link",
+            Icon = "fas fa-envelope",
+            Placement = RfPlacement.Center,
+            Data = "someEmail@someProvider.com"
+        },
+        new RfDialogMultiActionButtonOptions("Cancel", "is-ghost")
+    ];
+
+
     public PlaygroundDetails Logger { get; set; }
     public static RenderFragment CustomAlert => __builder =>
     {
-    <article class="media">
-        <div class="media-left">
-            <figure class="image is-64x64">
-                <img src="https://placehold.co/100x100/" alt="Image">
-            </figure>
-        </div>
-        <div class="media-content">
-            <div class="content">
-                <p>
-                    <strong>John Smith</strong> <small>@@johnsmith</small> <small>31m</small>
-                    <br>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean efficitur sit amet massa fringilla
-                    egestas. Nullam condimentum luctus turpis.
-                </p>
+        <article class="media">
+            <div class="media-left">
+                <figure class="image is-64x64">
+                    <img src="https://placehold.co/100x100/" alt="Image">
+                </figure>
             </div>
-            <nav class="level is-mobile">
-                <div class="level-left">
-                    <a class="level-item" aria-label="retweet">
-                        <span class="icon is-small">
-                            <i class="fa-solid fa-retweet" aria-hidden="true"></i>
-                        </span>
-                    </a>
-                    <a class="level-item" aria-label="like">
-                        <span class="icon is-small">
-                            <i class="fa-solid fa-heart" aria-hidden="true"></i>
-                        </span>
-                    </a>
+            <div class="media-content">
+                <div class="content">
+                    <p>
+                        <strong>John Smith</strong> <small>@@johnsmith</small> <small>31m</small>
+                        <br>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean efficitur sit amet massa fringilla
+                        egestas. Nullam condimentum luctus turpis.
+                    </p>
                 </div>
-            </nav>
-        </div>
-    </article>
-  };
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="retweet">
+                            <span class="icon is-small">
+                                <i class="fa-solid fa-retweet" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                        <a class="level-item" aria-label="like">
+                            <span class="icon is-small">
+                                <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </article>
+    };
 
-  #region Alerts
+    #region Alerts
     public void ShowAlertCustomNoCallback()
     {
         dialogManager.Alert(CustomAlert);
@@ -187,7 +228,6 @@ void Prompt(string message, string title, Func&lt;string, Task&gt; onPrompt, str
         return Task.CompletedTask;
     }
     #endregion
-
 
     #region Confirm
     public void ShowConfirm(string message = "Are you sure?", string title = null, string confirmText = null, string cancelText = null)
@@ -241,6 +281,25 @@ void Prompt(string message, string title, Func&lt;string, Task&gt; onPrompt, str
         else
 
             notificationManager.AddSuccess($"Mesage: {message}", "Successfully Saved!", options => options.Position = RForge.Abstractions.Notifications.RfNotificationPosition.BottomRight);
+    }
+
+    #endregion
+
+    #region MutliAction
+    public void ShowMultiAction(string message, string title = null)
+    {
+        dialogManager.MultiAction(message, OnActionCallback, multiActionButtons);
+    }
+    public void ShowMultiActionCustomRender()
+    {
+        dialogManager.MultiAction(CustomAlert, OnActionCallback, multiActionButtons);
+    }
+
+    public async Task OnActionCallback(RfDialogMultiActionButtonOptions action)
+    {
+        await Task.Delay(2000);
+
+        notificationManager.AddInfo($"Action: {action.Action}, Data: {action.Data}");
     }
 
     #endregion

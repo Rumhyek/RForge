@@ -1,4 +1,5 @@
 ﻿using RForge.Abstractions;
+using RForge.Abstractions.Modal;
 
 namespace RForgeBlazor.Models;
 

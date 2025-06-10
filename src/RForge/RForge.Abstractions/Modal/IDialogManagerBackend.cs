@@ -62,4 +62,59 @@ public interface IDialogManagerBackend
     /// <param name="confirmText">The text to use for confirm button.</param>
     /// <param name="cancelText">The text to use for the cancel button.</param>
     void Prompt(string message, string title, Func<string, Task> onPrompt, string confirmText = "Ok", string cancelText = "Cancel");
+
+
+
+    /// <summary>
+    /// Displays a message with a title and provides multiple actions for the user to choose from.
+    /// </summary>
+    /// <remarks>This method allows the caller to specify a set of actions that the user can select, along
+    /// with a callback function      to handle the selected action. The callback function is invoked asynchronously
+    /// with the selected action as its argument.</remarks>
+    /// <param name="message">The message to display to the user.</param>
+    /// <param name="title">The title of the message dialog.</param>
+    /// <param name="onAction">A callback function that is invoked asynchronously when an action is selected. The function receives the
+    /// selected action as its argument.</param>
+    /// <param name="actions">An array of strings representing the available actions for the user to choose from. Must not be null or empty.</param>
+    void MultiAction(string message, string title, Func<RfDialogMultiActionButtonOptions, Task> onAction, string[] actions);
+
+    /// <summary>
+    /// Displays a message and provides multiple actions for the user to choose from.
+    /// </summary>
+    /// <remarks>This method allows the caller to specify a set of actions that the user can select, along
+    /// with a callback function      to handle the selected action. The callback function is invoked asynchronously
+    /// with the selected action as its argument.</remarks>
+    /// <param name="message">The message to display to the user.</param>
+    /// <param name="onAction">A callback function that is invoked asynchronously when an action is selected. The function receives the
+    /// selected action as its argument.</param>
+    /// <param name="actions">An array of strings representing the available actions for the user to choose from. Must not be null or empty.</param>
+    void MultiAction(string message, Func<RfDialogMultiActionButtonOptions, Task> onAction, string[] actions);
+
+
+    /// <summary>
+    /// Displays a message with a title and provides multiple actions for the user to choose from.
+    /// </summary>
+    /// <remarks>This method allows the caller to specify a set of actions that the user can select, along
+    /// with a callback function      to handle the selected action. The callback function is invoked asynchronously
+    /// with the selected action as its argument.</remarks>
+    /// <param name="message">The message to display to the user.</param>
+    /// <param name="title">The title of the message dialog.</param>
+    /// <param name="onAction">A callback function that is invoked asynchronously when an action is selected. The function receives the
+    /// selected action as its argument.</param>
+    /// <param name="actions">An array of <see cref="RfDialogMultiActionButtonOptions" /> representing the available actions for the user to choose from. Must not be null.</param>
+    void MultiAction(string message, string title, Func<RfDialogMultiActionButtonOptions, Task> onAction, RfDialogMultiActionButtonOptions[] actions);
+
+    /// <summary>
+    /// Displays a message and provides multiple actions for the user to choose from.
+    /// </summary>
+    /// <remarks>This method allows the caller to specify a set of actions that the user can select, along
+    /// with a callback function      to handle the selected action. The callback function is invoked asynchronously
+    /// with the selected action as its argument.</remarks>
+    /// <param name="message">The message to display to the user.</param>
+    /// <param name="onAction">A callback function that is invoked asynchronously when an action is selected. The function receives the
+    /// selected action as its argument.</param>
+    /// <param name="actions">An array of <see cref="RfDialogMultiActionButtonOptions" /> representing the available actions for the user to choose from. Must not be null.</param>
+    void MultiAction(string message, Func<RfDialogMultiActionButtonOptions, Task> onAction, RfDialogMultiActionButtonOptions[] actions);
+
+
 }
