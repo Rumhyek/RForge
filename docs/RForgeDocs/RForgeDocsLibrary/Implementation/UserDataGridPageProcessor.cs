@@ -12,7 +12,26 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
         _userRepository = userRepository;
     }
 
-    public async Task<GridPageResults<UserData>> GetPage(UserDataGridGetPageData options)
+    public Task<List<UserData>> GetAll()
+    {
+        var users = _userRepository.GetAllUsers()
+            .Select(u => new UserData()
+            {
+                Bio = u.Bio,
+                DateCreated = u.DateCreated,
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Id = u.Id,
+                IsAdmin = u.IsAdmin,
+                Username = u.Username
+            })
+            .ToList();
+
+        return Task.FromResult(users);
+    }
+
+    public Task<GridPageResults<UserData>> GetPage(UserDataGridGetPageData options)
     {
         var query = _userRepository.GetAllUsers();
         var results = new GridPageResults<UserData>();
@@ -147,6 +166,6 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
                 Username = u.Username
             }));
 
-        return results;
+        return Task.FromResult(results);
     }
 }

@@ -14,7 +14,7 @@ namespace RForgeDocs.EndPoints
                 {
                     return Results.Ok(await processor.GetUser(userId));
                 });
-
+         
             //ISaveUserProcessor
             app.MapPut("/api/users",
                 async ([FromServices] ISaveUserProcessor processor, [FromBody] UserAddSaveData user) =>
@@ -34,7 +34,11 @@ namespace RForgeDocs.EndPoints
                 {
                     return Results.Ok(await processor.GetPage(options));
                 });
-
+            app.MapGet("/api/users/all",
+                async ([FromServices] IUserDataGridPageProcessor processor) =>
+                {
+                    return Results.Ok(await processor.GetAll());
+                });
             //IFindUserProcessor
             app.MapGet("/api/users/find/",
                 async ([FromServices] IFindUsersProcessor processor, string searchText, int returnCount = 10) =>
