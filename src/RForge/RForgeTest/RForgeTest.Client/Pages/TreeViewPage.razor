@@ -35,25 +35,25 @@
 
             <div class="column">
                 <h1 class="subtitle">Loaded User Data</h1>
-                <RfTreeView TTreeItemData=UserRowData AllowSelection=AllowSelection AllowExpand=AllowExpand ShowAsPrerender=@(RootUsers == null)>
+                <RfTreeView AllowSelection=AllowSelection AllowExpand=AllowExpand ShowAsPrerender=@(RootUsers == null)>
 
                     <PrerenderNodes>
 
                         <RfTreeLabel />
                         <RfTreeList>
-                            <RfTreeNode TTreeItemData="UserRowData">
+                            <RfTreeNode>
                                 <Children>
-                                    <RfTreeNode TTreeItemData="UserRowData" />
-                                    <RfTreeNode TTreeItemData="UserRowData">
+                                    <RfTreeNode />
+                                    <RfTreeNode>
                                         <Children>
                                             <RfTreeLabel />
-                                            <RfTreeNode TTreeItemData="UserRowData" />
-                                            <RfTreeNode TTreeItemData="UserRowData" />
-                                            <RfTreeNode TTreeItemData="UserRowData" />
+                                            <RfTreeNode />
+                                            <RfTreeNode />
+                                            <RfTreeNode />
 
                                         </Children>
                                     </RfTreeNode>
-                                    <RfTreeNode TTreeItemData="UserRowData" />
+                                    <RfTreeNode />
                                 </Children>
                             </RfTreeNode>
                         </RfTreeList>
@@ -76,101 +76,101 @@
             </div>
             <div class="column">
                 <h1 class="subtitle">Prerender Structure Match</h1>
-                <RfTreeView TTreeItemData=UserRowData>
+                <RfTreeView>
 
                     <Nodes>
                         <RfTreeLabel>Title</RfTreeLabel>
                         <RfTreeList>
-                            <RfTreeNode TTreeItemData="UserRowData" IsExpanded="true">
+                            <RfTreeNode IsExpanded="true">
                                 <Node>Node 1</Node>
                                 <Children>
-                                    <RfTreeNode TTreeItemData="UserRowData">
+                                    <RfTreeNode>
                                         <Node>Node 1.1</Node>
                                     </RfTreeNode>
-                                    <RfTreeNode TTreeItemData="UserRowData" IsExpanded="true">
+                                    <RfTreeNode IsExpanded="true">
                                         <Node>Node 1.2</Node>
                                         <Children>
                                             <RfTreeLabel>Title</RfTreeLabel>
 
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.2.1</Node>
                                             </RfTreeNode>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.2.2</Node>
                                             </RfTreeNode>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.2.3</Node>
                                             </RfTreeNode>
                                         </Children>
                                     </RfTreeNode>
-                                    <RfTreeNode TTreeItemData="UserRowData" IsLoading="true">
+                                    <RfTreeNode IsLoading="true">
                                         <Node>Node 1.2</Node>
                                         <Children>
                                             <RfTreeLabel>Title</RfTreeLabel>
 
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.2.1</Node>
                                             </RfTreeNode>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.2.2</Node>
                                             </RfTreeNode>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.2.3</Node>
                                             </RfTreeNode>
                                         </Children>
                                     </RfTreeNode>
-                                    <RfTreeNode TTreeItemData="UserRowData">
+                                    <RfTreeNode>
                                         <Node>Node 1.3</Node>
                                     </RfTreeNode>
-                                    <RfTreeNode TTreeItemData="UserRowData" IsExpanded="true">
+                                    <RfTreeNode IsExpanded="true">
                                         <Node>Node 1.4</Node>
                                         <Children>
 
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Some lab list</Node>
                                             </RfTreeNode>
                                             <RfTreeLabel>Categories</RfTreeLabel>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.4.2</Node>
                                             </RfTreeNode>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.4.3</Node>
                                             </RfTreeNode>
                                             <RfTreeLabel>Categories</RfTreeLabel>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.4.2</Node>
                                             </RfTreeNode>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.4.3</Node>
                                             </RfTreeNode>
-                                            <RfTreeNode TTreeItemData="UserRowData" IsExpanded="true">
+                                            <RfTreeNode IsExpanded="true">
                                                 <Node>Node 1.2</Node>
                                                 <Children>
 
-                                                    <RfTreeNode TTreeItemData="UserRowData">
+                                                    <RfTreeNode>
                                                         <Node>Node 1.2.1</Node>
                                                     </RfTreeNode>
-                                                    <RfTreeNode TTreeItemData="UserRowData">
+                                                    <RfTreeNode>
                                                         <Node>Node 1.2.2</Node>
                                                     </RfTreeNode>
-                                                    <RfTreeNode TTreeItemData="UserRowData">
+                                                    <RfTreeNode>
                                                         <Node>Node 1.2.3</Node>
                                                     </RfTreeNode>
                                                 </Children>
                                             </RfTreeNode>
 
                                             <RfTreeLabel>Categories</RfTreeLabel>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.4.2</Node>
                                             </RfTreeNode>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.4.3</Node>
                                             </RfTreeNode>
                                             <RfTreeLabel>Categories</RfTreeLabel>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.4.2</Node>
                                             </RfTreeNode>
-                                            <RfTreeNode TTreeItemData="UserRowData">
+                                            <RfTreeNode>
                                                 <Node>Node 1.4.3</Node>
                                             </RfTreeNode>
                                         </Children>
@@ -189,12 +189,12 @@
         </div>
 
         <div>
-            <RfTreeView TTreeItemData=object>
+            <RfTreeView>
                 <Nodes>
 
                     <RfTreeList>
 
-                        <RfTreeNode TTreeItemData=object>
+                        <RfTreeNode>
 
                             <Node>
                                 <div class="has-background-primary">
@@ -217,26 +217,32 @@
 
     public RenderFragment TreeBuilder(UserRowData node) => __builder =>
     {
-        <RfTreeNode TTreeItemData=UserRowData
-                    OnNodeClick=OnNodeClick
-                    NodeData=node
-                    ShowExpandIcon=@(node.Children.Count > 0)>
+        @if (node.Children.Count > 0)
+        {
+            <RfTreeNode NodeClick=@(() => OnNodeClick(node))>
 
-            <Node>@node.FirstName @node.LastName</Node>
+                <Node>@node.FirstName @node.LastName</Node>
 
-            <Children>
-                @if (node.Children != null && node.Children.Count > 0)
-                {
-
-                    @foreach (var child in node.Children)
+                <Children>
+                    @if (node.Children != null && node.Children.Count > 0)
                     {
-                        @TreeBuilder(child)
+
+                        @foreach (var child in node.Children)
+                        {
+                            @TreeBuilder(child)
+                        }
+
                     }
+                </Children>
 
-                }
-            </Children>
-
-        </RfTreeNode>
+            </RfTreeNode>
+        }
+        else
+        {
+            <RfTreeNode NodeClick=@(() => OnNodeClick(node))>
+                <Node>@node.FirstName @node.LastName</Node>
+            </RfTreeNode>
+        }
     };
 
     public void OnNodeClick(UserRowData node)

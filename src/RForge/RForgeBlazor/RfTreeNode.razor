@@ -1,5 +1,3 @@
-@typeparam TTreeItemData
-
 <li>
 
     @switch (GetDisplayMode())
@@ -30,7 +28,7 @@
 
                     <a class="node-label"
                        href="@LinkUrl"
-                       @onclick=OnNodeClickCallback>@Node(NodeData)</a>
+                       @onclick=OnNodeClickCallback>@Node</a>
                 </div>
 
                 <ul class="@Rf.ClassWhen(("is-open", IsExpanded))"
@@ -63,7 +61,7 @@
                         }
                     </span>
 
-                    <span class="node-label">@Node(NodeData)</span>
+                    <span class="node-label">@Node</span>
                 </a>
             }
 
