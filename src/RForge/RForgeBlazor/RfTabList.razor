@@ -1,0 +1,57 @@
+
+
+<CascadingValue Value="Context" IsFixed="true">
+<div class="@CssClass">
+    <div class="tabs @TabsCssClass" role="tablist" aria-label=@TabListAriaLabel>
+        <ul>
+            @foreach (var tab in RegisteredTabs)
+            {
+                <li class="@Rf.ClassWhen(("is-active", tab.Tab.TabId == ActiveTabId))">
+                    <a class="@tab.Tab.TabCssClass"
+                            role="tab"
+                            href="javascript:void(0)"
+                            @ref=tab.TabElement
+                            aria-controls="panel-@tab.Tab.TabId"
+                            id="tab-@tab.Tab.TabId"
+                            @onkeydown=@(async (e) => await OnTabKeyDown(e, tab))
+                            @onclick=@(async () => await OnTabClick(tab))
+                            tabindex="@Rf.ClassWhen(("0", tab.Tab.TabId == ActiveTabId),("-1", tab.Tab.TabId != ActiveTabId))"
+                            aria-selected="@Rf.ClassWhen(("true", tab.Tab.TabId == ActiveTabId),("false", tab.Tab.TabId != ActiveTabId))">
+                        @tab.Tab.Tab
+                    </a>
+                </li>
+            }
+        </ul>
+
+    </div>
+    <div class="@PanelCssClass">
+        @foreach (var tab in RegisteredTabs)
+        {
+            <div id="panel-@tab.Tab.TabId"
+                 aria-labelledby="tab-@tab.Tab.TabId"
+                 role="tabpanel"
+                 tabindex="0"
+                 class="@tab.Tab.PanelCssClass"
+                 >
+
+                @if (tab.Tab.IsShown == true)
+                {
+                    @tab.Tab.Panel
+                }
+                else if (tab.Tab.IsLoading == true && tab.Tab.LoadingPanel != null)
+                {
+                    @tab.Tab.LoadingPanel
+                }
+                else if(tab.Tab.IsShown == false && tab.Tab.ShowPanelWhenHidden == true)
+                {
+                    @tab.Tab.Panel
+                }
+            </div>
+        }
+    </div>
+</div>
+
+    @ChildContent
+</CascadingValue>
+
+

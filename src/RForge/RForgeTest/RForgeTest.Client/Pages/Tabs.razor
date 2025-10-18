@@ -1,0 +1,66 @@
+﻿@page "/tabs"
+@rendermode InteractiveAuto
+
+<PageTitle>Tabs</PageTitle>
+
+<h1>Tabs</h1>
+
+
+
+<RfTabList @bind-ActiveTabId=ActiveTabId>
+    <RfTab TabId="tab1" TabCssClass="tab-class" PanelCssClass="panel-class">
+        <Tab>Tab 1</Tab>
+        <Panel>
+            <p>This is the content of Tab 1.</p>
+            <p>Current Count: @currentCount</p>
+            <button class="btn btn-primary" @onclick="IncrementCount">Increment</button>
+        </Panel>
+    </RfTab>
+    <RfTab TabId="tab2">
+        <Tab>Tab 2</Tab>
+        <Panel>
+            <p>This is the content of Tab 2.</p>
+        </Panel>
+    </RfTab>
+    <RfTab TabId="tab3">
+        <Tab>Tab 3</Tab>
+        <Panel>
+            <p>This is the content of Tab 3.</p>
+        </Panel>
+    </RfTab>
+    <RfTab TabId="loading-tab-1" OnLoad=OnLoad>
+        <Tab>Loading Tab</Tab>
+        <LoadingPanel>
+            <p>Loading content, please wait...</p>
+        </LoadingPanel>
+        <Panel>
+            <p>Loaded!</p>
+        </Panel>
+    </RfTab>
+</RfTabList>
+
+
+@code {
+
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string ActiveTabId { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrWhiteSpace(ActiveTabId) == true)
+            ActiveTabId = "tab1";
+    }
+
+    private int currentCount = 0;
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private async Task OnLoad()
+    {
+        await Task.Delay(2000);
+    }
+
+}
