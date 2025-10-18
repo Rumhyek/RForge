@@ -66,7 +66,7 @@ public partial class RfTabList : ComponentBase, IDisposable
     internal RfTabListContext Context { get; } = new RfTabListContext();
 
     private List<RfTabInfo> RegisteredTabs { get; } = new List<RfTabInfo>();
-
+    private RfTabInfo ActiveTab { get; set; }
     /// <summary>
     /// Invoked when the component is initialized. Subscribes to the <see cref="RfTabListContext.OnTabRegister"/> event.
     /// </summary>
@@ -106,23 +106,36 @@ public partial class RfTabList : ComponentBase, IDisposable
         {
             await SetActiveTab(newTab);
         }
+
+        StateHasChanged();
     }
 
     private async Task SetActiveTab(RfTabInfo newTab)
     {
+        if (ActiveTab == newTab) return;
+
+        ActiveTab = newTab;
         ActiveTabId = newTab.Tab.TabId;
         await newTab.Tab.TabListOnLoad();
         await newTab.Tab.TabListOnShow();
+
     }
 
     private async Task OnTabClick(RfTabInfo tabInfo)
     {
+        if (ActiveTab == tabInfo) return;
+
+        if (ActiveTab != null)
+            await ActiveTab.Tab.TabListOnHide();
+
+        ActiveTab = tabInfo;
         ActiveTabId = tabInfo.Tab.TabId;
         if (ActiveTabIdChanged.HasDelegate)
             await ActiveTabIdChanged.InvokeAsync(ActiveTabId);
 
         await tabInfo.Tab.TabListOnLoad();
         await tabInfo.Tab.TabListOnShow();
+        StateHasChanged();
     }
 
     private async Task OnTabKeyDown(KeyboardEventArgs e, RfTabInfo tabInfo)

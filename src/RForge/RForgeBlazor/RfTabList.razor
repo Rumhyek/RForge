@@ -1,13 +1,15 @@
 
 
+<CascadingValue Value="Context" IsFixed="true">
 <div class="@CssClass">
     <div class="tabs @TabsCssClass" role="tablist" aria-label=@TabListAriaLabel>
         <ul>
             @foreach (var tab in RegisteredTabs)
             {
                 <li class="@Rf.ClassWhen(("is-active", tab.Tab.TabId == ActiveTabId))">
-                    <button class="@tab.Tab.TabCssClass"
+                    <a class="@tab.Tab.TabCssClass"
                             role="tab"
+                            href="javascript:void(0)"
                             @ref=tab.TabElement
                             aria-controls="panel-@tab.Tab.TabId"
                             id="tab-@tab.Tab.TabId"
@@ -15,8 +17,8 @@
                             @onclick=@(async () => await OnTabClick(tab))
                             tabindex="@Rf.ClassWhen(("0", tab.Tab.TabId == ActiveTabId),("-1", tab.Tab.TabId != ActiveTabId))"
                             aria-selected="@Rf.ClassWhen(("true", tab.Tab.TabId == ActiveTabId),("false", tab.Tab.TabId != ActiveTabId))">
-                        @tab.Tab
-                    </button>
+                        @tab.Tab.Tab
+                    </a>
                 </li>
             }
         </ul>
@@ -30,7 +32,7 @@
                  role="tabpanel"
                  tabindex="0"
                  class="@tab.Tab.PanelCssClass"
-                 hidden="@Rf.ClassWhen(("hidden", tab.Tab.IsShown))">
+                 >
 
                 @if (tab.Tab.IsShown == true)
                 {
@@ -49,7 +51,7 @@
     </div>
 </div>
 
-<CascadingValue Value="Context">
     @ChildContent
 </CascadingValue>
+
 

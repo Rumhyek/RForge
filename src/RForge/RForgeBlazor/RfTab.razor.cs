@@ -76,6 +76,12 @@ namespace RForgeBlazor
         public EventCallback<string> OnLoad { get; set; }
 
         /// <summary>
+        /// Invoked when the component is hidden.
+        /// </summary>
+        [Parameter]
+        public EventCallback<string> OnHide { get; set; }
+
+        /// <summary>
         /// Gets or sets the cascading parameter that provides the context for the associated tab list.
         /// </summary>
         /// <remarks>This property is marked with the <see cref="CascadingParameterAttribute"/>,
@@ -128,6 +134,13 @@ namespace RForgeBlazor
 
             IsLoading = false;
             IsLoaded = true;
+        }
+
+        internal async Task TabListOnHide()
+        {
+            IsShown = false;
+            if (OnHide.HasDelegate == true)
+                await OnHide.InvokeAsync(TabId);
         }
     }
 }
