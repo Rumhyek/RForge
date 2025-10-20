@@ -37,6 +37,12 @@
             <p>Loaded!</p>
         </Panel>
     </RfTab>
+    <RfTab TabId="hidden-tab-1" ShowPanelWhenHidden=true>
+        <Tab>Rendered Hidden Tab</Tab>
+        <Panel>
+            <p>I'm still rendered even though I'm hidden!</p>
+        </Panel>
+    </RfTab>
 </RfTabList>
 
 
@@ -47,6 +53,12 @@
     public string ActiveTabId { get; set; }
 
     protected override void OnInitialized()
+    {
+        if (string.IsNullOrWhiteSpace(ActiveTabId) == true)
+            ActiveTabId = "tab1";
+    }
+
+    protected override void OnParametersSet()
     {
         if (string.IsNullOrWhiteSpace(ActiveTabId) == true)
             ActiveTabId = "tab1";
