@@ -182,6 +182,11 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     #endregion
 
     /// <summary>
+    /// Unique identifier for this dropdown component instance.
+    /// </summary>
+    protected string DropdownId { get; private set; } = $"dropdown-menu-{Guid.NewGuid():N}";
+
+    /// <summary>
     /// Gets or sets a value indicating whether the dropdown is loading.
     /// </summary>
     protected bool IsLoading { get; set; }
