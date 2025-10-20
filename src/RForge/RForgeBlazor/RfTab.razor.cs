@@ -92,7 +92,7 @@ namespace RForgeBlazor
         internal bool IsLoaded { get; set; } = false;
         internal bool IsLoading { get; set; } = false;
         internal bool IsShown { get; set; } = false;
-
+        internal bool IsHidden => IsShown == false && IsLoading == false;
         /// <summary>
         /// Asynchronously handles parameter changes and ensures the component is properly registered within its
         /// context.

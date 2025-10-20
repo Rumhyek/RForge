@@ -7,7 +7,7 @@
             @foreach (var tab in RegisteredTabs)
             {
                 <li class="@Rf.ClassWhen(("is-active", tab.Tab.TabId == ActiveTabId))">
-                    <a class="@tab.Tab.TabCssClass"
+                    <a class="@tab.Tab.TabCssClass @Rf.ClassWhen(("is-loading", tab.Tab.IsLoading))"
                             role="tab"
                             href="javascript:void(0)"
                             @ref=tab.TabElement
@@ -32,6 +32,7 @@
                  role="tabpanel"
                  tabindex="0"
                  class="@tab.Tab.PanelCssClass"
+                 hidden=@tab.Tab.IsHidden
                  >
 
                 @if (tab.Tab.IsShown == true)
