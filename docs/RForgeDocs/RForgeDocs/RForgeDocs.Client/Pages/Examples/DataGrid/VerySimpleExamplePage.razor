@@ -1,0 +1,90 @@
+@page "/data-grid/example/very-simple"
+
+@using RForgeDocs.Abstractions
+
+@rendermode InteractiveAuto
+
+<ExampleDetail Title="Very Simple Example"
+               SubTitle="Data Grid"
+               ComponentName="Data Grid"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/DataGrid/VerySimpleExamplePage.razor")"
+               ComponentDetailsUrl="/data-grid/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This is the bare minimum example of using <code>RfDataGrid</code>. 
+                        It shows a simple table with hardcoded data - no pagination, no sorting, no filtering, and no service dependencies.
+                    </p>
+
+                    <h5>What's Included</h5>
+                    <ul>
+                        <li>Simple data class</li>
+                        <li>Hardcoded data in a list</li>
+                        <li>Basic table headers using <code>&lt;th&gt;</code></li>
+                        <li>Basic table cells using <code>&lt;td&gt;</code></li>
+                    </ul>
+
+                    <h5>What's Not Included</h5>
+                    <ul>
+                        <li>No pagination</li>
+                        <li>No sorting</li>
+                        <li>No filtering</li>
+                        <li>No service injection</li>
+                        <li>No async data loading</li>
+                    </ul>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <RfDataGrid TRowData="Person"
+                        Data=@people
+                        TotalCount=@people.Count
+                        OnLoadData=@OnLoad>
+
+                <Headers>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>City</th>
+                </Headers>
+
+                <Cells>
+                    <td>@context.Name</td>
+                    <td>@context.Age</td>
+                    <td>@context.City</td>
+                </Cells>
+
+            </RfDataGrid>
+
+        </article>
+    </div>
+</div>
+
+@code {
+    private List<Person> people = new List<Person>
+    {
+        new Person { Name = "Alice", Age = 30, City = "New York" },
+        new Person { Name = "Bob", Age = 25, City = "Los Angeles" },
+        new Person { Name = "Charlie", Age = 35, City = "Chicago" },
+        new Person { Name = "Diana", Age = 28, City = "Houston" },
+        new Person { Name = "Eve", Age = 32, City = "Phoenix" }
+    };
+
+    private void OnLoad()
+    {
+        // No data loading needed - using hardcoded data
+    }
+
+    private class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public string City { get; set; }
+    }
+}
