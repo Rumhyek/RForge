@@ -1,0 +1,255 @@
+﻿@page "/tab-list/details"
+
+<ComponentDetail Title="Tab List"
+                 PlaygroundUrl="/tab-list/playground"
+                 SubTitle="Accessible tabbed interface with keyboard navigation">
+
+    <CustomSideLinks>
+
+        <div class="menu">
+            <p class="menu-label is-size-6 mb-2">Repository Links</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("RfTabList.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTabList.razor"))
+                @ComponentDetail.SideLink(("RfTabList.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTabList.razor.cs"))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("RfTab.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfTab.razor.cs"))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("RfTabListContext.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfTabListContext.cs"))
+            </ul>
+        </div>
+
+        <div class="menu mt-6">
+            <p class="menu-label is-size-6 mb-2">Examples</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("Basic Example", TagInfo.Empty, "/tab-list/example/basic-example"))
+                @ComponentDetail.SideLink(("Loader Example", TagInfo.Empty, "/tab-list/example/loader-example"))
+            </ul>
+        </div>
+    </CustomSideLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                <code>RfTabList</code> provides an accessible tabbed interface with keyboard navigation support.
+                It manages the registration, activation, and navigation of tabs while ensuring only one tab is active at a time.
+                Individual tabs are defined using <code>RfTab</code> components within the tab list.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                When you need to organize related content into separate panels that users can switch between,
+                such as settings panels, different views of data, or step-by-step processes.
+            </p>
+
+        </div>
+    </Purpose>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+
+    <BasicUsage>
+
+        <div class="content">
+
+            <p>
+                To use <code>RfTabList</code>, create a tab list container and define individual tabs using <code>RfTab</code> components.
+                Each tab has a unique identifier and contains both the tab header content and the panel content.
+            </p>
+            
+            <p>
+                The <code>RfTabList</code> manages tab state through a <code>RfTabListContext</code> which is passed down to child tabs
+                via a <code>CascadingParameter</code>.
+            </p>
+
+            <h2>RfTabList Component</h2>
+            <p>
+                The main container that manages all tabs and handles keyboard navigation.
+            </p>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>ActiveTabId</code></td>
+                        <td>string</td>
+                        <td>The identifier of the currently active tab. Required parameter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ActiveTabIdChanged</code></td>
+                        <td>EventCallback&lt;string&gt;</td>
+                        <td>Callback invoked when the active tab ID changes.</td>
+                    </tr>
+                    <tr>
+                        <td><code>TabListAriaLabel</code></td>
+                        <td>string</td>
+                        <td>ARIA label for the tab list element for accessibility.</td>
+                    </tr>
+                    <tr>
+                        <td><code>CssClass</code></td>
+                        <td>string</td>
+                        <td>CSS classes to apply to the component wrapper.</td>
+                    </tr>
+                    <tr>
+                        <td><code>TabsCssClass</code></td>
+                        <td>string</td>
+                        <td>CSS classes for the tabs container. Use Bulma classes like .is-boxed, .is-toggle, etc.</td>
+                    </tr>
+                    <tr>
+                        <td><code>PanelCssClass</code></td>
+                        <td>string</td>
+                        <td>CSS classes for the panel wrapper element.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ChildContent</code></td>
+                        <td>RenderFragment</td>
+                        <td>Content containing RfTab components.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>RfTab Component</h2>
+            <p>
+                Individual tab component that defines both the tab header and panel content.
+            </p>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>TabId</code></td>
+                        <td>string</td>
+                        <td>Unique identifier for the tab. Required parameter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Tab</code></td>
+                        <td>RenderFragment</td>
+                        <td>Content to render in the tab header.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Panel</code></td>
+                        <td>RenderFragment</td>
+                        <td>Content to render in the tab panel.</td>
+                    </tr>
+                    <tr>
+                        <td><code>LoadingPanel</code></td>
+                        <td>RenderFragment</td>
+                        <td>Content to display while the tab is loading.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ShowPanelWhenHidden</code></td>
+                        <td>bool</td>
+                        <td>Whether to render panel content even when not active (for SEO). Default: false.</td>
+                    </tr>
+                    <tr>
+                        <td><code>TabCssClass</code></td>
+                        <td>string</td>
+                        <td>CSS classes to apply to the tab element.</td>
+                    </tr>
+                    <tr>
+                        <td><code>PanelCssClass</code></td>
+                        <td>string</td>
+                        <td>CSS classes to apply to the panel element.</td>
+                    </tr>
+                    <tr>
+                        <td><code>OnShow</code></td>
+                        <td>EventCallback&lt;string&gt;</td>
+                        <td>Callback invoked when the tab becomes visible.</td>
+                    </tr>
+                    <tr>
+                        <td><code>OnLoad</code></td>
+                        <td>EventCallback&lt;string&gt;</td>
+                        <td>Callback invoked when the tab is loaded for the first time.</td>
+                    </tr>
+                    <tr>
+                        <td><code>OnHide</code></td>
+                        <td>EventCallback&lt;string&gt;</td>
+                        <td>Callback invoked when the tab is hidden.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Keyboard Navigation</h2>
+            <p>
+                The tab list supports full keyboard navigation:
+            </p>
+            <ul>
+                <li><strong>Arrow Left/Right:</strong> Navigate between tabs</li>
+                <li><strong>Home:</strong> Focus first tab</li>
+                <li><strong>End:</strong> Focus last tab</li>
+            </ul>
+
+            <h2>Basic Example</h2>
+            <p>
+                Below shows a basic example of setting up the <code>RfTabList</code> with multiple tabs.
+            </p>
+
+            <pre><code>&lt;RfTabList @@bind-ActiveTabId="ActiveTabId"&gt;
+    &lt;RfTab TabId="tab1"&gt;
+        &lt;Tab&gt;First Tab&lt;/Tab&gt;
+        &lt;Panel&gt;
+            &lt;p&gt;This is the content of the first tab.&lt;/p&gt;
+        &lt;/Panel&gt;
+    &lt;/RfTab&gt;
+    &lt;RfTab TabId="tab2"&gt;
+        &lt;Tab&gt;Second Tab&lt;/Tab&gt;
+        &lt;Panel&gt;
+            &lt;p&gt;This is the content of the second tab.&lt;/p&gt;
+        &lt;/Panel&gt;
+    &lt;/RfTab&gt;
+    &lt;RfTab TabId="loading-tab" OnLoad="LoadTabContent"&gt;
+        &lt;Tab&gt;Loading Tab&lt;/Tab&gt;
+        &lt;LoadingPanel&gt;
+            &lt;p&gt;Loading content, please wait...&lt;/p&gt;
+        &lt;/LoadingPanel&gt;
+        &lt;Panel&gt;
+            &lt;p&gt;Content loaded successfully!&lt;/p&gt;
+        &lt;/Panel&gt;
+    &lt;/RfTab&gt;
+&lt;/RfTabList&gt;</code></pre>
+
+            <div class="notification is-info">
+                <strong>NOTE:</strong> Each tab must have a unique <code class="has-text-info">TabId</code> within the tab list.
+                The <code class="has-text-info">OnLoad</code> callback is only called once when the tab is first activated.
+            </div>
+
+            <h2>Loading States</h2>
+            <p>
+                Tabs can display loading content using the <code>LoadingPanel</code> render fragment.
+                During loading, the tab will show a loading indicator and call the <code>OnLoad</code> callback.
+            </p>
+
+            <h2>Styling with Bulma</h2>
+            <p>
+                The tab list integrates with Bulma CSS framework classes:
+            </p>
+            <ul>
+                <li><code>.is-boxed</code> - Boxed tabs</li>
+                <li><code>.is-toggle</code> - Toggle-style tabs</li>
+                <li><code>.is-fullwidth</code> - Full width tabs</li>
+                <li><code>.is-centered</code> - Centered tabs</li>
+                <li><code>.is-right</code> - Right-aligned tabs</li>
+            </ul>
+
+        </div>
+
+    </BasicUsage>
+
+</ComponentDetail>
+
+@code {
+
+}

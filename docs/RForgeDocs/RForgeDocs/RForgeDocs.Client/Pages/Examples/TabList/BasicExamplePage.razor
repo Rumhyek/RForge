@@ -1,0 +1,117 @@
+﻿@page "/tab-list/example/basic-example"
+
+@rendermode InteractiveAuto
+
+<ExampleDetail Title="Basic Example"
+               SubTitle="Tab List"
+               ComponentName="Tab List"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/TabList/BasicExamplePage.razor")"
+               ComponentDetailsUrl="/tab-list/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This example demonstrates a basic tabbed interface with three tabs containing different content.
+                    </p>
+
+                    <h5>Tab Navigation</h5>
+                    <p>
+                        Users can switch between tabs by clicking on them or using keyboard navigation (arrow keys, Home, End).
+                    </p>
+
+                    <h5>Active Tab Management</h5>
+                    <p>
+                        The active tab is controlled through the <code>ActiveTabId</code> parameter, which can be bound for two-way data binding.
+                    </p>
+
+                    <h5>Tab Structure</h5>
+                    <p>
+                        Each <code>RfTab</code> has two main sections:
+                    </p>
+                    <ul>
+                        <li><strong>Tab:</strong> The clickable header portion</li>
+                        <li><strong>Panel:</strong> The content area displayed when active</li>
+                    </ul>
+
+                    <h5>Current Active Tab</h5>
+                    <p>
+                        <strong>@ActiveTabId</strong>
+                    </p>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <RfTabList @bind-ActiveTabId="ActiveTabId" 
+                       TabListAriaLabel="Basic example tabs">
+
+                <RfTab TabId="home">
+                    <Tab>Home</Tab>
+                    <Panel>
+                        <div class="content">
+                            <h3>Welcome to the Home Tab</h3>
+                            <p>
+                                This is the home tab content. It contains some basic information and welcome message.
+                            </p>
+                            <p>
+                                You can navigate between tabs using mouse clicks or keyboard arrow keys.
+                            </p>
+                        </div>
+                    </Panel>
+                </RfTab>
+
+                <RfTab TabId="about">
+                    <Tab>About</Tab>
+                    <Panel>
+                        <div class="content">
+                            <h3>About This Component</h3>
+                            <p>
+                                The <code>RfTabList</code> component provides an accessible and keyboard-navigable tabbed interface.
+                            </p>
+                            <ul>
+                                <li>Fully accessible with ARIA attributes</li>
+                                <li>Keyboard navigation support</li>
+                                <li>Customizable styling with CSS classes</li>
+                                <li>Loading states for async content</li>
+                            </ul>
+                        </div>
+                    </Panel>
+                </RfTab>
+
+                <RfTab TabId="contact">
+                    <Tab>Contact</Tab>
+                    <Panel>
+                        <div class="content">
+                            <h3>Contact Information</h3>
+                            <p>
+                                This tab demonstrates how you can organize different types of content in separate panels.
+                            </p>
+                            <div class="field">
+                                <label class="label">Sample Form Field</label>
+                                <div class="control">
+                                    <input class="input" type="text" placeholder="Enter some text">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <button class="button is-primary">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </Panel>
+                </RfTab>
+
+            </RfTabList>
+
+        </article>
+    </div>
+</div>
+
+@code {
+    private string ActiveTabId { get; set; } = "home";
+}
