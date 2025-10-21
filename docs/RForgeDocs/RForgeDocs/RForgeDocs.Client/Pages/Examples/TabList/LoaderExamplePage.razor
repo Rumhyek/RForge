@@ -1,0 +1,208 @@
+﻿@page "/tab-list/example/loader-example"
+
+@rendermode InteractiveAuto
+
+<ExampleDetail Title="Loader Example"
+               SubTitle="Tab List"
+               ComponentName="Tab List"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/TabList/LoaderExamplePage.razor")"
+               ComponentDetailsUrl="/tab-list/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <p>
+                        This example demonstrates tabs with loading states. Some tabs load their content asynchronously
+                        when first accessed.
+                    </p>
+
+                    <h5>Loading Behavior</h5>
+                    <p>
+                        Tabs with an <code>OnLoad</code> callback will show their <code>LoadingPanel</code> content
+                        until the loading operation completes.
+                    </p>
+
+                    <h5>One-Time Loading</h5>
+                    <p>
+                        The <code>OnLoad</code> callback is only executed once per tab, on first activation.
+                        Subsequent visits to the tab will show the loaded content immediately.
+                    </p>
+
+                    <h5>Loading States</h5>
+                    <ul>
+                        <li><strong>Instant Tab:</strong> No loading, content immediately available</li>
+                        <li><strong>Quick Load:</strong> 1 second loading simulation</li>
+                        <li><strong>Slow Load:</strong> 3 second loading simulation</li>
+                    </ul>
+
+                    <h5>Current Active Tab</h5>
+                    <p>
+                        <strong>@ActiveTabId</strong>
+                    </p>
+
+                    <h5>Loading Log</h5>
+                    <div class="content">
+                        @foreach(var log in LoadingLog)
+                        {
+                            <p class="is-size-7"><code>@log</code></p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+
+            <RfTabList @bind-ActiveTabId="ActiveTabId" 
+                       TabListAriaLabel="Loading example tabs"
+                       TabsCssClass="is-boxed">
+
+                <RfTab TabId="instant">
+                    <Tab>
+                        <span class="icon-text">
+                            <span class="icon has-text-success">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <span>Instant</span>
+                        </span>
+                    </Tab>
+                    <Panel>
+                        <div class="content">
+                            <h3>Instant Content</h3>
+                            <p>
+                                This tab loads instantly without any loading state since it has no <code>OnLoad</code> callback.
+                            </p>
+                            <div class="notification is-success">
+                                <strong>Ready immediately!</strong> No loading required.
+                            </div>
+                        </div>
+                    </Panel>
+                </RfTab>
+
+                <RfTab TabId="quick-load" 
+                       OnLoad="LoadQuickContent"
+                       OnShow="@(tabId => AddToLog($"Showing tab: {tabId}"))"
+                       OnHide="@(tabId => AddToLog($"Hiding tab: {tabId}"))">
+                    <Tab>
+                        <span class="icon-text">
+                            <span class="icon has-text-warning">
+                                <i class="fas fa-clock"></i>
+                            </span>
+                            <span>Quick Load</span>
+                        </span>
+                    </Tab>
+                    <LoadingPanel>
+                        <div class="content">
+                            <div class="notification is-warning">
+                                <span class="icon-text">
+                                    <span class="icon">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </span>
+                                    <span><strong>Loading quick content...</strong> This will take about 1 second.</span>
+                                </span>
+                            </div>
+                        </div>
+                    </LoadingPanel>
+                    <Panel>
+                        <div class="content">
+                            <h3>Quick Loading Content</h3>
+                            <p>
+                                This content was loaded after a 1-second delay to simulate a quick API call or data fetch.
+                            </p>
+                            <div class="notification is-success">
+                                <strong>Content loaded!</strong> Loading completed at @QuickLoadTime.
+                            </div>
+                        </div>
+                    </Panel>
+                </RfTab>
+
+                <RfTab TabId="slow-load" 
+                       OnLoad="LoadSlowContent"
+                       OnShow="@(tabId => AddToLog($"Showing tab: {tabId}"))"
+                       OnHide="@(tabId => AddToLog($"Hiding tab: {tabId}"))">
+                    <Tab>
+                        <span class="icon-text">
+                            <span class="icon has-text-danger">
+                                <i class="fas fa-hourglass-half"></i>
+                            </span>
+                            <span>Slow Load</span>
+                        </span>
+                    </Tab>
+                    <LoadingPanel>
+                        <div class="content">
+                            <div class="notification is-danger">
+                                <span class="icon-text">
+                                    <span class="icon">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </span>
+                                    <span><strong>Loading slow content...</strong> This will take about 3 seconds.</span>
+                                </span>
+                            </div>
+                            <progress class="progress is-danger" max="100">Loading...</progress>
+                        </div>
+                    </LoadingPanel>
+                    <Panel>
+                        <div class="content">
+                            <h3>Slow Loading Content</h3>
+                            <p>
+                                This content was loaded after a 3-second delay to simulate a slower operation like processing large data sets.
+                            </p>
+                            <div class="notification is-success">
+                                <strong>Content loaded!</strong> Loading completed at @SlowLoadTime.
+                            </div>
+                            <p>
+                                Notice how the loading only happened once. Switching back to this tab now shows the content immediately.
+                            </p>
+                        </div>
+                    </Panel>
+                </RfTab>
+
+            </RfTabList>
+
+            <div class="box mt-4">
+                <h4 class="title is-5">Tab Events</h4>
+                <p>This example demonstrates the <code>OnShow</code>, <code>OnHide</code>, and <code>OnLoad</code> events.</p>
+                <button class="button is-small" @onclick="ClearLog">Clear Log</button>
+            </div>
+
+        </article>
+    </div>
+</div>
+
+@code {
+    private string ActiveTabId { get; set; } = "instant";
+    private List<string> LoadingLog { get; set; } = new();
+    private string QuickLoadTime { get; set; } = "";
+    private string SlowLoadTime { get; set; } = "";
+
+    private void AddToLog(string message)
+    {
+        LoadingLog.Add($"{DateTime.Now:HH:mm:ss.fff} - {message}");
+        StateHasChanged();
+    }
+
+    private void ClearLog()
+    {
+        LoadingLog.Clear();
+        StateHasChanged();
+    }
+
+    private async Task LoadQuickContent(string tabId)
+    {
+        AddToLog($"Starting quick load for tab: {tabId}");
+        await Task.Delay(1000); // Simulate 1 second loading
+        QuickLoadTime = DateTime.Now.ToString("HH:mm:ss");
+        AddToLog($"Quick load completed for tab: {tabId}");
+    }
+
+    private async Task LoadSlowContent(string tabId)
+    {
+        AddToLog($"Starting slow load for tab: {tabId}");
+        await Task.Delay(3000); // Simulate 3 seconds loading
+        SlowLoadTime = DateTime.Now.ToString("HH:mm:ss");
+        AddToLog($"Slow load completed for tab: {tabId}");
+    }
+}

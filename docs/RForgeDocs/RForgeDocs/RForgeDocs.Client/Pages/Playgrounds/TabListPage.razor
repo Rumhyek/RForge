@@ -1,0 +1,347 @@
+﻿@page "/tab-list/playground"
+@rendermode InteractiveAuto
+
+<PlaygroundDetails @ref="Logger"
+                   PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/TabListPage.razor")"
+                   HasEvents=true
+                   SubTitle="Tab List"
+                   ComponentName="Tab List"
+                   Title="Playground"
+                   MakeDisplaySticky=false
+                   ComponentDetailsUrl="/tab-list/details">
+
+    <Parameters>
+
+        <BulmaInput Label="ActiveTabId"
+                    HelpText="The identifier of the currently active tab.">
+            <div class="select is-primary">
+                <select @bind="ActiveTabId">
+                    <option value="tab1">tab1</option>
+                    <option value="tab2">tab2</option>
+                    <option value="tab3">tab3</option>
+                    <option value="loading-tab">loading-tab</option>
+                    <option value="hidden-tab">hidden-tab</option>
+                </select>
+            </div>
+        </BulmaInput>
+
+        <BulmaInput Label="TabListAriaLabel"
+                    HelpText="ARIA label for the tab list for accessibility.">
+            <InputText @bind-Value="TabListAriaLabel" class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="CssClass"
+                    HelpText="CSS class to apply to the component wrapper.">
+            <InputText @bind-Value="CssClass" class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="TabsCssClass"
+                    HelpText="CSS class for tabs container. Use Bulma classes like is-boxed, is-toggle, is-fullwidth, is-centered.">
+            <InputText @bind-Value="TabsCssClass" class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="PanelCssClass"
+                    HelpText="CSS class for the panel wrapper element.">
+            <InputText @bind-Value="PanelCssClass" class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="Tab1 TabCssClass"
+                    HelpText="CSS class for the first tab element.">
+            <InputText @bind-Value="Tab1CssClass" class="input" />
+        </BulmaInput>
+
+        <BulmaInput Label="Tab1 PanelCssClass"
+                    HelpText="CSS class for the first tab panel.">
+            <InputText @bind-Value="Tab1PanelCssClass" class="input" />
+        </BulmaInput>
+
+        <BulmaCheckbox Label="ShowPanelWhenHidden"
+                       HelpText="Should the loading tab panel be rendered even when hidden (for SEO).">
+            <InputCheckbox @bind-Value="ShowPanelWhenHidden" class="checkbox" />
+        </BulmaCheckbox>
+
+        <BulmaInput Label="LoadingDelay (ms)"
+                    HelpText="Delay in milliseconds for the loading tab simulation.">
+            <InputNumber @bind-Value="LoadingDelay" class="input" />
+        </BulmaInput>
+
+    </Parameters>
+
+    <Display>
+
+        <RfTabList @bind-ActiveTabId="ActiveTabId"
+                   @bind-ActiveTabId:after="@(() => Logger.AddLog($"ActiveTabId changed to: {ActiveTabId}"))"
+                   TabListAriaLabel="@TabListAriaLabel"
+                   CssClass="@CssClass"
+                   TabsCssClass="@TabsCssClass"
+                   PanelCssClass="@PanelCssClass">
+
+            <RfTab TabId="tab1"
+                   TabCssClass="@Tab1CssClass"
+                   PanelCssClass="@Tab1PanelCssClass"
+                   OnShow="@(tabId => Logger.AddLog($"Tab1 OnShow: {tabId}"))"
+                   OnHide="@(tabId => Logger.AddLog($"Tab1 OnHide: {tabId}"))">
+                <Tab>
+                    <span class="icon-text">
+                        <span class="icon has-text-info">
+                            <i class="fas fa-home"></i>
+                        </span>
+                        <span>Home</span>
+                    </span>
+                </Tab>
+                <Panel>
+                    <div class="content">
+                        <h3>Home Tab</h3>
+                        <p>This is the content of the home tab. It's always instantly available.</p>
+                        <div class="notification is-info">
+                            <strong>Current time:</strong> @DateTime.Now.ToString("HH:mm:ss")
+                        </div>
+                        <button class="button is-primary" @onclick="@(() => Logger.AddLog("Home tab button clicked"))">
+                            Click Me
+                        </button>
+                    </div>
+                </Panel>
+            </RfTab>
+
+            <RfTab TabId="tab2"
+                   OnShow="@(tabId => Logger.AddLog($"Tab2 OnShow: {tabId}"))"
+                   OnHide="@(tabId => Logger.AddLog($"Tab2 OnHide: {tabId}"))">
+                <Tab>
+                    <span class="icon-text">
+                        <span class="icon has-text-success">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <span>About</span>
+                    </span>
+                </Tab>
+                <Panel>
+                    <div class="content">
+                        <h3>About Tab</h3>
+                        <p>This tab demonstrates basic tab functionality without loading states.</p>
+                        <ul>
+                            <li>Accessible keyboard navigation</li>
+                            <li>Customizable styling</li>
+                            <li>Event callbacks for show/hide</li>
+                        </ul>
+                        <div class="field">
+                            <label class="label">Sample Form Field</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Try typing something">
+                            </div>
+                        </div>
+                    </div>
+                </Panel>
+            </RfTab>
+
+            <RfTab TabId="tab3"
+                   OnShow="@(tabId => Logger.AddLog($"Tab3 OnShow: {tabId}"))"
+                   OnHide="@(tabId => Logger.AddLog($"Tab3 OnHide: {tabId}"))">
+                <Tab>
+                    <span class="icon-text">
+                        <span class="icon has-text-warning">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <span>Contact</span>
+                    </span>
+                </Tab>
+                <Panel>
+                    <div class="content">
+                        <h3>Contact Tab</h3>
+                        <p>This tab shows more complex content with form elements.</p>
+                        <div class="field">
+                            <label class="label">Name</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Enter your name">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Email</label>
+                            <div class="control">
+                                <input class="input" type="email" placeholder="Enter your email">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Message</label>
+                            <div class="control">
+                                <textarea class="textarea" placeholder="Enter your message"></textarea>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="control">
+                                <button class="button is-primary" @onclick="@(() => Logger.AddLog("Contact form submitted"))">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </Panel>
+            </RfTab>
+
+            <RfTab TabId="loading-tab"
+                   OnLoad="LoadTabContent"
+                   OnShow="@(tabId => Logger.AddLog($"LoadingTab OnShow: {tabId}"))"
+                   OnHide="@(tabId => Logger.AddLog($"LoadingTab OnHide: {tabId}"))">
+                <Tab>
+                    <span class="icon-text">
+                        <span class="icon has-text-danger">
+                            <i class="fas fa-spinner @(IsLoadingTabActive ? "fa-spin" : "")"></i>
+                        </span>
+                        <span>Loading Tab</span>
+                    </span>
+                </Tab>
+                <LoadingPanel>
+                    <div class="content">
+                        <div class="notification is-warning">
+                            <span class="icon-text">
+                                <span class="icon">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </span>
+                                <span><strong>Loading content...</strong> Please wait @LoadingDelay ms.</span>
+                            </span>
+                        </div>
+                        <progress class="progress is-warning" max="100">Loading...</progress>
+                    </div>
+                </LoadingPanel>
+                <Panel>
+                    <div class="content">
+                        <h3>Loaded Content</h3>
+                        <p>This content was loaded asynchronously when the tab was first accessed.</p>
+                        <div class="notification is-success">
+                            <strong>Loading completed!</strong> Content loaded at @LoadedTime.
+                        </div>
+                        <p>Subsequent visits to this tab will show the content immediately without reloading.</p>
+                    </div>
+                </Panel>
+            </RfTab>
+
+            <RfTab TabId="hidden-tab"
+                   ShowPanelWhenHidden="@ShowPanelWhenHidden"
+                   OnShow="@(tabId => Logger.AddLog($"HiddenTab OnShow: {tabId}"))"
+                   OnHide="@(tabId => Logger.AddLog($"HiddenTab OnHide: {tabId}"))">
+                <Tab>
+                    <span class="icon-text">
+                        <span class="icon has-text-grey">
+                            <i class="fas fa-eye-slash"></i>
+                        </span>
+                        <span>SEO Tab</span>
+                    </span>
+                </Tab>
+                <Panel>
+                    <div class="content">
+                        <h3>SEO-Friendly Content</h3>
+                        <p>
+                            This tab demonstrates the <code>ShowPanelWhenHidden</code> feature. 
+                            When enabled, this content is rendered in the DOM even when the tab is not active.
+                        </p>
+                        <div class="notification @(ShowPanelWhenHidden ? "is-success" : "is-warning")">
+                            <strong>ShowPanelWhenHidden:</strong> @ShowPanelWhenHidden
+                        </div>
+                        <p>
+                            This is useful for SEO purposes when you want search engines to index the content
+                            of all tabs, not just the active one.
+                        </p>
+                    </div>
+                </Panel>
+            </RfTab>
+
+        </RfTabList>
+
+        <div class="box mt-4">
+            <h4 class="title is-5">Tab Information</h4>
+            <div class="columns">
+                <div class="column">
+                    <p><strong>Current Active Tab:</strong> @ActiveTabId</p>
+                    <p><strong>Loading Tab Active:</strong> @IsLoadingTabActive</p>
+                    <p><strong>Last Loaded Time:</strong> @LoadedTime</p>
+                </div>
+                <div class="column">
+                    <div class="buttons">
+                        <button class="button is-small is-info" @onclick="@(() => ActiveTabId = "tab1")">
+                            Activate Home
+                        </button>
+                        <button class="button is-small is-success" @onclick="@(() => ActiveTabId = "tab2")">
+                            Activate About
+                        </button>
+                        <button class="button is-small is-warning" @onclick="@(() => ActiveTabId = "tab3")">
+                            Activate Contact
+                        </button>
+                        <button class="button is-small is-danger" @onclick="@(() => ActiveTabId = "loading-tab")">
+                            Activate Loading
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </Display>
+
+</PlaygroundDetails>
+
+@code {
+
+    public PlaygroundDetails Logger { get; set; }
+
+    #region Parameters
+
+    /// <summary>
+    /// The identifier of the currently active tab.
+    /// </summary>
+    public string ActiveTabId { get; set; } = "tab1";
+
+    /// <summary>
+    /// ARIA label for the tab list element.
+    /// </summary>
+    public string TabListAriaLabel { get; set; } = "Interactive tab list example";
+
+    /// <summary>
+    /// CSS class to apply to the component wrapper.
+    /// </summary>
+    public string CssClass { get; set; } = "";
+
+    /// <summary>
+    /// CSS class for the tabs container.
+    /// </summary>
+    public string TabsCssClass { get; set; } = "";
+
+    /// <summary>
+    /// CSS class for the panel wrapper element.
+    /// </summary>
+    public string PanelCssClass { get; set; } = "";
+
+    /// <summary>
+    /// CSS class for the first tab element.
+    /// </summary>
+    public string Tab1CssClass { get; set; } = "";
+
+    /// <summary>
+    /// CSS class for the first tab panel.
+    /// </summary>
+    public string Tab1PanelCssClass { get; set; } = "";
+
+    /// <summary>
+    /// Should the loading tab panel be rendered even when hidden.
+    /// </summary>
+    public bool ShowPanelWhenHidden { get; set; } = false;
+
+    /// <summary>
+    /// Delay in milliseconds for loading simulation.
+    /// </summary>
+    public int LoadingDelay { get; set; } = 2000;
+
+    #endregion
+
+    #region State
+
+    private string LoadedTime { get; set; } = "Not loaded yet";
+    private bool IsLoadingTabActive => ActiveTabId == "loading-tab";
+
+    #endregion
+
+    private async Task LoadTabContent(string tabId)
+    {
+        Logger.AddLog($"Loading tab content for: {tabId}");
+        await Task.Delay(LoadingDelay);
+        LoadedTime = DateTime.Now.ToString("HH:mm:ss.fff");
+        Logger.AddLog($"Tab content loaded for: {tabId}");
+    }
+}
