@@ -204,7 +204,8 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
             await OpenDropDown();
     }
 
-    private readonly Func<TItem, TItem, bool> _defaultItemComparer = (i1, i2) => EqualityComparer<object>.Default.Equals(i1, i2);
+    private readonly Func<TItem, TItem, bool> _defaultItemComparer = (i1, i2) => EqualityComparer<TItem>.Default.Equals(i1, i2);
+
     /// <summary>
     /// Sets the parameters for the component.
     /// </summary>
