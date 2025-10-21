@@ -71,6 +71,34 @@ public class RfDropDown_ItemComparer : VerifyBase
     }
 
     [TestMethod]
+    public void DefaultItemComparer_ShouldHandleCustomObjects()
+    {
+        // Arrange
+        var dropdown = new RfDropDown<TestItem>();
+        
+        // Access the private _defaultItemComparer field via reflection for testing
+        var defaultItemComparerField = typeof(RfDropDownBase<TestItem>).GetField("_defaultItemComparer", 
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        var comparer = defaultItemComparerField?.GetValue(dropdown) as Func<TestItem, TestItem, bool>;
+
+        var item1 = new TestItem { Id = 1, Name = "Test" };
+        var item2 = new TestItem { Id = 1, Name = "Test" }; // Same values, different instance
+        var item3 = new TestItem { Id = 2, Name = "Other" };
+        var item4 = item1; // Same reference
+
+        // Assert
+        Assert.IsNotNull(comparer);
+        
+        // Test object comparisons including nulls
+        Assert.IsTrue(comparer(null, null)); // null equals null
+        Assert.IsFalse(comparer(item1, null)); // non-null does not equal null
+        Assert.IsFalse(comparer(null, item1)); // null does not equal non-null
+        Assert.IsTrue(comparer(item1, item2)); // objects with same values (using Equals override)
+        Assert.IsFalse(comparer(item1, item3)); // objects with different values
+        Assert.IsTrue(comparer(item1, item4)); // same reference
+    }
+
+    [TestMethod]
     public void DefaultItemComparer_ShouldBeAssignedToItemComparerByDefault()
     {
         // Arrange
@@ -93,5 +121,26 @@ public class RfDropDown_ItemComparer : VerifyBase
         Assert.IsFalse(itemComparer("test", null));
         Assert.IsFalse(itemComparer(null, "test"));
         Assert.IsTrue(itemComparer("test", "test"));
+    }
+
+    // Test class for object comparison testing
+    private class TestItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is TestItem other)
+            {
+                return Id == other.Id && Name == other.Name;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Name);
+        }
     }
 }
