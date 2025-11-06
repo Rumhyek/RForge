@@ -2,3 +2,7 @@
 .is-clickable {
     cursor: pointer;
 }
+
+.rf-data-grid {
+    margin-bottom: var(--bulma-block-spacing);
+}
