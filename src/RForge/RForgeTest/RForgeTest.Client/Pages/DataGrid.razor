@@ -8,8 +8,7 @@
 
 <h1 class="title">Data Grid test</h1>
 
-<RfDataGrid
-            TRowData="UserRowData"
+<RfDataGrid TRowData="UserRowData"
             @bind-SortKey=DataGrid1.SortKey
             @bind-SortOrder=DataGrid1.SortOrder
             @bind-CurrentPageIndex=DataGrid1.CurrentPageIndex
@@ -78,6 +77,109 @@
         <td>@context.Id</td>
         <td>@context.FirstName</td>
         <td>@context.LastName</td>
+        <td>@context.Email</td>
+    </Cells>
+    <EmptyContent>
+        <td colspan="4">Could not find any Users</td>
+    </EmptyContent>
+</RfDataGrid>
+
+<h2 class="title is-size-3">Horizontal Scroll bar</h2>
+
+<RfDataGrid TRowData="UserRowData"
+            @bind-SortKey=DataGrid2.SortKey
+            @bind-SortOrder=DataGrid2.SortOrder
+            @bind-CurrentPageIndex=DataGrid2.CurrentPageIndex
+            TotalCount=DataGrid2.TotalCount
+            AllowFilters=true
+            Data=DataGrid2.Users
+            AllowSelection=true
+            PageSize=DataGrid2.PageSize
+            AddHorizontalScrollbar="true"
+            OnRowDoubleClick=@OnRowDoubleClick
+            OnLoadData="@LoadData2">
+
+    <Headers>
+        <RfDgHeader SortKey="Id">Id</RfDgHeader>
+        <RfDgHeader SortKey="FirstName">First Name</RfDgHeader>
+        <RfDgHeader SortKey="LastName">Last Name</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+        <RfDgHeader SortKey="Email">Email</RfDgHeader>
+    </Headers>
+
+    <Filters>
+        <RfDgFilterInputInt @bind-Value=DataGrid2.Filters.Id />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.FirstName />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.LastName />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+        <RfDgFilterInputText @bind-Value=DataGrid2.Filters.Email />
+    </Filters>
+
+    <Cells>
+        <td>@context.Id</td>
+        <td>@context.FirstName</td>
+        <td>@context.LastName</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
+        <td>@context.Email</td>
         <td>@context.Email</td>
     </Cells>
     <EmptyContent>
