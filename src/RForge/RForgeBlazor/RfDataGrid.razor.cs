@@ -246,6 +246,12 @@ public partial class RfDataGrid<TRowData>
     /// </summary>
     [Parameter]
     public string SelectedRowCssClass { get; set; } = "is-primary";
+
+    /// <summary>
+    /// If true the data grid will be wraped in a horizontal scrollable div.
+    /// </summary>
+    [Parameter]
+    public bool AddHorizontalScrollbar { get; set; } = false;
     #endregion
 
 
@@ -494,6 +500,9 @@ public partial class RfDataGrid<TRowData>
                     break;
                 case nameof(IsFullWidth):
                     IsFullWidth = (bool)parameter.Value;
+                    break;
+                case nameof(AddHorizontalScrollbar):
+                    AddHorizontalScrollbar = (bool)parameter.Value;
                     break;
             }
         }

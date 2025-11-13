@@ -82,61 +82,63 @@
     }
     else
     {
-        <table class="@ComputedTableCss">
-            <thead>
-                @if (Headers != null)
-                {
-                    <tr>
-                        @Headers
-                    </tr>
-                }
-                @if (AllowFilters == true && Filters != null)
-                {
-                    <tr class="filter-row">
-                        @Filters
-                    </tr>
-                }
-            </thead>
-            <tbody>
-                @if (Data != null)
-                {
-                    @foreach (var row in Data)
+        <div class="rf-data-grid @Rf.ClassWhen(("table-container", AddHorizontalScrollbar))">
+            <table class="@ComputedTableCss">
+                <thead>
+                    @if (Headers != null)
                     {
-                        var rowCss = "";
-                        if (CurrentSelection?.Any(selectedRow => RowComparer(selectedRow, row)) == true)
-                        {
-                            rowCss += $"selected {SelectedRowCssClass}".Trim();
-                        }
-
-                        @if (OnRowDoubleClick.HasDelegate == true)
-                        {
-                            <RfDoubleClick Element="tr"
-                                           class="@rowCss"
-                                           OnSingleClick=@(async () => await onRowClick(row))
-                                           OnDoubleClick=@(async () => await onRowDoubleClick(row))
-                                           ClickDelay=@DoubleClickDelay>
-                                @Cells(row)
-                            </RfDoubleClick>
-                        }
-                        else
-                        {
-                            <tr class="@rowCss" @onclick=@(async () => await onRowClick(row))>
-                                @Cells(row)
-                            </tr>
-                        }
-
-                    }
-
-
-                    @if (Data.Any() == false)
-                    {
-                        <tr class="@EmptyContentCss">
-                            @EmptyContent
+                        <tr>
+                            @Headers
                         </tr>
                     }
-                }
-            </tbody>
-        </table>
+                    @if (AllowFilters == true && Filters != null)
+                    {
+                        <tr class="filter-row">
+                            @Filters
+                        </tr>
+                    }
+                </thead>
+                <tbody>
+                    @if (Data != null)
+                    {
+                        @foreach (var row in Data)
+                        {
+                            var rowCss = "";
+                            if (CurrentSelection?.Any(selectedRow => RowComparer(selectedRow, row)) == true)
+                            {
+                                rowCss += $"selected {SelectedRowCssClass}".Trim();
+                            }
+
+                            @if (OnRowDoubleClick.HasDelegate == true)
+                            {
+                                <RfDoubleClick Element="tr"
+                                               class="@rowCss"
+                                               OnSingleClick=@(async () => await onRowClick(row))
+                                               OnDoubleClick=@(async () => await onRowDoubleClick(row))
+                                               ClickDelay=@DoubleClickDelay>
+                                    @Cells(row)
+                                </RfDoubleClick>
+                            }
+                            else
+                            {
+                                <tr class="@rowCss" @onclick=@(async () => await onRowClick(row))>
+                                    @Cells(row)
+                                </tr>
+                            }
+
+                        }
+
+
+                        @if (Data.Any() == false)
+                        {
+                            <tr class="@EmptyContentCss">
+                                @EmptyContent
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
         <div class="is-flex gap-3 is-justify-content-space-between is-align-items-center @PagerCssClass">
             <div>
                 @if (ShowPaging == true)
