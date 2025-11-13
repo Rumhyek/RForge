@@ -9,7 +9,7 @@
 
             @if (HasChildren == true)
             {
-                <div class="tree-node @Rf.ClassWhen(("is-active", IsSelected))">
+                <div class="tree-node @NodeCss @Rf.ClassWhen(("is-active", IsSelected))">
 
                     <button type="button"
                             class="button node-icon @Rf.ClassWhen(("is-loading", IsLoading))"
@@ -52,7 +52,7 @@
             }
             else
             {
-                <a class="tree-node @Rf.ClassWhen(("is-active", IsSelected))"
+                <a class="tree-node @NodeCss @Rf.ClassWhen(("is-active", IsSelected))"
                    href="@LinkUrl"
                    @onclick=OnNodeClickCallback>
 
