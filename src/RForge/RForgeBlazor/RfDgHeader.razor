@@ -1,7 +1,7 @@
 @using RForge.Abstractions.DataGrids
 @implements IDisposable
 
-<th @onclick="OnColumnClick" class="@HeaderCss">
+<th @onclick="OnColumnClick" class="@HeaderCss" @attributes="AdditionalAttributes">
     @ChildContent
 
     @if (AllowSorting == true)

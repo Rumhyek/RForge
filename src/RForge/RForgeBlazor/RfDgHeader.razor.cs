@@ -46,6 +46,16 @@ public partial class RfDgHeader
     /// </summary>
     [Parameter]
     public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of additional attributes that do not match any known parameters.
+    /// </summary>
+    /// <remarks>This property is typically used to capture and pass arbitrary HTML attributes or other
+    /// key-value pairs that are not explicitly defined as parameters. The keys in the dictionary represent attribute
+    /// names,  and the values represent their corresponding values.</remarks>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+
     #endregion
 
     /// <summary>
