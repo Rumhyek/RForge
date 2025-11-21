@@ -12,6 +12,9 @@ public partial class RfContextMenuLink
     [Parameter]
     public string Href { get; set; }
 
+    /// <summary>
+    /// Gets or sets the URL of the link.
+    /// </summary>
     [Parameter]
     public EventCallback OnClick { get; set; }
 

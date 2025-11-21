@@ -42,6 +42,7 @@ jobs:
           dotnet-version: |
             8.x
             9.x
+            10.x
 
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v3.0.0
