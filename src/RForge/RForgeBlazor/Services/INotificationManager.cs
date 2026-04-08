@@ -24,44 +24,61 @@ public interface INotificationManager : INotificationManagerBackend
     event Action<RfNotificationPosition> OnClearByPosition;
 
     /// <summary>
+    /// A event that will be invoked to clear toast with a given id.
+    /// </summary>
+    event Action<Guid> OnClearById;
+
+    /// <summary>
     /// A event that will be invoked when showing a notification.
     /// </summary>
     event Action<RenderFragment, NotificationOptions, Action<NotificationOptions>> OnShow;
+
+    /// <summary>
+    /// Called everytime a notification is dissmissed via time or click.
+    /// </summary>
+    event Action<NotificationOptions> OnNotificationDimiss;
 
     /// <summary>
     /// Shows a information notification 
     /// </summary>
     /// <param name="content">RenderFragment to display on the notification</param>
     /// <param name="options">Options to configure the notification instance</param>
-    void AddInfo(RenderFragment content, Action<NotificationOptions> options = null);
+    Guid AddInfo(RenderFragment content, Action<NotificationOptions> options = null);
 
     /// <summary>
     /// Shows a success notification 
     /// </summary>
     /// <param name="content">RenderFragment to display on the notification</param>
     /// <param name="options">Options to configure the notification instance</param>
-    void AddSuccess(RenderFragment content, Action<NotificationOptions> options = null);
+    Guid AddSuccess(RenderFragment content, Action<NotificationOptions> options = null);
 
     /// <summary>
     /// Shows a warning notification 
     /// </summary>
     /// <param name="content">RenderFragment to display on the notification</param>
     /// <param name="options">Options to configure the notification instance</param>
-    void AddWarning(RenderFragment content, Action<NotificationOptions> options = null);
+    Guid AddWarning(RenderFragment content, Action<NotificationOptions> options = null);
 
     /// <summary>
     /// Shows a error notification 
     /// </summary>
     /// <param name="content">RenderFragment to display on the notification</param>
     /// <param name="options">Options to configure the notification instance</param>
-    void AddError(RenderFragment content, Action<NotificationOptions> options = null);
+    Guid AddError(RenderFragment content, Action<NotificationOptions> options = null);
 
     /// <summary>
     /// Shows a notification using the supplied options
     /// </summary>
     /// <param name="content">RenderFragment to display inside the notification</param>
     /// <param name="options">Options to configure the notification instance. If null the system will use the default options.</param>
-    void AddNotification(RenderFragment content, NotificationOptions options);
+    Guid AddNotification(RenderFragment content, NotificationOptions options);
+
+    /// <summary>
+    /// Shows a notification using the supplied options
+    /// </summary>
+    /// <param name="content">RenderFragment to display inside the notification</param>
+    /// <param name="options">Options to configure the notification instance.</param>
+    Guid AddNotification(RenderFragment content, Action<NotificationOptions> options);
 
 
     /// <summary>
@@ -98,4 +115,16 @@ public interface INotificationManager : INotificationManagerBackend
     /// Removes all notifications with notification level Error
     /// </summary>
     void ClearAllError();
+
+    /// <summary>
+    /// Removes all notifications with given ids
+    /// </summary>
+    /// <param name="id"></param>
+    void ClearById(params Guid[] id);
+
+    /// <summary>
+    /// Called internally to handle frontend removing a notification
+    /// </summary>
+    /// <param name="notification"></param>
+    internal void NotifyNotificationRemoval(NotificationOptions notification);
 }

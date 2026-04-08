@@ -56,6 +56,13 @@
     </div>
 </div>
 
+<div class="content">
+    @foreach (var dismissLog in DismissLogs)
+    {
+        <p>@dismissLog</p>    
+    }
+</div>
+
 <RfNotificationManager />
 
 @code {
@@ -65,11 +72,23 @@
     public RfNotificationSeverity Severity { get; set; }
     public RfNotificationPosition Position { get; set; }
 
+    private List<string> DismissLogs { get; set; } = [];
+
     public static RenderFragment MessageTemplate(string message) => (__builder) =>
     {
         <h1>CUSTOM</h1>
         <div>@message</div>
     };
+
+    protected override void OnInitialized()
+    {
+        nm.OnNotificationDimiss += nm_OnNotificationDimiss;
+    }
+
+    private void nm_OnNotificationDimiss(NotificationOptions notification)
+    {
+        DismissLogs.Prepend($"{DateTime.Now}: {notification.NotificationId}");
+    }
 
     private void OnAddCustomMessageClick()
     {

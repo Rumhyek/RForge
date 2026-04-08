@@ -6,6 +6,19 @@
 public class NotificationOptions
 {
     /// <summary>
+    /// Default constructor
+    /// </summary>
+    public NotificationOptions()
+    {
+        NotificationId = Guid.NewGuid();
+    }
+
+    /// <summary>
+    /// Gets or sets the unique identifier for the notification. If null the notification manager will set it.
+    /// </summary>
+    public Guid NotificationId { get; set; }
+
+    /// <summary>
     /// The <c>CssClass</c> property is used to specify additional CSS classes that will be applied to the notification. 
     /// </summary>
     public string CssClass { get; set; }
@@ -41,7 +54,5 @@ public class NotificationOptions
     /// If true the close button will be shown. Note: ShowCloseButton will be set to true if ShowFor = null.
     /// </summary>
     public bool ShowCloseButton { get; set; }
-
-
 }
 

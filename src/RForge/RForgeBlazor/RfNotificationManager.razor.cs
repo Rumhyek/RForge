@@ -91,47 +91,67 @@ public partial class RfNotificationManager : IDisposable
         _notificationManager.OnClearAll += NotificationManager_OnClearAll;
         _notificationManager.OnClearByPosition += NotificationManager_OnClearByPosition;
         _notificationManager.OnClearBySeverity += NotificationManager_OnClearBySeverity;
+        _notificationManager.OnClearById += NotificationManager_OnClearById;
     }
+
+    /// <summary>
+    /// Removes notifications that satisfy the specified criteria from all notification collections.
+    /// </summary>
+    /// <remarks>For each notification removed, a notification removal event is triggered. This method affects
+    /// all notification locations managed by the notification manager.</remarks>
+    /// <param name="selector">A function that determines whether a given notification should be removed. The function receives a
+    /// NotificationDetails object and returns <see langword="true"/> to remove the notification; otherwise, <see
+    /// langword="false"/>.</param>
+    /// <returns><see langword="true"/> if one or more notifications were removed; otherwise, <see langword="false"/>.</returns>
+    private bool RemoveNotifcations(Func<NotificationDetails, bool> selector)
+    {
+        bool stateHasChanged = false;
+        foreach (List<NotificationDetails> notificationLocations in Messages.Values)
+        {
+            var list = notificationLocations.Where(selector).ToList();
+            stateHasChanged = stateHasChanged || list.Count > 0;
+
+            foreach (var notification in list)
+            {
+                notificationLocations.Remove(notification);
+                _notificationManager.NotifyNotificationRemoval(notification.Options);
+                notification.Dispose();
+            }
+        }
+
+        if (stateHasChanged == true)
+            StateHasChanged();
+
+        return stateHasChanged;
+    }
+    /// <summary>
+    /// Removes notifications associated with the specified notification identifier and updates the component state if
+    /// any notifications were removed.
+    /// </summary>
+    private void NotificationManager_OnClearById(Guid id) => RemoveNotifcations(n => n.Options.NotificationId == id);
 
     /// <summary>
     /// Listens to <see cref="NotificationManager.OnClearBySeverity"/>. Clears notifications by severity.
     /// </summary>
     /// <param name="severity">The severity of the notifications to clear.</param>
-    private void NotificationManager_OnClearBySeverity(RfNotificationSeverity severity)
-    {
-        bool stateHasChanged = false;
-        foreach (var notifications in Messages.Values)
-        {
-            stateHasChanged |= notifications.RemoveAll(n => n.Options.Severity == severity) > 0;
-        }
+    private void NotificationManager_OnClearBySeverity(RfNotificationSeverity severity) => RemoveNotifcations(n => n.Options.Severity == severity);
 
-        if (stateHasChanged == true)
-            StateHasChanged();
-    }
     /// <summary>
     /// Listens to <see cref="NotificationManager.OnClearByPosition"/>. Clears notifications by position.
     /// </summary>
     /// <param name="position">The position of the notifications to clear.</param>
-    private void NotificationManager_OnClearByPosition(RfNotificationPosition position)
-    {
-
-        bool stateHasChanged = false;
-        foreach (var notifications in Messages.Values)
-        {
-            stateHasChanged |= notifications.RemoveAll(n => n.Options.Position == position) > 0;
-        }
-
-        if (stateHasChanged == true)
-            StateHasChanged();
-    }
+    private void NotificationManager_OnClearByPosition(RfNotificationPosition position) => RemoveNotifcations(n => n.Options.Position == position);
 
     /// <summary>
     /// Listens to <see cref="NotificationManager.OnClearAll"/>. Clears all notifications.
     /// </summary>
-    private void NotificationManager_OnClearAll()
-    {
-        throw new NotImplementedException();
-    }
+    private void NotificationManager_OnClearAll() => RemoveNotifcations(n => true);
+
+    /// <summary>
+    /// Removes a notification.
+    /// </summary>
+    /// <param name="notification">The notification to remove.</param>
+    internal void OnRemoveNotification(NotificationDetails notification) => RemoveNotifcations(n => n.Id == notification.Id);
 
     /// <summary>
     /// Listens to <see cref="NotificationManager.OnShow"/>. Shows a notification.
@@ -141,7 +161,10 @@ public partial class RfNotificationManager : IDisposable
     /// <param name="configuration">The configuration action for the notification options.</param>
     private void NotificationManager_OnShow(RenderFragment content, NotificationOptions baseOptions, Action<NotificationOptions> configuration)
     {
-        baseOptions ??= new NotificationOptions();
+        baseOptions ??= new NotificationOptions()
+        {
+            NotificationId = Guid.NewGuid()
+        };
 
         NotificationOptions defaultOptions = null;
         switch (baseOptions.Severity)
@@ -176,7 +199,7 @@ public partial class RfNotificationManager : IDisposable
         var notification = new NotificationDetails()
         {
             DisplayFragment = content,
-            Id = Guid.NewGuid(),
+            Id = baseOptions.NotificationId,
             Options = baseOptions,
         };
 
@@ -214,27 +237,6 @@ public partial class RfNotificationManager : IDisposable
         return null;
     }
 
-    /// <summary>
-    /// Removes a notification.
-    /// </summary>
-    /// <param name="notification">The notification to remove.</param>
-    internal void OnRemoveNotification(NotificationDetails notification)
-    {
-        if (notification == null) return;
-
-        notification.Timer?.Dispose();
-        notification.Timer = null;
-
-        foreach (var location in Messages.Keys)
-        {
-            var notifications = Messages[location];
-            if (notifications.RemoveAll(n => n.Id == notification.Id) > 0)
-            {
-                StateHasChanged();
-                return;
-            }
-        }
-    }
 
     /// <summary>
     /// Disposes the notification manager.
@@ -247,6 +249,7 @@ public partial class RfNotificationManager : IDisposable
             _notificationManager.OnClearAll -= NotificationManager_OnClearAll;
             _notificationManager.OnClearByPosition -= NotificationManager_OnClearByPosition;
             _notificationManager.OnClearBySeverity -= NotificationManager_OnClearBySeverity;
+            _notificationManager.OnClearById -= NotificationManager_OnClearById;
         }
 
         foreach (var position in Messages.Values)
@@ -263,7 +266,7 @@ public partial class RfNotificationManager : IDisposable
     /// <summary>
     /// Represents the details of a notification.
     /// </summary>
-    public class NotificationDetails
+    public class NotificationDetails : IDisposable
     {
         /// <summary>
         /// Gets or sets the options for the notification.
@@ -285,5 +288,13 @@ public partial class RfNotificationManager : IDisposable
         /// </summary>
         internal CountdownTimer Timer { get; set; }
 
+        /// <summary>
+        /// Disposes of the timer if any
+        /// </summary>
+        public void Dispose()
+        {
+            Timer?.Dispose();
+            Timer = null;
+        }
     }
 }
