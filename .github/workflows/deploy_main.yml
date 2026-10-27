@@ -70,10 +70,6 @@ jobs:
       - name: Publish Packages (Github)
         run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github --skip-duplicate
         
-      # Publish the packages to nuget under RForge
-      - name: Publish Packages (Nuget)
-        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate
-
       # Create the release as draft so I can add more details if needed.
       - name: Github Release
         run: gh release create v${{ steps.gitversion.outputs.MajorMinorPatch }} --generate-notes --draft
