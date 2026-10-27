@@ -18,6 +18,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="3.6.4" />
     <PackageReference Include="MSTest.TestFramework" Version="3.6.4" />
     <PackageReference Include="Verify.MSTest" Version="28.4.0" />
+    <PackageReference Include="bunit" Version="1.40.0" />
     <ProjectReference Include="..\RForgeBlazor\RForgeBlazor.csproj" />
 
   </ItemGroup>
