@@ -350,6 +350,24 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
             CssHelper.AddIfTrue(ref css, Position == RfDropDownPosition.LeftUp
                 || Position == RfDropDownPosition.RightUp, "is-up");
 
+            CssHelper.AddIfTrue(ref css, string.IsNullOrWhiteSpace(CssClass) == false, CssClass);
+
+            return css;
+        }
+    }
+
+    /// <summary>
+    /// Gets the CSS classes for the filter input, combining the Bulma <c>input</c> class
+    /// with the user-supplied <see cref="CssFilterClass"/> when one is set.
+    /// </summary>
+    protected string FilterInputCss
+    {
+        get
+        {
+            string css = "input";
+
+            CssHelper.AddIfTrue(ref css, string.IsNullOrWhiteSpace(CssFilterClass) == false, CssFilterClass);
+
             return css;
         }
     }
