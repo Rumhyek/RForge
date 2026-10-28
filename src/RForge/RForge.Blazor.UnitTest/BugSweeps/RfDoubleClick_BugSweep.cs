@@ -28,6 +28,12 @@ public class RfDoubleClick_BugSweep
     // callback fires after the component is removed (await-after-dispose). race, med.
     // Semi-deterministic by nature (timing window); honest per spec §6.
     // Un-ignored as the RED step of #76 (TDD contract in docs/bug-sweeps.md).
+    // Repair per docs/bug-sweeps.md ("a failure for any other reason means the repro drifted"):
+    // the cut.Dispose() variant never reached the component's IDisposable in-suite (instrumented:
+    // OnSingleClick invoked ~270 ms BEFORE any component Dispose call, fixed and unfixed alike), so
+    // it failed for a dispose-propagation artifact, not the spec'd bug. ctx.DisposeComponents() is
+    // the repro the #76 body specifies ("click, DisposeComponents within window, wait") and it
+    // disposes synchronously: unfixed goes fired 0 -> 1 (real post-dispose callback), fixed stays 0.
     [TestMethod]
     public void SingleClick_FiresOnlyWhileAlive()
     {
@@ -40,19 +46,12 @@ public class RfDoubleClick_BugSweep
             ComponentParameter.CreateParameter("OnSingleClick",
                 EventCallback.Factory.Create<MouseEventArgs>(this, (Action)(() => Interlocked.Increment(ref fired)))));
 
-        cut.Find("div").Click(); // schedules the delayed single-click continuation
-        cut.Dispose();           // component gone — the pending callback must be dropped
+        cut.Find("div").Click();  // schedules the delayed single-click continuation
+        ctx.DisposeComponents();  // renderer-level dispose inside the 50 ms window (spec repro, synchronous)
 
-        try
-        {
-            // Pump the test dispatcher past the 50 ms window: today the continuation runs and
-            // invokes the parent callback on a disposed component.
-            cut.WaitForState(() => Volatile.Read(ref fired) > 0, TimeSpan.FromMilliseconds(300));
-        }
-        catch (Exception)
-        {
-            // WaitForState failure (wait never satisfied) == callback never fired post-dispose.
-        }
+        // Wait past the 50 ms window without any dispatcher pumping: unfixed code runs the
+        // continuation on the timer thread and invokes the parent callback on the disposed component.
+        Thread.Sleep(250);
 
         Assert.IsTrue(Volatile.Read(ref fired) == 0,
             "OnSingleClick fired after the component was disposed (no lifetime guard on the Task.Delay continuation).");
