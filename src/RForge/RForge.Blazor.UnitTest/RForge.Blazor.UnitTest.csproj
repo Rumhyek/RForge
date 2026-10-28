@@ -21,6 +21,9 @@
     <PackageReference Include="Verify.MSTest" Version="28.4.0" />
     <PackageReference Include="bunit" Version="1.40.0" />
     <ProjectReference Include="..\RForgeBlazor\RForgeBlazor.csproj" />
+    <!-- #99: Docs_BugSweep repros exercise the docs app (page + processor) directly. -->
+    <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocsLibrary\RForgeDocsLibrary.csproj" />
+    <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocs\RForgeDocs.Client\RForgeDocs.Client.csproj" />
 
   </ItemGroup>
 
