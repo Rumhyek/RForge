@@ -16,3 +16,9 @@
 - CI: merges to `main` no longer push packages to nuget.org. Each merge still builds and
   publishes packages to the GitHub package feed and creates a draft release; packages reach
   nuget.org only when a maintainer publishes a release (#116).
+- Fixed `DialogManager` / `RfDialogManager`: disposing a replaced `RfDialogManager` no longer
+  unregisters the live one. `Unregister` had no registrant-identity check, so when one dialog
+  host component replaced another, the old host's `Dispose` cleared the new registration and
+  every later Alert/Confirm/Prompt queued forever and no dialog ever rendered again. The
+  component now unregisters with an identity check; the existing no-arg `Unregister()` on
+  `IDialogManager` is unchanged for existing callers (#86).
