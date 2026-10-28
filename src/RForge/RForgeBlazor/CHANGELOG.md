@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed `RfDropDown` / `RfDropDownMulti`: rendering no longer throws a `NullReferenceException` when an item or selection must render with no template set. The invoked `@ChildContent` fallbacks (trigger display, show-at-top row, and item loop, in both components) are now null-guarded: with `ChildContent`, `RowItemTemplate`, and `SelectedItemTemplate` all unset, the slots render empty instead of crashing the render (#73).
 - Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
   `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears
