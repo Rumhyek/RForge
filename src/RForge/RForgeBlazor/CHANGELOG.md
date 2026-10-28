@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fixed `RfTab`: a consumer `OnLoad` that throws no longer latches the tab forever.
+  `TabListOnLoad` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
+  (`is-loading`) stuck on the tab and the load guard rejected every later activation of that
+  tab; the latch now clears and a failed tab load can be retried by re-activating the tab.
+  Successful-load behavior is unchanged (#89).
 - Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
   `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears
