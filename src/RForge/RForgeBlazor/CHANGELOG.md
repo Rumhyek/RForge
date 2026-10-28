@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
+  `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
+  (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears
+  and the dropdown can be reopened after a failed load. Successful-open behavior is unchanged (#70).
 - Fixed `RfTreeView`: changing `AllowClick` after the first render now takes effect. The flag
   was only copied to the cascaded context at initialization, so revoking node clicks later was
   silently ignored and nodes stayed clickable (#98).
