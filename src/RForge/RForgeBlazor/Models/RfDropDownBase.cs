@@ -308,9 +308,18 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 
         IsLoading = true;
         StateHasChanged();
-        await OnLoad.InvokeAsync(Filter);
-        IsLoading = false;
-        StateHasChanged();
+        try
+        {
+            await OnLoad.InvokeAsync(Filter);
+        }
+        finally
+        {
+            // #70: a consumer OnLoad that throws must not latch IsLoading forever —
+            // the entry guard above would make this dropdown permanently unopenable.
+            // Success path is unchanged (same order: clear, re-render, then open).
+            IsLoading = false;
+            StateHasChanged();
+        }
 
         _filterChanges.Clear();
         _filterHandler = null;
