@@ -1,0 +1,184 @@
+﻿@page "/release-train"
+
+<PageTitle>Release Train</PageTitle>
+
+<HeroSection Title="Release Train"
+             SubTitle="How merged code becomes a release: drafts, notes, and publishing" />
+
+<div class="container">
+    <div class="breadcrumb mt-2" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="/">RForge</a></li>
+            <li class="is-active"><a href="/release-train" aria-current="page">Release Train</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container is-fluid">
+    <div class="columns">
+
+        <div class="column is-3-desktop is-4-tablet side-nav">
+            <section class="section">
+
+                <div class="menu">
+                    <p class="menu-label">On this page</p>
+                    <ul class="menu-list">
+                        <li><a href="/release-train#the-train">The Train</a></li>
+                        <li><a href="/release-train#one-draft-per-version">One Draft Per Version</a></li>
+                        <li><a href="/release-train#draft-notes">Draft Notes and the Auto Region</a></li>
+                        <li><a href="/release-train#publishing">Publishing</a></li>
+                        <li><a href="/release-train#draft-list">Reading the Draft List</a></li>
+                    </ul>
+                </div>
+
+                <div class="menu mt-5">
+                    <p class="menu-label">Repository Files</p>
+                    <ul class="menu-list">
+                        <li><a class="side-link is-family-monospace" href="https://github.com/Rumhyek/RForge/blob/main/.github/workflows/deploy_main.yml">deploy_main.yml</a></li>
+                        <li><a class="side-link is-family-monospace" href="https://github.com/Rumhyek/RForge/blob/main/.github/scripts/draft-release.sh">draft-release.sh</a></li>
+                        <li><a class="side-link is-family-monospace" href="https://github.com/Rumhyek/RForge/blob/main/.github/scripts/tests/test-draft-release.sh">test-draft-release.sh</a></li>
+                        <li class="spacer-link">&nbsp;</li>
+                        <li><a class="side-link is-family-monospace" href="https://github.com/Rumhyek/RForge/blob/main/.github/workflows/deploy_release.yml">deploy_release.yml</a></li>
+                        <li><a class="side-link is-family-monospace" href="https://github.com/Rumhyek/RForge/blob/main/.github/workflows/deploy_rforge_docs.yml">deploy_rforge_docs.yml</a></li>
+                    </ul>
+                </div>
+
+            </section>
+        </div>
+
+        <div class="column">
+            <div class="content-container">
+
+                <section class="section" id="the-train">
+                    <h2 class="title">The Train</h2>
+                    <div class="content">
+                        <p>
+                            Merging into <code>main</code> never publishes to nuget.org.
+                            Every merge that touches <code>src/**</code> runs the <code>deploy_main</code> workflow, which builds,
+                            packs, and pushes the packages to the private GitHub package feed (dogfoodable at any time),
+                            and then maintains the <strong>draft release</strong> for the version tag GitVersion computed
+                            for the current head of <code>main</code>.
+                        </p>
+                        <p>
+                            The only ship event is the maintainer <strong>publishing that draft release</strong>: one click
+                            per finished milestone. Publishing triggers <code>deploy_release</code> (the nuget.org push)
+                            and <code>deploy_rforge_docs</code> (this site going live).
+                            Nothing in the pipeline publishes on its own.
+                        </p>
+                        <div class="notification">
+                            <strong>Consumers:</strong> GitHub feed packages are current with every merge.
+                            nuget.org and this docs site always reflect the last <em>published</em> release.
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section" id="one-draft-per-version">
+                    <h2 class="title">One Draft Per Version</h2>
+                    <div class="content">
+                        <p>
+                            Each merge refreshes the draft release for the pending version so its notes cover everything
+                            merged so far. Before issue <a href="https://github.com/Rumhyek/RForge/issues/119">#119</a>,
+                            the workflow called <code>gh release create</code> on every merge, so successive merges stacked
+                            duplicate drafts under the same version tag, each with a different (and stale) changelog.
+                            That is fixed: <code>deploy_main</code> now keeps <strong>exactly one draft per version tag</strong>,
+                            maintained by <a href="https://github.com/Rumhyek/RForge/blob/main/.github/scripts/draft-release.sh"><code>draft-release.sh</code></a>
+                            (PR <a href="https://github.com/Rumhyek/RForge/pull/124">#124</a>).
+                        </p>
+                        <p>Each run handles four cases:</p>
+                        <table class="table is-striped is-fullwidth">
+                            <thead>
+                                <tr>
+                                    <th>State for the version tag</th>
+                                    <th>What the run does</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>No release exists</td>
+                                    <td>Creates a draft release with auto-generated notes, wrapped in the auto markers.</td>
+                                </tr>
+                                <tr>
+                                    <td>A draft already exists</td>
+                                    <td>Refreshes it in place: notes are regenerated for the new head of <code>main</code> and only the auto region is rewritten. Everything outside the markers is kept verbatim.</td>
+                                </tr>
+                                <tr>
+                                    <td>Several drafts stacked (legacy duplicates from before the fix)</td>
+                                    <td>Keeps the newest draft, absorbs the older drafts' hand-written text under a <code>## Preserved from duplicate draft</code> heading so nothing is lost, and deletes the extras.</td>
+                                </tr>
+                                <tr>
+                                    <td>A published release exists for the tag</td>
+                                    <td>Leaves it untouched. Any stray draft for that version is swept. A published release is never edited or unpublished by the pipeline.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p>
+                            The maintenance logic is plain shell on top of <code>gh</code> (no third-party actions), and it is
+                            pinned by a runnable acceptance harness in the repo:
+                            <code>bash .github/scripts/tests/test-draft-release.sh</code> (14 scenarios, including the
+                            original live incident).
+                        </p>
+                    </div>
+                </section>
+
+                <section class="section" id="draft-notes">
+                    <h2 class="title">Draft Notes and the Auto Region</h2>
+                    <div class="content">
+                        <p>
+                            The draft body is split by two HTML comments into a bot-owned region and a human-owned region:
+                        </p>
+                        <pre><code>&lt;!-- auto-release-notes:start --&gt;
+(auto-generated changelog: merged PRs since the previous release,
+ plus the Full Changelog compare link; regenerated on every merge)
+&lt;!-- auto-release-notes:end --&gt;
+
+(your scratch text lives outside the markers and is never deleted)</code></pre>
+                        <p>
+                            Inside the markers is the bot's: it is overwritten on every subsequent merge, so do not edit it
+                            by hand. Outside the markers is the maintainer's scratch space: the refresh never deletes text,
+                            so release notes you type around the auto region survive every refresh.
+                            Drafts created before the markers existed are preserved wholesale as human text.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="section" id="publishing">
+                    <h2 class="title">Publishing</h2>
+                    <div class="content">
+                        <p>
+                            When a milestone is done, open the single draft release for the version. Its notes now list
+                            everything merged so far, plus any scratch text, so there is nothing to reconcile between
+                            duplicates. Publishing it ships everything at once: the GitHub Release for the tag, the
+                            nuget.org push, and the docs site update.
+                        </p>
+                        <div class="notification is-warning">
+                            <strong>Maintainers:</strong> publishing is a deliberate, one-click act per milestone.
+                            Do not create releases by hand for unreleased version tags; the next merge will collide with them.
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section" id="draft-list">
+                    <h2 class="title">Reading the Draft List</h2>
+                    <div class="content">
+                        <p>
+                            Two GitHub quirks to know when you run <code>gh release list</code> or browse releases:
+                        </p>
+                        <ul>
+                            <li>
+                                A draft whose tag has not been published yet is not resolvable by tag, and GitHub rewrites
+                                its tag name to an <code>untagged-</code> placeholder shortly after creation.
+                                The version number survives in the draft's <em>name</em>, so look drafts up by name, not by tag.
+                            </li>
+                            <li>
+                                If you ever see multiple drafts for one version (leftovers from before the fix), no manual
+                                cleanup is needed: the next <code>deploy_main</code> run collapses them to one, preserving
+                                all hand-written text.
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+</div>
