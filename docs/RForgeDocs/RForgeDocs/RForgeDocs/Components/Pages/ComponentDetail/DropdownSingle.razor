@@ -71,6 +71,41 @@
                 If <code>SelectedItemTemplate</code> isn't set the drop down will use <code>ChildContent</code>.
             </p>
 
+            <h3>Styling</h3>
+            <p>
+                The drop down passes four class parameters through to the elements it renders, so you can style it without fighting the component:
+            </p>
+            <ul>
+                <li>
+                    <code>CssClass</code> is added to the root <code>div.dropdown</code> element, alongside the state classes the
+                    component manages itself (<code>is-active</code> while open, <code>is-right</code> and <code>is-up</code> from <code>Position</code>).
+                </li>
+                <li>
+                    <code>CssFilterClass</code> is added to the filter textbox alongside the Bulma <code>input</code> class.
+                    It has no effect while <code>ShowFilter</code> hides the filter.
+                </li>
+                <li>
+                    <code>CssRowItemClass</code> is added to every option row inside the drop down panel.
+                </li>
+                <li>
+                    <code>CssSelectedClass</code> is added to the span wrapping the selected item in the trigger.
+                </li>
+            </ul>
+            <p>
+                Unset parameters add nothing: the rendered markup is identical to a drop down that never had them.
+            </p>
+
+            <h5>Example:</h5>
+            <pre><code>&lt;RfDropDown TItem="string"
+                Items="@@Items"
+                @@bind-SelectedItem="@@Selected"
+                CssClass="wide-dropdown"
+                CssFilterClass="is-rounded" /&gt;</code></pre>
+            <p>
+                With the panel open this renders the root as <code>class="dropdown is-active wide-dropdown"</code>
+                and the filter textbox as <code>class="input is-rounded"</code>.
+            </p>
+
         </div>
     </BasicUsage>
 
