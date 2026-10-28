@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Docs app: the DataGrid double-click example no longer crashes for users with a null `Bio`
+  (mock user Id 90). The detail modal's truncation branch is now null-guarded instead of
+  dereferencing `ShownUser.Bio.Length` (a null Bio renders as an empty paragraph), and the
+  paged user API's `Bio` filter skips null rows rather than 500s. Library surface and
+  rendered output are unchanged; only the docs app's crash paths were fixed (#99).
+
 - Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
   `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears
