@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed `RfNotificationManager`: `INotificationManager.ClearAll()` no longer throws. The component's
+  `OnClearAll` handler was an unimplemented `throw new NotImplementedException()`, so every `ClearAll()`
+  call crashed into the caller and aborted the event multicast to later subscribers. It now disposes any
+  countdown timers, clears every notification from all positions, and re-renders (#78).
 - Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
   `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears
