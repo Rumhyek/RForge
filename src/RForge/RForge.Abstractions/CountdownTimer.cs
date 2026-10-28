@@ -44,7 +44,6 @@ public class CountdownTimer : IDisposable
     /// <param name="elapsedDelegate">The function to fire when the timer completes.</param>
     public CountdownTimer OnElapsed(Action elapsedDelegate)
     {
-        Status = TimerStatus.Completed;
         _elapsedDelegate = elapsedDelegate;
         return this;
     }
@@ -74,6 +73,7 @@ public class CountdownTimer : IDisposable
 
             if (_percentComplete >= _ticksToTimeout)
             {
+                Status = TimerStatus.Completed;
                 _elapsedDelegate?.Invoke();
                 break;
             }
