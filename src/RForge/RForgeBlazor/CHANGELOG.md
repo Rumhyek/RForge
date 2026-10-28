@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fixed `RfTreeNode`: a tree node rendered without the optional `Node` template no longer
+  throws a `NullReferenceException` during render. `@Node(NodeData)` was invoked unguarded in
+  both the has-children and the leaf branch; both sites now render only when `Node` is set,
+  matching how every other optional fragment in the library is guarded. Nodes without a
+  template now render their surrounding node markup with an empty label (#97).
 - Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
   `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears

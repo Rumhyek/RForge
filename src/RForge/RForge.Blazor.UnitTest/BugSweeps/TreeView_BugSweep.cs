@@ -31,7 +31,6 @@ public class TreeView_BugSweep
     // has-children and the leaf branch, although Node is an optional RenderFragment<TTreeItemData>
     // (every other optional fragment in the tree components is guarded). crash, low.
     [TestMethod]
-    [Ignore("pending #97 — #68 bug-sweep repro, red-by-construction")]
     public void NoNodeTemplate_DoesNotThrow()
     {
         RenderFragment nodes = b =>

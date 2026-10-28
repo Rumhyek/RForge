@@ -30,7 +30,12 @@
 
                     <a class="node-label"
                        href="@LinkUrl"
-                       @onclick=OnNodeClickCallback>@Node(NodeData)</a>
+                       @onclick=OnNodeClickCallback>
+                        @if (Node != null)
+                        {
+                            @Node(NodeData)
+                        }
+                    </a>
                 </div>
 
                 <ul class="@Rf.ClassWhen(("is-open", IsExpanded))"
@@ -63,7 +68,12 @@
                         }
                     </span>
 
-                    <span class="node-label">@Node(NodeData)</span>
+                    <span class="node-label">
+                        @if (Node != null)
+                        {
+                            @Node(NodeData)
+                        }
+                    </span>
                 </a>
             }
 
