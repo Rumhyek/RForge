@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Hermetic acceptance tests for draft-release.sh (spec #119 §8).
-# Runs the real script against the fake gh in tests/bin — no network, no
+# Runs the real script against the fake gh in tests/fakebin — no network, no
+# (dir deliberately NOT named bin/: the repo-wide .gitignore [Bb]in/ pattern
+# silently swallowed the shim in that location, see #119 review history)
 # real releases. Assertions derive from the SPEC's acceptance criteria and
 # its §2 invariant ("exactly one draft per unreleased tag"), never from the
 # script's internals.
@@ -24,7 +26,7 @@ new_state() { # $1 = fixture json array; sets FAKE_STATE for one scenario
 }
 
 run_script() {
-  PATH="$DIR/bin:$PATH" REPO="fake/r" HEAD_SHA="deadbeefdeadbeef" GH_TOKEN="x" \
+  PATH="$DIR/fakebin:$PATH" REPO="fake/r" HEAD_SHA="deadbeefdeadbeef" GH_TOKEN="x" \
     bash "$SCRIPT" "$TAG" > "$FAKE_STATE/out.log" 2>&1
   RC=$?
 }
