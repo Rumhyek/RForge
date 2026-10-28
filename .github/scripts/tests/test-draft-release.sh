@@ -23,6 +23,7 @@ new_state() { # $1 = fixture json array; sets FAKE_STATE for one scenario
   : > "$FAKE_STATE/calls.log"
   export FAKE_STATE
   unset FAKE_FAIL_FIRST_LIST
+  unset FAKE_FAIL_GET_IDS
 }
 
 run_script() {
@@ -124,6 +125,17 @@ new_state '[
 run_script
 check B2a $([ $RC -eq 0 ] && [ "$(draft_ids_for_tag)" = "0" ] && [ "$(body_of 30)" = "PUBLISHED FINAL NOTES" ] && [ "$(count_created)" = "0" ]; echo $?) \
   "published body byte-identical, stray draft deleted, no create (publish stays the PO's click)"
+rm -rf "$FAKE_STATE"
+
+echo "== boundary nit (delta re-review Finding 2): stray-body GET fails -> loud ::warning, delete still proceeds =="
+new_state '[
+ {"id":30,"tag_name":"v0.15.0","name":"v0.15.0","draft":false,"body":"PUBLISHED FINAL NOTES","created_at":"2026-01-01T00:00:00Z","html_url":"u30"},
+ {"id":31,"tag_name":"untagged-c","name":"v0.15.0","draft":true,"body":"PO SCRATCH IN STRAY","created_at":"2026-10-27T00:00:00Z","html_url":"u31"}
+]'
+export FAKE_FAIL_GET_IDS=31   # the Path-C stray-body fetch answers HTTP 502
+run_script
+[ $RC -eq 0 ] && grep -q '::warning' "$FAKE_STATE/out.log" && [ "$(count_delete)" = "1" ] && [ "$(draft_ids_for_tag)" = "0" ] && [ "$(body_of 30)" = "PUBLISHED FINAL NOTES" ]
+check B2w $? "failed stray fetch warns loudly (never silent text loss); published untouched; sweep still proceeds"
 rm -rf "$FAKE_STATE"
 
 echo "== AC-2 bad-path: transient gh api failure during lookup must NOT hide the existing draft and create a duplicate =="

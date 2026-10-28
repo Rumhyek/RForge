@@ -95,9 +95,15 @@ if [ -n "$PUBLISHED_ID" ]; then
     # Reviewer note 2 (never-delete symmetry): the published release must stay
     # byte-identical (harness B2a), so a stray's PO scratch text has no survivor
     # to absorb into — preserve it verbatim in the job log before deleting.
-    if gh api "repos/$REPO/releases/$extra" --jq .body > "$TMP/stray.txt" 2>/dev/null; then
+    if gh api "repos/$REPO/releases/$extra" --jq .body > "$TMP/stray.txt" 2> "$TMP/stray.err"; then
       po_text "$TMP/stray.txt"
       [ -s "$TMP/po.txt" ] && { echo "PO text preserved from stray draft $extra (published $NEW_TAG untouched):"; cat "$TMP/po.txt"; }
+    else
+      # Delta re-review Finding 2: a transient fetch failure must not lose the
+      # PO's scratch text in silence. Loud warning, delete still proceeds -
+      # blocking the whole deploy over one stray draft is not justified;
+      # silence is not either (harness case B2w).
+      echo "::warning title=Draft release::Failed to read stray draft $extra's body before deleting it - any PO scratch text in it may be lost. gh api said: $(tr '\n' ' ' < "$TMP/stray.err")"
     fi
     echo "deleting stray draft $extra for published $NEW_TAG"
     gh api -X DELETE "repos/$REPO/releases/$extra" > /dev/null

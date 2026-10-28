@@ -3,6 +3,7 @@
 # endpoints draft-release.sh calls, against $FAKE_STATE/state.json.
 # Call log: $FAKE_STATE/calls.log ("gh <args...>" per invocation).
 # Env: FAKE_FAIL_FIRST_LIST=N -> fail the first N release-LIST calls (502).
+#      FAKE_FAIL_GET_IDS="31 42" -> fail GETs of those release ids (502).
 set -u
 S="${FAKE_STATE:?}"
 echo "gh $*" >> "$S/calls.log"
@@ -39,6 +40,9 @@ case "$sub" in
         id="${url##*/}"
         case "$method" in
           GET)
+            if [ -n "${FAKE_FAIL_GET_IDS:-}" ] && printf '%s' " $FAKE_FAIL_GET_IDS " | grep -q " $id "; then
+              echo "gh: HTTP 502: temporary upstream failure" >&2; exit 1
+            fi
             cur="$(jq --argjson id "$id" '[.[] | select(.id==$id)][0] | {"html_url": .html_url, "body": .body}' "$S/state.json")"
             applyjq "$jqf" "$cur";;
           PATCH)
