@@ -87,6 +87,12 @@
                 The three are <code>AllowSelection</code>, <code>AllowExpand</code>, <code>AllowClick</code>.
                 By default all three are on.
             </p>
+            <p>
+                All three are live settings, not first-render snapshots. <code>RfTreeView</code> hands the current
+                value to every descendant node each time its parameters change, so a value you flip after the tree
+                is on screen takes effect on the next click, in both directions. Binding one to app state (a save in
+                progress, a permission that got revoked and later restored) is the intended usage.
+            </p>
 
             <h4>Allow Selection</h4>
             <p>
@@ -115,9 +121,38 @@
                 This allows for custom actions to be performed when a node is clicked.
                 The event <code>RfTreeNode.NodeClick</code> will fire whenever a node is clicked.
             </p>
+            <p>
+                Setting it to false suppresses <code>NodeClick</code> and nothing else. The click is still a normal
+                node click: selection and expansion still run under <code>AllowSelection</code> and
+                <code>AllowExpand</code>, the expand toggle button still toggles, and the rendered node looks the same.
+            </p>
+            <p>
+                The flag is re-read every time the tree's parameters are set, so changing it after the first render
+                takes effect on both edges. This is the behavior fixed in #98: the value used to be copied into the
+                tree's cascaded context at initialization only, which meant a later <code>AllowClick=false</code>
+                was silently ignored and the nodes stayed clickable.
+            </p>
             <div class="notification">
                 <strong>NOTE:</strong> Any <code>RfTreeNode.LinkUrl</code> will still work.
             </div>
+
+            <h5>Example: node actions off while a save is running</h5>
+            <pre><code>&lt;RfTreeView TTreeItemData="Movie" AllowClick="@@(!SaveInProgress)"&gt;
+    &lt;Nodes&gt;
+        &lt;RfTreeNode TTreeItemData="Movie" NodeData="@@movie" NodeClick="@@OnNodeClick"&gt;
+            &lt;Node&gt;@@movie.Name&lt;/Node&gt;
+        &lt;/RfTreeNode&gt;
+    &lt;/Nodes&gt;
+&lt;/RfTreeView&gt;</code></pre>
+            <p>
+                While <code>SaveInProgress</code> is true the tree still selects, expands and follows links, but
+                <code>OnNodeClick</code> stops firing and resumes the moment the flag goes back to true. No rebuild of
+                the tree and no re-render trick is involved.
+            </p>
+            <p>
+                Live version: <a href="/treeview/example/basic-example">Tree View Basic Example</a> binds
+                <code>AllowClick</code> to a checkbox.
+            </p>
 
             <h2>Label / Heading</h2>
 
@@ -285,6 +320,37 @@
         </div>
 
         <div class="block">
+            <h5 class="subtitle mb-2">AllowSelection</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool?</span>
+                <span class="tag">default: null</span>
+            </div>
+            <p>Overrides <code>RfTreeView.AllowSelection</code> for this node only. Left null the node follows the tree, including later changes to it.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">AllowExpand</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool?</span>
+                <span class="tag">default: null</span>
+            </div>
+            <p>Overrides <code>RfTreeView.AllowExpand</code> for this node only. Left null the node follows the tree, including later changes to it.</p>
+        </div>
+
+        <div class="block">
+            <h5 class="subtitle mb-2">AllowClick</h5>
+            <div class="tags mb-2">
+                <span class="tag is-info">bool?</span>
+                <span class="tag">default: null</span>
+            </div>
+            <p>
+                Overrides <code>RfTreeView.AllowClick</code> for this node only. Left null the node follows the tree flag
+                and picks up its changes. Set it to a value and the node stops consulting the tree, so the tree level
+                re-sync no longer reaches this node: change the override by re-rendering the node with a new value.
+            </p>
+        </div>
+
+        <div class="block">
             <h5 class="subtitle mb-2">NodeClick</h5>
             <div class="tags mb-2">
                 <span class="tag is-info">EventCallback{TreeViewNodeOnClickEventArgs{TTreeItemData}}</span>
@@ -312,6 +378,56 @@
         </div>
 
         <div class="content">
+
+            <h3>Expansion, Lazy Loads and In Flight Toggles</h3>
+            <p>
+                <code>NodeExpandChange</code> is awaited by the node. It fires once the expansion state has been
+                applied (including the two way <code>IsExpandedChanged</code> push) and the node has re-rendered, so a
+                lazy child load started from the handler always runs against a node that is already expanded.
+            </p>
+            <p>
+                Because that handler is awaited, a slow load keeps the toggle open behind it: while your handler is
+                still running the node treats the change as in flight and ignores every further toggle, whether it
+                arrives on the toggle button or on the node itself (a node click expands too). An ignored toggle
+                raises no second <code>NodeExpandChange</code> and never collapses a node in the middle of its own
+                load, which is what a fast double click used to do: two misordered callbacks and children left
+                rendered under a collapsed node. The node simply keeps the state of the load that is running, and
+                <code>aria-expanded</code> on the toggle button reports exactly that state.
+            </p>
+            <p>
+                The in flight state belongs to the node, not the tree, and it is released as soon as your handler
+                returns, including when the handler throws. The next click after a finished or failed load toggles
+                normally, so a guard can never wedge a node.
+            </p>
+            <div class="notification">
+                <strong>NOTE:</strong> The dropped toggle is silent on purpose: the component keeps no queue and
+                replays nothing. Drive <code>RfTreeNode.IsLoading</code> from your handler so the toggle button shows
+                its spinner and the user can see why the second click did nothing.
+            </div>
+
+            <h4>Example: lazy loaded children</h4>
+            <pre><code>&lt;RfTreeNode TTreeItemData="Genre" NodeData="@@genre" IsLoading="@@IsLoadingGenre"
+            NodeExpandChange="@@LoadMovies"&gt;
+    &lt;Node&gt;@@genre.Name&lt;/Node&gt;
+    &lt;Children&gt;
+        ... built from MoviesByGenre once the load below has completed ...
+    &lt;/Children&gt;
+&lt;/RfTreeNode&gt;</code></pre>
+            <pre><code>private async Task LoadMovies(TreeViewNodeIsExpandEventArgs&lt;Genre&gt; args)
+{
+    if (args.IsExpanded == false || MoviesByGenre.ContainsKey(args.NodeData))
+    {
+        return;
+    }
+
+    IsLoadingGenre = true;
+    MoviesByGenre[args.NodeData] = await MovieService.GetByGenre(args.NodeData.Name);
+    IsLoadingGenre = false;
+}</code></pre>
+            <p>
+                Clicking the chevron twice while <code>GetByGenre</code> is still in the air produces exactly one
+                <code>NodeExpandChange</code>, one load, and a node that ends expanded with its children under it.
+            </p>
 
             <h3>Prerendering Entire Tree</h3>
             <p>
