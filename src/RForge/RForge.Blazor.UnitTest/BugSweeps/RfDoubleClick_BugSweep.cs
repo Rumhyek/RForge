@@ -27,8 +27,8 @@ public class RfDoubleClick_BugSweep
     // and invokes OnSingleClick with no lifetime tracking (no CTS/disposed-check) → the parent
     // callback fires after the component is removed (await-after-dispose). race, med.
     // Semi-deterministic by nature (timing window); honest per spec §6.
+    // Un-ignored as the RED step of #76 (TDD contract in docs/bug-sweeps.md).
     [TestMethod]
-    [Ignore("pending #76 — #68 bug-sweep repro, red-by-construction")]
     public void SingleClick_FiresOnlyWhileAlive()
     {
         int fired = 0;
@@ -56,6 +56,27 @@ public class RfDoubleClick_BugSweep
 
         Assert.IsTrue(Volatile.Read(ref fired) == 0,
             "OnSingleClick fired after the component was disposed (no lifetime guard on the Task.Delay continuation).");
+    }
+
+    // BUG #76 — RfDoubleClick.razor.cs:73: builder.OpenElement(0, Element) with Element explicitly
+    // null/empty throws ArgumentNullException every render. crash, low.
+    // Planned test from the issue body, written to this convention because the #68 supporting PR
+    // landed only the SingleClick repro (docs/bug-sweeps.md: write a new test when none exists).
+    // Documented behavior chosen by the #76 fix: null/empty Element falls back to the parameter's
+    // default element ("button") instead of throwing every render.
+    [TestMethod]
+    public void EmptyElement_HandledPredictably()
+    {
+        // Null first: this is the spec's ArgumentNullException path (OpenElement(null)).
+        var missing = ctx.RenderComponent<RfDoubleClick>(
+            ComponentParameter.CreateParameter("Element", null));
+        Assert.IsNotNull(missing.Find("button"),
+            "A null Element must fall back to the default \"button\" element instead of throwing.");
+
+        var empty = ctx.RenderComponent<RfDoubleClick>(
+            ComponentParameter.CreateParameter("Element", ""));
+        Assert.IsNotNull(empty.Find("button"),
+            "An empty Element must fall back to the default \"button\" element instead of rendering no queryable element.");
     }
 
 }
