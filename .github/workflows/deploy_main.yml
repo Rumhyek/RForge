@@ -70,8 +70,13 @@ jobs:
       - name: Publish Packages (Github)
         run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github --skip-duplicate
         
-      # Create the release as draft so I can add more details if needed.
-      - name: Github Release
-        run: gh release create v${{ steps.gitversion.outputs.MajorMinorPatch }} --generate-notes --draft
+      # Keep exactly ONE draft release per version tag (#119): create it on the
+      # first src merge for a version, refresh the existing draft on later merges.
+      # The draft stays the PO's scratch space — auto notes live in a marked
+      # region and everything outside it is preserved. See the script for details.
+      - name: Github Release (idempotent draft)
+        run: bash "$GITHUB_WORKSPACE/.github/scripts/draft-release.sh" "v${{ steps.gitversion.outputs.MajorMinorPatch }}"
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.sha }}
