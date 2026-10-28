@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Fixed `DataGridContext` / `RfTabListContext`: raising a multicast async event now awaits every
+  subscriber. Previously the raisers invoked the delegate directly, which returns only the LAST
+  subscriber's task, so earlier subscribers ran fire-and-forget: their exceptions were unobserved
+  and the raiser returned while their work was still in flight (e.g. `SortChanged` could return
+  while a data load was still running). All subscribers now run to completion; a single subscriber
+  fault is rethrown unchanged, multiple faults are combined into one `AggregateException` (#90).
 - Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
   `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears
