@@ -25,7 +25,7 @@
                                     {
                                         @SelectedItemTemplate(selectedItem)
                                     }
-                                    else
+                                    else if (ChildContent != null)
                                     {
                                         @ChildContent(selectedItem)
                                     }
@@ -100,7 +100,7 @@
                             {
                                 @RowItemTemplate(selectedItem)
                             }
-                            else
+                            else if (ChildContent != null)
                             {
                                 @ChildContent(selectedItem)
                             }
@@ -138,7 +138,7 @@
                         {
                             @RowItemTemplate(item)
                         }
-                        else
+                        else if (ChildContent != null)
                         {
                             @ChildContent(item)
                         }
