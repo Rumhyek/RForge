@@ -79,6 +79,7 @@ public partial class RfTreeView<TTreeItemData> : ComponentBase, IDisposable wher
         Context.AllowSelection = AllowSelection;
         Context.AllowExpand = AllowExpand;
         Context.ShowAsPrerender = ShowAsPrerender;
+        Context.AllowNodeClick = AllowClick; // #98: was seeded only at OnInitialized, so later changes were ignored
 
         base.OnParametersSet();
     }

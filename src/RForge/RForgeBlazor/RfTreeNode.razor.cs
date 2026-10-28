@@ -127,6 +127,7 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
     private string ChildrenId { get; set; }
     private bool ExpansionChangeOcurred = false;
     private bool selectionChangeOcurred = false;
+    private bool expansionInFlight = false;
     private readonly string defaultIconCss = "fa-solid fa-chevron-right";
 
     /// <summary>
@@ -229,17 +230,34 @@ public partial class RfTreeNode<TTreeItemData> : ComponentBase where TTreeItemDa
             return false;
         }
 
-        IsExpanded = isExpanding;
-        await IsExpandedChanged.InvokeAsync(IsExpanded); 
-
-        StateHasChanged();
-
-        await NodeExpandChange.InvokeAsync(new TreeViewNodeIsExpandEventArgs<TTreeItemData>()
+        // #98: re-entrancy guard. The NodeExpandChange below is awaited and may hang on the
+        // consumer's lazy child-load; a second toggle during that window collapsed the node
+        // mid-load and raised a duplicate, misordered expand callback. Ignore toggles that
+        // arrive while an expansion change is still in flight.
+        if (expansionInFlight == true)
         {
-            IsExpanded = IsExpanded,
-            NodeData = NodeData,
-            NodeReference = this
-        });
+            return false;
+        }
+
+        expansionInFlight = true;
+        try
+        {
+            IsExpanded = isExpanding;
+            await IsExpandedChanged.InvokeAsync(IsExpanded);
+
+            StateHasChanged();
+
+            await NodeExpandChange.InvokeAsync(new TreeViewNodeIsExpandEventArgs<TTreeItemData>()
+            {
+                IsExpanded = IsExpanded,
+                NodeData = NodeData,
+                NodeReference = this
+            });
+        }
+        finally
+        {
+            expansionInFlight = false;
+        }
 
         return true;
     }
