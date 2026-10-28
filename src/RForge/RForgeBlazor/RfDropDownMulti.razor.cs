@@ -62,6 +62,10 @@ public partial class RfDropDownMulti<TItem> : RfDropDownBase<TItem>
     {
         if (IsReadonly == true) return;
 
+        // #74: a consumer may bind only SelectedItemsChanged, leaving SelectedItems null.
+        // IsSelected tolerates null; the add/count paths below do not, so start a list here.
+        SelectedItems ??= new List<TItem>();
+
         bool isSelected = IsSelected(item);
 
         if (isSelected == true)
