@@ -64,10 +64,22 @@ po_text() { # $1 = file holding the current body, writes $TMP/po.txt
 # tag_name OR name (see quirk 2).
 # --------------------------------------------------------------------------
 find_matches() {
-  gh api --paginate "repos/$REPO/releases?per_page=100" \
+  # A FAILED lookup is never read as "absent" (reviewer note 1 / BP1 harness):
+  # masking here would send Path A to create a duplicate of an existing draft —
+  # the exact bug class this script kills. Failed lookup exits red (job noise
+  # beats a silent duplicate); only the post-create retry loop tolerates lag,
+  # and only for a *successful-but-empty* list.
+  local raw rc
+  raw="$(gh api --paginate "repos/$REPO/releases?per_page=100" \
      --jq "[.[] | select(.tag_name == \"$NEW_TAG\" or (.draft and .name == \"$NEW_TAG\"))]
-           | sort_by(.created_at) | .[] | \"\(.id) \(.draft)\"" 2>/dev/null \
-    | grep -E '^[0-9]+ (true|false)$' || true
+           | sort_by(.created_at) | .[] | \"\(.id) \(.draft)\"" 2>"$TMP/find_matches.err")" \
+    && rc=0 || rc=$?
+  if [ "$rc" -ne 0 ]; then
+    printf '::error title=Draft release::find_matches: gh api releases lookup failed (rc=%s) — refusing to treat "unknown" as "absent":\n' "$rc" >&2
+    cat "$TMP/find_matches.err" >&2 2>/dev/null || true
+    return 1
+  fi
+  printf '%s\n' "$raw" | grep -E '^[0-9]+ (true|false)$' || true
 }
 
 MATCHES="$(find_matches)"
@@ -80,6 +92,13 @@ while IFS=' ' read -r id _; do [ -n "${id:-}" ] && DRAFT_IDS+=("$id"); done \
 if [ -n "$PUBLISHED_ID" ]; then
   echo "::notice title=Draft release::$NEW_TAG is already published — leaving it untouched."
   for extra in ${DRAFT_IDS[@]+"${DRAFT_IDS[@]}"}; do
+    # Reviewer note 2 (never-delete symmetry): the published release must stay
+    # byte-identical (harness B2a), so a stray's PO scratch text has no survivor
+    # to absorb into — preserve it verbatim in the job log before deleting.
+    if gh api "repos/$REPO/releases/$extra" --jq .body > "$TMP/stray.txt" 2>/dev/null; then
+      po_text "$TMP/stray.txt"
+      [ -s "$TMP/po.txt" ] && { echo "PO text preserved from stray draft $extra (published $NEW_TAG untouched):"; cat "$TMP/po.txt"; }
+    fi
     echo "deleting stray draft $extra for published $NEW_TAG"
     gh api -X DELETE "repos/$REPO/releases/$extra" > /dev/null
   done
@@ -142,8 +161,9 @@ fi
 # Fresh notes mirroring `gh release create --generate-notes`: PR bullets since
 # PREV + Full Changelog footer. PR numbers come ONLY from `Merge pull request
 # #N` commit lines — titles like "feat(#116):" name ISSUES, not PRs (caught by
-# the dry-run). NOTE: the compare API caps .commits at 250; release windows
-# here are far smaller (spec §6 accepted the simplification).
+# the dry-run). NOTE: the compare API caps .commits at 250 — an implementation
+# acceptance of this script, not a spec clause; release windows here are far
+# smaller than the cap (corrects reviewer note 3's mis-attribution to §6).
 gh api "repos/$REPO/compare/$PREV...$HEAD_SHA" \
    --jq '[.commits[] | .commit.message | split("\n")[0]] | .[]' \
    | sed -nE 's/^Merge pull request #([0-9]+) .*/\1/p' | sort -un > "$TMP/prs.txt"
