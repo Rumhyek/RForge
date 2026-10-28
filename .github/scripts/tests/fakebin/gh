@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# Minimal fake `gh` for draft-release.sh tests (#119). Emulates ONLY the
+# endpoints draft-release.sh calls, against $FAKE_STATE/state.json.
+# Call log: $FAKE_STATE/calls.log ("gh <args...>" per invocation).
+# Env: FAKE_FAIL_FIRST_LIST=N -> fail the first N release-LIST calls (502).
+#      FAKE_FAIL_GET_IDS="31 42" -> fail GETs of those release ids (502).
+set -u
+S="${FAKE_STATE:?}"
+echo "gh $*" >> "$S/calls.log"
+sub="$1"; shift || true
+
+runjq() { # $1=filter, stdin=json -> gh --jq semantics (raw)
+  jq -r "$1"
+}
+
+applyjq() { # $1=filter $2=json-string; empty filter -> passthrough
+  if [ -n "$1" ]; then printf '%s' "$2" | runjq "$1"; else printf '%s\n' "$2"; fi
+}
+
+case "$sub" in
+  api)
+    method=GET; jqf=""; input=""; url=""
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        -X) method="$2"; shift 2;;
+        --paginate) shift;;
+        --input) input="$2"; shift 2;;
+        --jq) jqf="$2"; shift 2;;
+        *) [ -z "$url" ] && url="$1"; shift;;
+      esac
+    done
+    case "$url" in
+      */releases\?per_page*)
+        n=$(( $(cat "$S/listcalls" 2>/dev/null || echo 0) + 1 )); echo "$n" > "$S/listcalls"
+        if [ -n "${FAKE_FAIL_FIRST_LIST:-}" ] && [ "$n" -le "${FAKE_FAIL_FIRST_LIST}" ]; then
+          echo "gh: HTTP 502: temporary upstream failure" >&2; exit 1
+        fi
+        applyjq "$jqf" "$(cat "$S/state.json")";;
+      */releases/[0-9]*)
+        id="${url##*/}"
+        case "$method" in
+          GET)
+            if [ -n "${FAKE_FAIL_GET_IDS:-}" ] && printf '%s' " $FAKE_FAIL_GET_IDS " | grep -q " $id "; then
+              echo "gh: HTTP 502: temporary upstream failure" >&2; exit 1
+            fi
+            cur="$(jq --argjson id "$id" '[.[] | select(.id==$id)][0] | {"html_url": .html_url, "body": .body}' "$S/state.json")"
+            applyjq "$jqf" "$cur";;
+          PATCH)
+            tmp="$(mktemp)"; body="$(jq -r .body "$input")"
+            jq --argjson id "$id" --arg body "$body" \
+               '[.[] | if .id==$id then .body=$body else . end]' "$S/state.json" > "$tmp" && mv "$tmp" "$S/state.json"
+            applyjq "$jqf" "$(jq -nc --arg id "$id" '{"html_url": ("https://github.com/fake/r/releases/" + $id)}')";;
+          DELETE)
+            tmp="$(mktemp)"; jq --argjson id "$id" '[.[] | select(.id!=$id)]' "$S/state.json" > "$tmp" && mv "$tmp" "$S/state.json"
+            ;;
+        esac;;
+      */compare/*)
+        applyjq "$jqf" '{"commits":[
+          {"commit":{"message":"feat: frobnicator v2\n\nbody"}},
+          {"commit":{"message":"Merge pull request #201 from Rumhyek/feat/201\n\nFix the frobnicator (#201)"}},
+          {"commit":{"message":"Merge pull request #202 from Rumhyek/feat/202\n\nPolish widgets"}},
+          {"commit":{"message":"fix: typo"}}
+        ]}';;
+      */pulls/*)
+        n="${url##*/}"
+        applyjq "$jqf" "$(jq -nc --arg n "$n" '{"title": ("PR " + $n + " title"), "html_url": ("https://github.com/fake/r/pull/" + $n), "user": {"login": "contributor"}}')"
+        ;;
+      *) echo "fake-gh: UNHANDLED api url: $url" >&2; exit 9;;
+    esac;;
+  release)
+    sub2="$1"; shift || true
+    case "$sub2" in
+      create)
+        tag=""
+        while [ $# -gt 0 ]; do case "$1" in
+          --*) shift;;
+          *) [ -z "$tag" ] && tag="$1"; shift;;
+        esac; done
+        tmp="$(mktemp)"
+        jq --arg tag "$tag" '. + [{"id": 100, "tag_name": $tag, "name": $tag, "draft": true,
+             "body": ("## What'"'"'s Changed (generated for " + $tag + ")"),
+             "created_at": "2026-12-31T00:00:00Z",
+             "html_url": ("https://github.com/fake/r/releases/tag/" + $tag)}]' \
+           "$S/state.json" > "$tmp" && mv "$tmp" "$S/state.json";;
+      edit)
+        echo "fake-gh: release edit called (script must use api PATCH)" >&2; exit 8;;
+      list)
+        jqf=""
+        while [ $# -gt 0 ]; do case "$1" in
+          --jq) jqf="$2"; shift 2;;
+          --*) shift 2;;
+          *) shift;;
+        esac; done
+        mapped="$(jq -c '[.[] | {"tagName": .tag_name, "isDraft": .draft, "createdAt": .created_at}]' "$S/state.json")"
+        applyjq "$jqf" "$mapped";;
+      view)
+        echo "fake-gh: release view called (must not be used)" >&2; exit 8;;
+      *) echo "fake-gh: UNHANDLED release sub: $sub2" >&2; exit 9;;
+    esac;;
+  *) echo "fake-gh: UNHANDLED sub: $sub" >&2; exit 9;;
+esac
