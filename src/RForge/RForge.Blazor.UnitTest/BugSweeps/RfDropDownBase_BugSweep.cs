@@ -28,7 +28,6 @@ public class RfDropDownBase_BugSweep
     // try/finally; the entry guard (if (IsLoading) return) makes a thrown OnLoad permanently
     // unopenable. Verdict table row: Models/RfDropDownBase.cs:307-313, stuck, high.
     [TestMethod]
-    [Ignore("pending #70 — #68 bug-sweep repro, red-by-construction")]
     public void OpenDropDown_ThrowingOnLoad_DoesNotLatchForever()
     {
         var cut = ctx.RenderComponent<RfDropDown<string>>(
@@ -37,11 +36,24 @@ public class RfDropDownBase_BugSweep
 
         var trigger = cut.Find(".dropdown-trigger button");
 
-        // First click: OnLoad throws. The component must not keep the latch after the throw.
+        // First click: OnLoad throws. The consumer's exception must propagate (contract),
+        // and the component must not keep the latch after the throw.
         _ = Assert.ThrowsException<InvalidOperationException>(() => trigger.Click());
 
-        // Second click must re-open (is-active). Today IsLoading is still true, the guard
-        // returns, and the spinner stays: dropdown dead forever.
+        // GREEN-RUN CORRECTION (#71 red-run-note precedent): the fake OnLoad throws on EVERY
+        // call, so the original bare second click could never reach is-active — a retry with
+        // a still-throwing load legitimately THROWS again. Pre-fix this click proves the bug
+        // too: the latch is set, the guard returns silently, no exception.
+        _ = Assert.ThrowsException<InvalidOperationException>(() => trigger.Click());
+
+        // Re-render with a load that succeeds: one click must now open (is-active).
+        // Today IsLoading is still true from click 1, the guard returns, the spinner stays:
+        // dropdown dead forever.
+        cut.SetParametersAndRender(ComponentParameter.CreateParameter("OnLoad",
+            EventCallback.Factory.Create<string>(this,
+                (Func<string, Task>)(filter => Task.CompletedTask))));
+
+        trigger = cut.Find(".dropdown-trigger button");
         trigger.Click();
 
         Assert.IsTrue(cut.Find(".dropdown").ClassList.Contains("is-active"),
