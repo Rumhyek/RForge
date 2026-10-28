@@ -25,6 +25,21 @@
                         The example makes use of a common menu like structure of pages and actions
                         showcasing how to interact with a <code>RfTreeNode</code>.
                     </p>
+                    <p>
+                        The <em>Add New</em> entries are the interactive ones: they carry <code>NodeData</code> and a
+                        <code>NodeClick</code> handler, so clicking one opens a prompt. Everything else only expands,
+                        collapses, or follows its <code>LinkUrl</code>.
+                    </p>
+                    <hr />
+                    <BulmaCheckbox Label="AllowClick"
+                                   HelpText="Live switch. When false, RfTreeNode.NodeClick stops firing while expansion, collapse and LinkUrl keep working.">
+                        <InputCheckbox @bind-Value=@AllowClick class="checkbox" />
+                    </BulmaCheckbox>
+                    <p>
+                        Uncheck it and the <em>Add New</em> prompts go silent; check it again and they come straight
+                        back. <code>RfTreeView</code> re-reads <code>AllowClick</code> each time its parameters are set,
+                        so the flag applies in both directions long after the first render (#98).
+                    </p>
 
                 </div>
             </div>
@@ -33,7 +48,7 @@
     <div class="column">
         <article class="section">
 
-            <RfTreeView TTreeItemData="object" AllowSelection=false>
+            <RfTreeView TTreeItemData="object" AllowSelection=false AllowClick=@AllowClick>
                 <Nodes>
 
                     <RfTreeLabel>Movies by Genre</RfTreeLabel>
@@ -142,6 +157,8 @@
 <RfNotificationManager />
 
 @code {
+
+    private bool AllowClick { get; set; } = true;
 
     private AddMovieData BuildMovie(string genre)
     {
