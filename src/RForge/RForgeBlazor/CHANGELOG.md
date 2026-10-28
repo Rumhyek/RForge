@@ -12,6 +12,9 @@
 - Fixed `RfTreeNode`: a toggle click that arrives while an expand/collapse load is still in
   flight is now ignored. Previously it collapsed the node mid-load and raised a duplicate,
   misordered `NodeExpandChange`, leaving children under a collapsed node (#98).
+- Fixed `RfDropDownMulti`: the first item click no longer throws `NullReferenceException` when a
+  consumer binds only `SelectedItemsChanged`. `SelectedItems` was never started when unset; the
+  click path now starts the list, adds the item, and emits `SelectedItemsChanged` (#74).
 - Fixed `RfDropDown` / `RfDropDownMulti`: the `CssClass` parameter is now applied to the dropdown root element and `CssFilterClass` to the filter input. Both parameters existed but were silently ignored; existing consumers that set them will now see their styles apply (#66).
 - CI: merges to `main` no longer push packages to nuget.org. Each merge still builds and
   publishes packages to the GitHub package feed and creates a draft release; packages reach
