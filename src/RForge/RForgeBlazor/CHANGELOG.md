@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fixed `RfContextMenu`: menu DOM ids are now unique per instance. The `aria-controls` / menu
+  `id` value came from a per-instance `Random`, so instances could draw the same number and
+  render duplicate DOM ids, silently breaking the trigger's `aria-controls` link and any JS
+  targeting the menu. Consumer-visible: the id suffix changed from a random 6-digit number to
+  a sequential per-process number (the `context-menu-` prefix is unchanged) (#77).
 - Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
   `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears

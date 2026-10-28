@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using RForge.Abstractions.DropDowns;
+using System.Threading;
 
 namespace RForgeBlazor;
 /// <summary>
@@ -80,7 +81,21 @@ public partial class RfContextMenu
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    private int DropDownId { get; set; } = new Random().Next(100000, 999999);
+    /// <summary>
+    /// Process-wide counter supplying unique menu ids. A shared interlocked counter is used
+    /// rather than the spec's suggested <c>Random.Shared</c>: <c>Random.Shared</c> removes the
+    /// per-instance <c>Random</c> allocation but can still draw the same value twice, so it
+    /// leaves the collision class open and keeps any repro test non-deterministic. A monotonic
+    /// counter is collision-free by construction and yields stable ids (spec #77 design note).
+    /// </summary>
+    private static int _nextDropDownId;
+
+    /// <summary>
+    /// Gets the id used for this instance's dropdown menu element and the trigger's
+    /// <c>aria-controls</c>. Ids are unique across every rendered instance and stable for the
+    /// instance's lifetime, so <c>aria-controls</c> always resolves to exactly one menu (#77).
+    /// </summary>
+    private int DropDownId { get; } = Interlocked.Increment(ref _nextDropDownId);
 
     private string DropDownDirectionCss
     {
