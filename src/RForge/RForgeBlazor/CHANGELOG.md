@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed `RfDoubleClick`: a pending `OnSingleClick` no longer fires after the component is
+  disposed (the click-delay continuation now tracks the component lifetime), and an `Element`
+  parameter set to null, empty, or whitespace now falls back to the default `button` element
+  instead of throwing `ArgumentNullException` on every render (#76).
 - Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
   `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears
