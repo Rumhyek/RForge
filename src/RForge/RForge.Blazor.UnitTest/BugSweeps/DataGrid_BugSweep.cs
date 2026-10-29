@@ -36,7 +36,6 @@ public class DataGrid_BugSweep
     // Earlier subscribers run fire-and-forget: their exceptions are unobserved and the raiser
     // returns while their work is still in flight. race, high.
     [TestMethod]
-    [Ignore("pending #90 — #68 bug-sweep repro, red-by-construction")]
     public void SortChanged_AwaitsAllSubscribers()
     {
         var gridContext = new DataGridContext();
