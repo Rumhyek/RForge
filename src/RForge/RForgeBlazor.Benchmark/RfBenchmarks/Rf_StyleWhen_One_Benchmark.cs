@@ -12,10 +12,10 @@ public class Rf_StyleWhen_One_Benchmark
 
 
     [Benchmark(Baseline = true)]
-    public void ForeachMethod() => RfBasicForeach.StyleWhen(benchmarkTest);
+    public string ForeachMethod() => RfBasicForeach.StyleWhen(benchmarkTest);
 
     [Benchmark]
-    public void RfMethod() => Rf.StyleWhen(benchmarkTest);
+    public string RfMethod() => Rf.StyleWhen(benchmarkTest);
 
 
     public static void PrintValues()
