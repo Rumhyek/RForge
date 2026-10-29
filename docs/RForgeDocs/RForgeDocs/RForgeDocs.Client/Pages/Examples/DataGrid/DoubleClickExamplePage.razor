@@ -131,7 +131,7 @@
                     <span class="tag">@ShownUser.Email</span>
                 </div>
                 <p class="mb-2" title="@ShownUser.Bio">
-                    @if (ShownUser.Bio.Length > 400)
+                    @if (ShownUser.Bio != null && ShownUser.Bio.Length > 400)
                     {
                         @ShownUser.Bio.Substring(0, 400)
 

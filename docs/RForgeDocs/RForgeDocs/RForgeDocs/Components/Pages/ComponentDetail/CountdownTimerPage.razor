@@ -1,0 +1,145 @@
+﻿@page "/countdown-timer/details"
+
+<ComponentDetail Title="Countdown Timer"
+                 SubTitle="A percent progress and completion countdown abstraction">
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("CountdownTimer.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/CountdownTimer.cs"))
+        @ComponentDetail.SideLink(("TimerStatus.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/TimerStatus.cs"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                <code>CountdownTimer</code> (in <code>RForge.Abstractions</code>) runs a fixed duration and reports back
+                while it runs: it splits the timeout into 100 ticks, calls your <code>OnTick</code> callback with the
+                percent complete on every tick, and calls your <code>OnElapsed</code> callback once when the countdown
+                actually finishes. The library uses it internally to time toast auto dismissal in
+                <code>RfNotificationManager</code>.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                Use <code>CountdownTimer</code> when you have a known duration and want percent progress plus one
+                completion signal: driving a progress bar, an auto dismissal delay, or a job timeout.
+            </p>
+
+            <h4>When not to Use</h4>
+            <ul>
+                <li>
+                    Wall clock precise scheduling. The ticks ride on <code>PeriodicTimer</code> continuations, so they
+                    are timely, not exact.
+                </li>
+                <li>
+                    Counting down several independent durations: create one <code>CountdownTimer</code> per countdown.
+                    A single instance runs one countdown at a time.
+                </li>
+            </ul>
+
+        </div>
+    </Purpose>
+
+    <BasicUsage>
+        <div class="content">
+
+            <h3>The Status values</h3>
+            <p><code>CountdownTimer.Status</code> is a <code>TimerStatus</code> with exactly three values:</p>
+            <ul>
+                <li>
+                    <code>Stopped</code>: the timer has been constructed but never ran. This is the value right after the
+                    constructor and after subscribing callbacks.
+                </li>
+                <li>
+                    <code>Running</code>: set by <code>StartAsync</code> while the countdown is in flight.
+                </li>
+                <li>
+                    <code>Completed</code>: set only by the real completion path: the tick that carries the countdown to
+                    100 percent, immediately before your <code>OnElapsed</code> callback fires.
+                </li>
+            </ul>
+
+            <h3>The Status lifecycle</h3>
+            <ol>
+                <li>The constructor leaves <code>Status</code> at <code>Stopped</code>.</li>
+                <li>
+                    <code>OnTick</code> and <code>OnElapsed</code> only register callbacks. Subscribing completes
+                    nothing and changes <code>Status</code> not at all: after constructing and subscribing,
+                    <code>Status</code> is still <code>Stopped</code>.
+                </li>
+                <li>
+                    <code>StartAsync</code> resets the percent to 0, sets <code>Running</code>, and runs the tick loop.
+                    It is awaited: it returns when the countdown finishes or the token ends the loop.
+                </li>
+                <li>
+                    On the tick that reaches 100 percent the timer sets <code>Completed</code> and then invokes
+                    <code>OnElapsed</code>. Nothing else ever sets <code>Completed</code>.
+                </li>
+            </ol>
+            <p>
+                What you can key off: an instance that was only constructed and subscribed is inert, so it is safe to
+                build the timer and wire its callbacks at startup; <code>Status == TimerStatus.Completed</code> after an
+                awaited <code>StartAsync</code> means the countdown ran to the end and your elapsed callback has already
+                fired; and a fresh <code>StartAsync</code> on a finished timer resets the percent and runs again with
+                <code>Running</code> set anew.
+            </p>
+
+            <h5>Example: percent progress with a completion signal</h5>
+            <pre><code>using var timer = new CountdownTimer(2000);
+
+timer.OnTick(percent =>
+{
+    ProgressBar.Value = percent;
+    return Task.CompletedTask;
+});
+
+timer.OnElapsed(() => Console.WriteLine("countdown done"));
+
+// Subscribing completes nothing: Status is still Stopped before the first run.
+Console.WriteLine(timer.Status); // Stopped
+
+await timer.StartAsync();
+
+if (timer.Status == TimerStatus.Completed)
+{
+    // The countdown truly finished and the OnElapsed callback already ran.
+}</code></pre>
+
+            <div class="notification is-info">
+                <strong>FIX (#82):</strong> Previously <code>OnElapsed</code> set <code>Status</code> to
+                <code>Completed</code> at subscription, before the timer had ever run, and the real completion path never
+                set <code>Completed</code> at all. <code>Status</code> was wrong in both directions: a consumer watching
+                for <code>Completed</code> after wiring callbacks saw a completion that had not happened, and a countdown
+                that genuinely finished never reported <code>Completed</code>. Subscription now leaves
+                <code>Status</code> untouched and only the 100 percent tick sets <code>Completed</code>, right before
+                <code>OnElapsed</code> fires. No member was added, renamed, or removed. Pinned by the
+                <code>Status_LifecycleContract</code> test in <code>CountdownTimer_BugSweep</code>.
+            </div>
+
+            <div class="notification">
+                <strong>NOTE:</strong> The timeout is split into 100 equal ticks, so a timeout under 100 ms asks the
+                underlying <code>PeriodicTimer</code> for a sub millisecond period and the constructor throws. Durations
+                of 100 ms and up construct fine; a reworked tick model is tracked in issue #84.
+            </div>
+
+            <div class="notification">
+                <strong>NOTE:</strong> A cancellation token given to the constructor ends the tick loop and
+                <code>StartAsync</code> returns, but <code>TimerStatus</code> has no <code>Cancelled</code> value: the
+                timer still reports <code>Running</code>. Treat "the awaited <code>StartAsync</code> returned and
+                <code>Status</code> is not <code>Completed</code>" as "the countdown did not finish". Also do not call
+                <code>StartAsync</code> again while a run is already in flight: there is no double start guard yet and
+                the overlapping call's task faults unobserved (tracked in issue #83).
+            </div>
+
+        </div>
+    </BasicUsage>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+
+</ComponentDetail>
+
+@code {
+
+}

@@ -61,6 +61,23 @@ value = Rf.StyleWhen(("color", "#333", IsDeleted)
 //value -&gt; color:#333;
 </code></pre>
 
+            <h4>Culture-dependent values</h4>
+            <p>
+                Style values are strings, and a value built from a formatted number carries
+                the current culture's separators into the style text. On a comma-decimal
+                culture (de-DE, fr-FR), <code>(1m / 3m).ToString()</code> yields
+                <code>0,333...</code>, not <code>0.333...</code>, so the same code renders
+                different output on different hosts. Pass values through
+                <code>CultureInfo.InvariantCulture</code> when the style text must be stable,
+                and never format numbers culture-dependently inside snapshot tests.
+            </p>
+            <pre><code>using System.Globalization;
+
+string width = (1m / 3m).ToString(CultureInfo.InvariantCulture);
+string stable = Rf.StyleWhen(("width", width + "em", true));
+//stable -&gt; width:0.3333333333333333333333333333em; on every host culture
+</code></pre>
+
         </div>
     </BasicUsage>
 

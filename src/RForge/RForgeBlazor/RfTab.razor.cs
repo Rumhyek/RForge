@@ -128,12 +128,22 @@ namespace RForgeBlazor
             if (IsLoading == true || IsLoaded == true) return;
 
             IsLoading = true;
+            try
+            {
+                if (OnLoad.HasDelegate == true)
+                    await OnLoad.InvokeAsync(TabId);
 
-            if (OnLoad.HasDelegate == true)
-                await OnLoad.InvokeAsync(TabId);
-
-            IsLoading = false;
-            IsLoaded = true;
+                IsLoaded = true;
+            }
+            finally
+            {
+                // #89: a consumer OnLoad that throws must not latch IsLoading forever.
+                // The entry guard above would then block every future load of this tab,
+                // leaving the is-loading spinner stuck on. The exception itself still
+                // propagates to the caller unchanged; a failed load stays retryable
+                // (IsLoaded is only set on success).
+                IsLoading = false;
+            }
         }
 
         internal async Task TabListOnHide()

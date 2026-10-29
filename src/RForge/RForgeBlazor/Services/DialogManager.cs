@@ -230,5 +230,19 @@ public class DialogManager : IDialogManager
         _dialogManager = null;
     }
 
+    /// <summary>
+    /// Unregisters the specified dialog manager if, and only if, it is the instance
+    /// currently registered. A replaced (stale) <see cref="RfDialogManager"/> disposing
+    /// after a swap leaves the current registration intact, so dialogs keep working.
+    /// </summary>
+    /// <param name="dialogManager">The dialog manager instance requesting unregistration.</param>
+    public void Unregister(RfDialogManager dialogManager)
+    {
+        if (ReferenceEquals(_dialogManager, dialogManager))
+        {
+            _dialogManager = null;
+        }
+    }
+
 
 }

@@ -170,7 +170,7 @@
                         <div class="button"
                              @onclick="@OnNextPageClick"
                              title="Next Page"
-                             disabled=@(CurrentPageIndex + 1 == TotalPages)>
+                             disabled=@(CurrentPageIndex + 1 >= TotalPages)>
                             <span class="icon">
                                 <i class="fa-solid fa-angle-right"></i>
                             </span>
@@ -178,7 +178,7 @@
                         <div class="button"
                              @onclick="@OnLastPageClick"
                              title="Last Page"
-                             disabled=@(CurrentPageIndex + 1 == TotalPages)>
+                             disabled=@(CurrentPageIndex + 1 >= TotalPages)>
                             <span class="icon">
                                 <i class="fa-solid fa-angles-right"></i>
                             </span>
