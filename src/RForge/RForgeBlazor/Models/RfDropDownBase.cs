@@ -2,6 +2,7 @@
 using RForge.Abstractions.DropDowns;
 using RForgeBlazor.Services;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace RForgeBlazor.Models;
 
@@ -223,20 +224,27 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
         {
             if (FilterRateLimit > 0)
             {
-                DateTime lastChecked = DateTime.Now;
                 bool rateLimited = false;
 
                 do
                 {
                     if (_filterChanges.TryPeek(out var filter) == true)
                     {
-                        if (DateTime.Now.Subtract(filter.DateRecorded).TotalMilliseconds >= FilterRateLimit)
+                        double elapsedMs = Stopwatch.GetElapsedTime(filter.RecordedTimestamp).TotalMilliseconds;
+
+                        if (elapsedMs >= FilterRateLimit)
                         {
                             rateLimited = true;
                         }
                         else
                         {
-                            await Task.Delay((int)DateTime.Now.Subtract(filter.DateRecorded).TotalMilliseconds + 1);
+                            // #72 (CANARY-3): wait the REMAINING window, not the time already
+                            // elapsed; the old code slept elapsed+1 ms and re-peeked in a
+                            // geometric loop (~8 wakes for a 250ms config). The stamp is a
+                            // monotonic Stopwatch timestamp and the delay is clamped to a
+                            // positive value, so no system-clock jump can hand Task.Delay a
+                            // negative argument and kill the pump.
+                            await Task.Delay(Math.Max((int)(FilterRateLimit - elapsedMs) + 1, 1));
                         }
                     }
                     else
@@ -405,9 +413,11 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     internal class FilterEventArgs
     {
         /// <summary>
-        /// Gets or sets the date and time when the filter event was recorded.
+        /// Gets or sets the monotonic <see cref="Stopwatch"/> timestamp taken when the filter
+        /// event was recorded. Monotonic on purpose (#72): a wall-clock stamp let a backward
+        /// system-clock jump drive the rate-limit wait calculation negative.
         /// </summary>
-        internal DateTime DateRecorded { get; set; } = DateTime.Now;
+        internal long RecordedTimestamp { get; set; } = Stopwatch.GetTimestamp();
         /// <summary>
         /// Gets or sets the filter text.
         /// </summary>

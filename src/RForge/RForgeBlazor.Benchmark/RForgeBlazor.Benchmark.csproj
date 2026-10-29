@@ -6,6 +6,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <IsPackable>false</IsPackable>
+        <!-- Console Exe defaults to Server GC; real Blazor workloads run Workstation GC.
+             Without this the allocation baselines under-penalize allocations (#114). -->
+        <ServerGarbageCollection>false</ServerGarbageCollection>
     </PropertyGroup>
 
     <ItemGroup>

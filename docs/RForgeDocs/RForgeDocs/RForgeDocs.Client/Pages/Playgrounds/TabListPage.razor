@@ -1,6 +1,8 @@
 ﻿@page "/tab-list/playground"
 @rendermode InteractiveAuto
 
+@implements IDisposable
+
 <PlaygroundDetails @ref="Logger"
                    PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Playgrounds/TabListPage.razor")"
                    HasEvents=true
@@ -335,13 +337,49 @@
     private string LoadedTime { get; set; } = "Not loaded yet";
     private bool IsLoadingTabActive => ActiveTabId == "loading-tab";
 
+    /// <summary>
+    /// Cancelled when the component is disposed so the in-flight load delay aborts
+    /// instead of resuming onto a dead circuit.
+    /// </summary>
+    private CancellationTokenSource LoadCancellation { get; } = new();
+
+    /// <summary>
+    /// True once Dispose has run; guards the load continuation touching Logger.
+    /// </summary>
+    private bool IsDisposed { get; set; }
+
     #endregion
 
     private async Task LoadTabContent(string tabId)
     {
         Logger.AddLog($"Loading tab content for: {tabId}");
-        await Task.Delay(LoadingDelay);
+        try
+        {
+            await Task.Delay(LoadingDelay, LoadCancellation.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return; // Component disposed mid-load; abandon the continuation.
+        }
+
+        if (IsDisposed)
+        {
+            // The component was navigated away from mid-load; the renderer is gone.
+            return;
+        }
+
         LoadedTime = DateTime.Now.ToString("HH:mm:ss.fff");
         Logger.AddLog($"Tab content loaded for: {tabId}");
+    }
+
+    /// <summary>
+    /// Stops the in-flight load delay and marks the component disposed so a late
+    /// continuation never touches the logger on a dead circuit.
+    /// </summary>
+    public void Dispose()
+    {
+        IsDisposed = true;
+        LoadCancellation.Cancel();
+        LoadCancellation.Dispose();
     }
 }

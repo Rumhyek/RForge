@@ -28,13 +28,13 @@ public class Rf_ClassWhen_Many_Benchmark
     ];
 
     [Benchmark(Baseline = true)]
-    public void BootstrapBlazorMethod() => BootstrapBlazor.ClassWhen(benchmarkTest);
+    public string BootstrapBlazorMethod() => BootstrapBlazor.ClassWhen(benchmarkTest);
 
     [Benchmark]
-    public void ForeachMethod() => RfBasicForeach.ClassWhen(benchmarkTest);
+    public string ForeachMethod() => RfBasicForeach.ClassWhen(benchmarkTest);
 
     [Benchmark]
-    public void RfMethod() => Rf.ClassWhen(benchmarkTest);
+    public string RfMethod() => Rf.ClassWhen(benchmarkTest);
 
 
     public static void PrintValues()

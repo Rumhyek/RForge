@@ -43,6 +43,35 @@
                 The <code>RfDropDownMulti</code> works primarily with two parameters: <code>SelectedItems</code> and <code>Items</code>.
             </p>
 
+            <h3>Binding the selection</h3>
+            <p>
+                The selection itself has two parameters: <code>SelectedItems</code> is the list of chosen items and
+                <code>SelectedItemsChanged</code> is raised after every click that changes the selection. Bind them
+                together with <code>@@bind-SelectedItems</code>, or bind only <code>SelectedItemsChanged</code> and let the
+                drop down keep the list: the component starts an empty list on the first item click, adds the clicked item,
+                and emits <code>SelectedItemsChanged</code>, so the callback fires from the very first click even with no
+                <code>SelectedItems</code> parameter set. Later clicks add and remove items from that same list and every
+                emit carries it, so the callback alone is a complete selection contract. The list is started before the
+                <code>MaxSelectableItems</code> cap is consulted, so the cap and <code>MaxSelectionKeepRule</code> behave
+                identically whether or not you supply <code>SelectedItems</code>.
+            </p>
+            <h5>Example: selection via callback only</h5>
+            <pre><code>&lt;RfDropDownMulti TItem="string"
+                   Items="@@Items"
+                   SelectedItemsChanged="@@OnSelectedChanged" /&gt;</code></pre>
+            <pre><code>private void OnSelectedChanged(List&lt;string&gt; selected)
+{
+    // The first click on an item delivers a one item list; no SelectedItems parameter is needed.
+}</code></pre>
+            <div class="notification is-info">
+                <strong>FIX (#74):</strong> Previously, clicking the first item while only <code>SelectedItemsChanged</code>
+                was bound threw a <code>NullReferenceException</code>: when <code>SelectedItems</code> was unset the click
+                path added the item to a list that had never been started, so the click failed and nothing was emitted.
+                The click path now starts the list first, so the first click selects, emits, and renders like any later
+                click. No parameter was added, removed, or renamed. Pinned by the
+                <code>ItemClick_NullSelectedItems_DoesNotThrow</code> test.
+            </div>
+
             <h3>How are Items Render?</h3>
             <p>
                 The dropdown doesn't make any assumptions on how to render the items or selected items it is given. 
@@ -81,6 +110,31 @@
                 filter text while the panel stays open; set <code>FilterRateLimit</code> to hold keystrokes until the rate elapses
                 and fire only the latest filter.
             </p>
+            <h4>Filter rate limiting</h4>
+            <p>
+                While the panel stays open, every keystroke in the filter box queues a filter change instead of calling
+                <code>OnLoad</code> directly. When <code>FilterRateLimit</code> is greater than zero (the default is 250 ms)
+                the drop down waits until the newest keystroke has sat quietly for that many milliseconds, then makes one
+                <code>OnLoad</code> call with the latest filter text; keystrokes typed during the wait are superseded and
+                dropped. Any new keystroke restarts the wait, so the load fires on the trailing edge of the typing.
+                <code>FilterRateLimit = 0</code> turns the wait off and fires on every keystroke.
+            </p>
+            <p>
+                The wait is measured on a monotonic clock (stopwatch timestamps) and each sleep is only the time remaining
+                in the quiet window, so the window length never depends on the wall clock: NTP corrections or manual clock
+                changes cannot stretch the debounce or break it.
+            </p>
+            <div class="notification is-info">
+                <strong>FIX (#72):</strong> Previously the limiter slept the time the keystroke had <em>already</em> waited
+                rather than the time remaining, so a 250 ms window woke and re-checked in a doubling loop of roughly eight
+                timer fires before the load fired, and the wall-clock stamp meant a backward system-clock jump could hand
+                the timer a negative delay, throw, and abort the running filter pump so that keystroke's load never fired.
+                The limiter now waits exactly the remaining window on a monotonic clock with the delay clamped positive.
+                The consumer-visible behavior is the same trailing-edge debounce, just timely and free of clock fragility;
+                no parameter was added, removed, or renamed. Pinned by the <code>RateLimit_WaitsRemainingNotElapsed</code>
+                test.
+            </div>
+
             <h4>Loader exceptions</h4>
             <p>
                 The loading state is released in a <code>finally</code>, so a handler that throws cannot latch the drop down into a
