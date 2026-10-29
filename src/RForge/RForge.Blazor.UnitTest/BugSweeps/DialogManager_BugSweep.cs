@@ -59,7 +59,6 @@ public class DialogManager_BugSweep
     // including a guaranteed NRE when OnAlert/OnConfirm/OnPrompt are null. The dialog closes as if
     // the action SUCCEEDED and the operation is lost with zero diagnostics. crash, low.
     [TestMethod]
-    [Ignore("pending #87 — #68 bug-sweep repro, red-by-construction")]
     public void FailingCallback_IsNotSilentlyEaten()
     {
         var cut = ctx.RenderComponent<RfDialogManager>();
