@@ -321,6 +321,84 @@
     &lt;/EmptyContent&gt;
 
 &lt;/RfDataGrid&gt;</code></pre>
+
+            <h1>Async Context Events</h1>
+
+            <p>
+                The <code>DataGridContext</code> raises its notifications as async, multicast events:
+                <code>OnSortChanged</code> (raised by <code>DataGridContext.SortChanged</code>) and
+                <code>OnFilterChanged</code> (raised by <code>DataGridContext.FilterChanged</code>).
+                Any number of components can subscribe to the same event, including the
+                <code>RfDataGrid</code> itself: its own subscription is what resets paging and calls
+                <code>OnLoadData</code>.
+            </p>
+            <p>
+                Raising one of these events awaits <strong>every</strong> subscriber before it returns.
+                Subscribers are invoked in registration order; if a handler yields, the later handlers start
+                without waiting for it, and the raiser completes only once all of the handlers' tasks have
+                finished. After a sort click, for example, the event does not finish until both the grid's
+                data reload and every other <code>OnSortChanged</code> handler have completed.
+            </p>
+            <p>
+                Fault handling: all subscribers always run to completion. If exactly one subscriber faults,
+                its exception is rethrown unchanged to the code that raised the event. If more than one
+                faults, the faults are combined into a single <code>AggregateException</code> containing
+                every subscriber exception. A subscriber that throws before its first <code>await</code>
+                does not stop the others from running.
+            </p>
+            <div class="notification is-warning">
+                <strong>BEHAVIOR CHANGE (#90):</strong> Previously, raising a multicast async event awaited
+                only the LAST registered subscriber. Earlier subscribers ran fire and forget: their
+                exceptions were never observed and the raiser could return while their work was still in
+                flight (for example, <code>SortChanged</code> could return while a data load was still
+                running). All subscribers are now awaited before the event returns, so a handler that used
+                to overlap with the grid's reload now completes before it, and handler faults surface at the
+                raiser instead of going unobserved.
+            </div>
+
+            <h2>Example</h2>
+            <p>
+                A component rendered inside the grid can subscribe to the cascaded context. Below, one
+                handler records the sort and a second reloads related data; both complete before the sort
+                event returns.
+            </p>
+<pre><code>public partial class SortWatcher : ComponentBase, IDisposable
+{
+    [CascadingParameter]
+    private DataGridContext Context { get; set; }
+
+    private string LastSort { get; set; }
+    private List&lt;RelatedItem&gt; Related { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Context.OnSortChanged += RecordSortAsync;
+        Context.OnSortChanged += ReloadRelatedAsync;
+    }
+
+    private Task RecordSortAsync(object sender, DataGridSortBy sortBy)
+    {
+        LastSort = $"{sortBy.SortKey} {sortBy.SortOrder}";
+        return Task.CompletedTask;
+    }
+
+    // Runs to completion before DataGridContext.SortChanged returns.
+    private async Task ReloadRelatedAsync(object sender, DataGridSortBy sortBy)
+    {
+        Related = await relatedApi.GetAsync(sortBy.SortKey);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Context.OnSortChanged -= RecordSortAsync;
+        Context.OnSortChanged -= ReloadRelatedAsync;
+    }
+}</code></pre>
+            <p>
+                Unsubscribe in <code>Dispose</code>. The context lives as long as the grid, so a forgotten
+                handler stays attached and is awaited on every future event.
+            </p>
         </div>
 
     </BasicUsage>
