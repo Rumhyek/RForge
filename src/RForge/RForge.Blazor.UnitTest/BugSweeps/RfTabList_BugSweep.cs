@@ -29,7 +29,6 @@ public class RfTabList_BugSweep
     // awaits OnLoad, clears + sets IsLoaded — NO try/finally. An exception latches the per-tab
     // spinner forever and the guards block all future loads of that tab. stuck, high.
     [TestMethod]
-    [Ignore("pending #89 — #68 bug-sweep repro, red-by-construction")]
     public void TabLoad_ThrowingOnLoad_DoesNotLatch()
     {
         int aLoads = 0;

@@ -59,7 +59,7 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
             query = query.Where(u => u.Email.Contains(options.Filters.Email));
 
         if (string.IsNullOrEmpty(options.Filters.Bio) == false)
-            query = query.Where(u => u.Bio.Contains(options.Filters.Bio));
+            query = query.Where(u => u.Bio != null && u.Bio.Contains(options.Filters.Bio));
 
         if (string.IsNullOrEmpty(options.Filters.Username) == false)
             query = query.Where(u => u.Username.Contains(options.Filters.Username));

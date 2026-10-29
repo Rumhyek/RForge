@@ -130,7 +130,24 @@ public partial class RfNotificationManager : IDisposable
     /// </summary>
     private void NotificationManager_OnClearAll()
     {
-        throw new NotImplementedException();
+        bool stateHasChanged = false;
+        foreach (var notifications in Messages.Values)
+        {
+            if (notifications.Count == 0)
+                continue;
+
+            foreach (var notification in notifications)
+            {
+                notification.Timer?.Dispose();
+                notification.Timer = null;
+            }
+
+            notifications.Clear();
+            stateHasChanged = true;
+        }
+
+        if (stateHasChanged == true)
+            StateHasChanged();
     }
 
     /// <summary>

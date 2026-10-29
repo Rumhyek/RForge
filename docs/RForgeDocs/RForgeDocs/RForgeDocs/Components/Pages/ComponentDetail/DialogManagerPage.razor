@@ -95,6 +95,36 @@
                 The <code>RfDialogManager</code> works off calling <code>RForgeBlazor.Services.IDialogManager.cs</code> and providing the method a callback function when completed.
             </p>
 
+            <h4>Dialog Host Lifetime</h4>
+            <p>
+                Each <code>RfDialogManager</code> registers itself as the live dialog host when it starts, and the injected
+                <code>IDialogManager</code> service always routes <code>Alert</code>, <code>Confirm</code>, <code>Prompt</code>,
+                and <code>MultiAction</code> calls to the most recently registered host. The recommended setup is exactly one
+                host placed high in the layout that lives for the life of the app. In that setup there is nothing to manage.
+            </p>
+            <p>
+                When the host does move, the newest instance always wins. If one <code>RfDialogManager</code> replaces another,
+                for example during a layout or render tree swap, the new host takes over immediately and a later dispose of the
+                replaced (stale) instance leaves the current registration untouched. Dialogs keep rendering through the live
+                host no matter when the old instance is cleaned up. Disposing the currently registered host does unregister it:
+                calls made after that point are queued and shown as soon as a new host registers.
+            </p>
+            <p>
+                Manual unregistration is unchanged. The no-argument <code>Unregister()</code> on <code>IDialogManager</code>
+                still clears the registration unconditionally, so custom <code>IDialogManager</code> implementations and code
+                that called it directly behave exactly as before. Only the library component's own cleanup changed: it now
+                unregisters with its own instance identity, and the swap safety above applies whenever the injected service is
+                the library's own <code>DialogManager</code>.
+            </p>
+            <div class="notification is-info">
+                <strong>FIX (#86):</strong> Previously <code>Unregister</code> had no registrant identity check, so disposing a
+                replaced host cleared the live host's registration with it. Every later <code>Alert</code>, <code>Confirm</code>,
+                or <code>Prompt</code> then queued forever and no dialog rendered again. Unregistration now only takes effect
+                when the requesting instance is the one currently registered, and a stale dispose is a no-op. No API was
+                removed, renamed, or changed in signature, so there is no consumer compile break. Pinned by the
+                <code>OlderInstanceDisposed_DialogsStillShow</code> test.
+            </div>
+
         </div>
 
     </BasicUsage>
