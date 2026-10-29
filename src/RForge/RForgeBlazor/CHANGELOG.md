@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fixed `RfTreeNode`: a tree node rendered without the optional `Node` template no longer
+  throws a `NullReferenceException` during render. `@Node(NodeData)` was invoked unguarded in
+  both the has-children and the leaf branch; both sites now render only when `Node` is set,
+  matching how every other optional fragment in the library is guarded. Nodes without a
+  template now render their surrounding node markup with an empty label (#97).
 - Docs app: the DataGrid double-click example no longer crashes for users with a null `Bio`
   (mock user Id 90). The detail modal's truncation branch is now null-guarded instead of
   dereferencing `ShownUser.Bio.Length` (a null Bio renders as an empty paragraph), and the
