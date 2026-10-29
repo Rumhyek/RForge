@@ -232,6 +232,27 @@
                 During loading, the tab will show a loading indicator and call the <code>OnLoad</code> callback.
             </p>
 
+            <h2>Async Context Events</h2>
+            <p>
+                Tabs and the tab list communicate through <code>RfTabListContext</code>, whose
+                <code>OnTabRegister</code> event is async and multicast: each <code>RfTab</code> raises it
+                while registering and the <code>RfTabList</code> subscribes to adopt the tab. Extra
+                subscribers can attach to the same event.
+            </p>
+            <p>
+                Raising the event awaits <strong>every</strong> subscriber before it returns, so a tab is
+                not considered registered until all handlers finish their tasks. Subscribers are invoked in
+                registration order and run to completion. If exactly one subscriber faults, its exception is
+                rethrown unchanged to the raiser; if more than one faults, the faults are combined into a
+                single <code>AggregateException</code>. A subscriber that throws before its first
+                <code>await</code> does not stop the others from running.
+            </p>
+            <div class="notification is-warning">
+                <strong>BEHAVIOR CHANGE (#90):</strong> Previously only the LAST registered subscriber's task
+                was awaited; earlier handlers ran fire and forget and their exceptions went unobserved.
+                Every subscriber is now awaited before <code>RaiseOnTabRegister</code> returns.
+            </div>
+
             <h2>Styling with Bulma</h2>
             <p>
                 The tab list integrates with Bulma CSS framework classes:
