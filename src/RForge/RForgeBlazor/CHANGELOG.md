@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Fixed `RfDataGrid`: changing the filter now resets the pager to the first page.
+  `OnFilterChangedCallback` emitted `CurrentPageIndexChanged(0)` but left the local
+  `CurrentPageIndex` at its stale value, so a consumer that does not echo the new index back kept
+  seeing the old page in the pager label, and the next Next/Last click emitted a stale page number
+  (e.g. page 3 instead of page 1 after filtering from page 3). The callback now zeroes the local
+  index before emitting, matching the sort path. Behavior is unchanged for consumers that echo
+  `CurrentPageIndex` back to the grid (#92).
 - Fixed `RfDataGrid`: the Next and Last pager buttons no longer emit page index `-1` when the grid
   is empty (`TotalCount=0`, so `TotalPages=0`). Previously `OnNextPageClick` / `OnLastPageClick`
   computed `TotalPages - 1` and fired `CurrentPageIndexChanged(-1)`, which consumers fed into a
