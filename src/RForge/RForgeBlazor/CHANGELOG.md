@@ -52,3 +52,10 @@
   every later Alert/Confirm/Prompt queued forever and no dialog ever rendered again. The
   component now unregisters with an identity check; the existing no-arg `Unregister()` on
   `IDialogManager` is unchanged for existing callers (#86).
+- Fixed `RfDialogManager`: a null or throwing dialog callback no longer closes the dialog as if
+  the action succeeded. The confirm, cancel, and multi-action handlers wrapped the user callback
+  in a bare `catch {}`, which swallowed every failure, including a guaranteed
+  `NullReferenceException` when `OnAlert` / `OnConfirm` / `OnPrompt` / `OnAction` was null: the
+  operation was lost with zero diagnostics. Callback failures now propagate to the caller while
+  the dialog state still unwinds through `try/finally` (`IsLoading` clears and queued dialogs
+  advance), so nothing latches on a failed callback (#87).
