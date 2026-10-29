@@ -39,7 +39,6 @@ public class NotificationManager_BugSweep
     // throw new NotImplementedException() → every ClearAll() call throws into callers and
     // aborts the multicast to later subscribers. crash, high.
     [TestMethod]
-    [Ignore("pending #78 — #68 bug-sweep repro, red-by-construction")]
     public void ClearAll_ClearsAllWithoutThrowing()
     {
         var cut = ctx.RenderComponent<RfNotificationManager>();

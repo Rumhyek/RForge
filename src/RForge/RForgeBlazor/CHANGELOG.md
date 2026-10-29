@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed `RfNotificationManager`: `INotificationManager.ClearAll()` no longer throws. The component's
+  `OnClearAll` handler was an unimplemented `throw new NotImplementedException()`, so every `ClearAll()`
+  call crashed into the caller and aborted the event multicast to later subscribers. It now disposes any
+  countdown timers, clears every notification from all positions, and re-renders (#78).
 - Fixed `RfTab`: a consumer `OnLoad` that throws no longer latches the tab forever.
   `TabListOnLoad` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) stuck on the tab and the load guard rejected every later activation of that
