@@ -70,7 +70,6 @@ public class DataGrid_BugSweep
     // disabled guards (CurrentPageIndex+1 == TotalPages → 1==0 false) leave the buttons ENABLED.
     // Consumers get CurrentPageIndexChanged(-1) → negative Skip → ArgumentOutOfRangeException. math, high.
     [TestMethod]
-    [Ignore("pending #91 — #68 bug-sweep repro, red-by-construction")]
     public void EmptyGrid_PagerNeverEmitsNegative()
     {
         var emitted = new List<int>();

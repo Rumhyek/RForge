@@ -621,19 +621,21 @@ public partial class RfDataGrid<TRowData>
     }
 
     /// <summary>
-    /// Handles the click event for the next page button.
+    /// Handles the click event for the next page button. The target page is clamped to the
+    /// valid range, so on an empty grid (no pages) no page index is emitted.
     /// </summary>
     public async Task OnNextPageClick()
     {
-        await OnPageIndexClick(Math.Min(TotalPages - 1, CurrentPageIndex + 1));
+        await OnPageIndexClick(Math.Max(0, Math.Min(TotalPages - 1, CurrentPageIndex + 1)));
     }
 
     /// <summary>
-    /// Handles the click event for the last page button.
+    /// Handles the click event for the last page button. The target page is clamped to the
+    /// valid range, so on an empty grid (no pages) no page index is emitted.
     /// </summary>
     public async Task OnLastPageClick()
     {
-        await OnPageIndexClick(TotalPages - 1);
+        await OnPageIndexClick(Math.Max(0, TotalPages - 1));
     }
 
     /// <summary>
