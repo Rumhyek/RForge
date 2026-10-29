@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fixed `RfTab`: a consumer `OnLoad` that throws no longer latches the tab forever.
+  `TabListOnLoad` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
+  (`is-loading`) stuck on the tab and the load guard rejected every later activation of that
+  tab; the latch now clears and a failed tab load can be retried by re-activating the tab.
+  Successful-load behavior is unchanged (#89).
 - Fixed `RfTreeNode`: a tree node rendered without the optional `Node` template no longer
   throws a `NullReferenceException` during render. `@Node(NodeData)` was invoked unguarded in
   both the has-children and the leaf branch; both sites now render only when `Node` is set,
