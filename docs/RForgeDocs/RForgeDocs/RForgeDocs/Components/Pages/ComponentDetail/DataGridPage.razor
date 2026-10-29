@@ -322,6 +322,32 @@
 
 &lt;/RfDataGrid&gt;</code></pre>
 
+            <h2>Paging on an Empty Grid</h2>
+
+            <p>
+                <code>TotalPages</code> is derived from <code>TotalCount</code> and <code>PageSize</code>, so a grid
+                with <code>TotalCount=0</code> has zero pages. In that state the pager renders fully disabled: First
+                and Previous by the guard <code>CurrentPageIndex == 0</code>, and Next and Last by the guard
+                <code>CurrentPageIndex + 1 &gt;= TotalPages</code>. The page tab list is empty, so there is no tab
+                to click into an invalid page either.
+            </p>
+            <p>
+                The page index is also clamped in code, not just visually: <code>OnNextPageClick</code> and
+                <code>OnLastPageClick</code> never target a negative page. On an empty grid both clamp to page 0,
+                which equals the current page, so <code>CurrentPageIndexChanged</code> does not fire at all. A
+                consumer that feeds the index into a <code>Skip</code> can never receive a negative index from the
+                pager. Paging on non-empty grids is unchanged.
+            </p>
+            <div class="notification is-info">
+                <strong>FIX (#91):</strong> Previously the Next and Last buttons stayed enabled on an empty grid
+                (their guard compared with <code>==</code> against a zero <code>TotalPages</code>) and a click
+                emitted <code>CurrentPageIndexChanged(-1)</code>, which commonly surfaced as an
+                <code>ArgumentOutOfRangeException</code> from a negative <code>Skip</code> in the consumer's load
+                callback. The guards now use <code>&gt;=</code> and the target page is clamped to the valid range,
+                so an empty grid emits no page index change. Pinned by the
+                <code>EmptyGrid_PagerNeverEmitsNegative</code> test.
+            </div>
+
             <h1>Async Context Events</h1>
 
             <p>
