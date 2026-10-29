@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Fixed `RfDataGrid`: the Next and Last pager buttons no longer emit page index `-1` when the grid
+  is empty (`TotalCount=0`, so `TotalPages=0`). Previously `OnNextPageClick` / `OnLastPageClick`
+  computed `TotalPages - 1` and fired `CurrentPageIndexChanged(-1)`, which consumers fed into a
+  negative `Skip` (ArgumentOutOfRangeException). The target page is now clamped to the valid range,
+  and the Next/Last disabled guards use `>=` instead of `==`, so both buttons render disabled on an
+  empty grid instead of staying enabled. Behavior on non-empty grids is unchanged (#91).
 - Fixed `DataGridContext` / `RfTabListContext`: raising a multicast async event now awaits every
   subscriber. Previously the raisers invoked the delegate directly, which returns only the LAST
   subscriber's task, so earlier subscribers ran fire-and-forget: their exceptions were unobserved
