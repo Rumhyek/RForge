@@ -74,6 +74,8 @@ public partial class RfDialogManager : IDisposable
 
     /// <summary>
     /// Handles the confirm button click event. Calls the appropriate method based on the dialog type.
+    /// A failing user callback propagates to the caller (#87: it must not be silently eaten); the
+    /// finally unwinds the dialog state on every path so nothing latches.
     /// </summary>
     private async Task OnConfirmClick()
     {
@@ -96,23 +98,23 @@ public partial class RfDialogManager : IDisposable
                     break;
             }
         }
-        catch
+        finally
         {
+            if (PendingDialogs.Count > 0)
+                ActiveDialog = PendingDialogs.Dequeue();
+            else
+                ActiveDialog = null;
 
+            IsLoading = false;
+
+            StateHasChanged();
         }
-
-        if (PendingDialogs.Count > 0)
-            ActiveDialog = PendingDialogs.Dequeue();
-        else
-            ActiveDialog = null;
-
-        IsLoading = false;
-
-        StateHasChanged();
     }
 
     /// <summary>
     /// Handles the cancel button click event. Calls the appropriate method based on the dialog type.
+    /// A failing user callback propagates to the caller (#87: it must not be silently eaten); the
+    /// finally unwinds the dialog state on every path so nothing latches.
     /// </summary>
     private async Task OnCancelClick()
     {
@@ -134,21 +136,24 @@ public partial class RfDialogManager : IDisposable
                     break;
             }
         }
-        catch
+        finally
         {
+            if (PendingDialogs.Count > 0)
+                ActiveDialog = PendingDialogs.Dequeue();
+            else
+                ActiveDialog = null;
 
+            IsLoading = false;
+
+            StateHasChanged();
         }
-
-        if (PendingDialogs.Count > 0)
-            ActiveDialog = PendingDialogs.Dequeue();
-        else
-            ActiveDialog = null;
-
-        IsLoading = false;
-
-        StateHasChanged();
     }
 
+    /// <summary>
+    /// Handles a multi-action button click. A failing user callback propagates to the caller
+    /// (#87: it must not be silently eaten); the finally unwinds the dialog state on every
+    /// path so nothing latches.
+    /// </summary>
     private async Task OnMultiActionClick( RfDialogMultiActionButtonOptions action)
     {
         if (IsLoading == true) return;
@@ -162,17 +167,16 @@ public partial class RfDialogManager : IDisposable
         {
             await dialog.OnAction(action);
         }
-        catch
+        finally
         {
+            if (PendingDialogs.Count > 0)
+                ActiveDialog = PendingDialogs.Dequeue();
+            else
+                ActiveDialog = null;
+
+            IsLoading = false;
+            StateHasChanged();
         }
-
-        if (PendingDialogs.Count > 0)
-            ActiveDialog = PendingDialogs.Dequeue();
-        else
-            ActiveDialog = null;
-
-        IsLoading = false;
-        StateHasChanged();
     }
 
     /// <summary>
@@ -217,10 +221,20 @@ public partial class RfDialogManager : IDisposable
 
     /// <summary>
     /// Disposes the component. Unregisters with the injected dialog manager.
+    /// When the injected service is the library's own <see cref="Services.DialogManager"/>,
+    /// the unregister carries this instance's identity so a stale component replaced by a
+    /// newer one cannot unregister it (#86).
     /// </summary>
     public void Dispose()
     {
-        DialogManager.Unregister();
+        if (DialogManager is Services.DialogManager manager)
+        {
+            manager.Unregister(this);
+        }
+        else
+        {
+            DialogManager.Unregister();
+        }
     }
 
     #region Computeds

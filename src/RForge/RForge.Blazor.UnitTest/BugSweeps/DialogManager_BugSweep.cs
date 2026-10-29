@@ -38,7 +38,6 @@ public class DialogManager_BugSweep
     // manager after a swap unregisters the NEW one: every later Alert/Confirm/Prompt queues
     // forever and no dialog ever renders again. stuck, med.
     [TestMethod]
-    [Ignore("pending #86 — #68 bug-sweep repro, red-by-construction")]
     public void OlderInstanceDisposed_DialogsStillShow()
     {
         var first = ctx.RenderComponent<RfDialogManager>();
@@ -60,7 +59,6 @@ public class DialogManager_BugSweep
     // including a guaranteed NRE when OnAlert/OnConfirm/OnPrompt are null. The dialog closes as if
     // the action SUCCEEDED and the operation is lost with zero diagnostics. crash, low.
     [TestMethod]
-    [Ignore("pending #87 — #68 bug-sweep repro, red-by-construction")]
     public void FailingCallback_IsNotSilentlyEaten()
     {
         var cut = ctx.RenderComponent<RfDialogManager>();

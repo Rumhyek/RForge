@@ -16,10 +16,10 @@ public class Rf_Class_Many_Benchmark
     ];
 
     [Benchmark(Baseline = true)]
-    public void ForeachMethod() => RfBasicForeach.Class(benchmarkTest);
+    public string ForeachMethod() => RfBasicForeach.Class(benchmarkTest);
 
     [Benchmark]
-    public void RfMethod() => Rf.Class(benchmarkTest);
+    public string RfMethod() => Rf.Class(benchmarkTest);
 
 
     public static void PrintValues()

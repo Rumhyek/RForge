@@ -19,8 +19,10 @@
     <PackageReference Include="MSTest.TestAdapter" Version="3.6.4" />
     <PackageReference Include="MSTest.TestFramework" Version="3.6.4" />
     <PackageReference Include="Verify.MSTest" Version="28.4.0" />
-    <PackageReference Include="bunit" Version="1.40.0" />
     <ProjectReference Include="..\RForgeBlazor\RForgeBlazor.csproj" />
+    <!-- #99: Docs_BugSweep repros exercise the docs app (page + processor) directly. -->
+    <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocsLibrary\RForgeDocsLibrary.csproj" />
+    <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocs\RForgeDocs.Client\RForgeDocs.Client.csproj" />
 
   </ItemGroup>
 
@@ -45,31 +47,11 @@
       <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
       <DependentUpon>Rf_Class.cs</DependentUpon>
     </None>
-    <None Update="Rf_Class.ShowTwoClasses.verified.txt">
-      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
-      <DependentUpon>Rf_Class.cs</DependentUpon>
-    </None>
     <None Update="Rf_Class.TestLongClassName.verified.txt">
       <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
       <DependentUpon>Rf_Class.cs</DependentUpon>
     </None>
     <None Update="Rf_Class.TestMultipleClasses.verified.txt">
-      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
-      <DependentUpon>Rf_Class.cs</DependentUpon>
-    </None>
-    <None Update="Rf_Class.TestOneClassHide.verified.txt">
-      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
-      <DependentUpon>Rf_Class.cs</DependentUpon>
-    </None>
-    <None Update="Rf_Class.TestThreeClassOneHideTwoShow.verified.txt">
-      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
-      <DependentUpon>Rf_Class.cs</DependentUpon>
-    </None>
-    <None Update="Rf_Class.TestThreeClassTwoHideOneShow.verified.txt">
-      <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
-      <DependentUpon>Rf_Class.cs</DependentUpon>
-    </None>
-    <None Update="Rf_Class.TestTwoClassHide.verified.txt">
       <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0].Split('(')[0])</ParentFile>
       <DependentUpon>Rf_Class.cs</DependentUpon>
     </None>
