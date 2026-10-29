@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Docs app: the DataGrid double-click example no longer crashes for users with a null `Bio`
+  (mock user Id 90). The detail modal's truncation branch is now null-guarded instead of
+  dereferencing `ShownUser.Bio.Length` (a null Bio renders as an empty paragraph), and the
+  paged user API's `Bio` filter skips null rows rather than 500s. Library surface and
+  rendered output are unchanged; only the docs app's crash paths were fixed (#99).
 - Fixed `RfDataGrid`: changing the filter now resets the pager to the first page.
   `OnFilterChangedCallback` emitted `CurrentPageIndexChanged(0)` but left the local
   `CurrentPageIndex` at its stale value, so a consumer that does not echo the new index back kept
