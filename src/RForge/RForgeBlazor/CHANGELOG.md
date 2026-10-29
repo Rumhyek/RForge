@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed `RfDoubleClick`: a pending `OnSingleClick` no longer fires after the component is
+  disposed (the click-delay continuation now tracks the component lifetime), and an `Element`
+  parameter set to null, empty, or whitespace now falls back to the default `button` element
+  instead of throwing `ArgumentNullException` on every render (#76).
 - Fixed `RfContextMenu`: menu DOM ids are now unique per instance. The `aria-controls` / menu
   `id` value came from a per-instance `Random`, so instances could draw the same number and
   render duplicate DOM ids, silently breaking the trigger's `aria-controls` link and any JS

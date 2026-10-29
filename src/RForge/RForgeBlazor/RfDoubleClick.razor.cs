@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using System;
+using System.Threading;
 
 namespace RForgeBlazor;
 
@@ -20,7 +22,7 @@ namespace RForgeBlazor;
 /// }
 /// </code>
 /// </example>
-public class RfDoubleClick : ComponentBase
+public class RfDoubleClick : ComponentBase, IDisposable
 {
     /// <summary>
     /// Callback invoked on a single click.
@@ -36,10 +38,13 @@ public class RfDoubleClick : ComponentBase
 
     /// <summary>
     /// The HTML element to render (e.g., "button", "div", "span"). 
-    /// Default is "button".
+    /// Default is "button". Setting this parameter to null, empty, or whitespace
+    /// falls back to the default "button" element (the fallback is documented
+    /// behavior since #76; previously an empty element name produced a render that
+    /// threw on web hosts and rendered no queryable element under test renderers).
     /// </summary>
     [Parameter]
-    public string Element { get; set; } = "button";
+    public string Element { get; set; } = DefaultElement;
 
     /// <summary>
     /// The delay in milliseconds to distinguish between single and double clicks.
@@ -60,7 +65,15 @@ public class RfDoubleClick : ComponentBase
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> Attributes { get; set; }
 
+    private const string DefaultElement = "button";
+
     private int currentClickCount = 0;
+
+    /// <summary>
+    /// Cancels the pending single-click delay when the component is disposed, so the
+    /// <see cref="OnSingleClick"/> callback can never fire after disposal (#76).
+    /// </summary>
+    private readonly CancellationTokenSource lifetimeCancellation = new CancellationTokenSource();
 
     /// <summary>
     /// Builds the render tree for the component.
@@ -70,7 +83,9 @@ public class RfDoubleClick : ComponentBase
     {
         base.BuildRenderTree(builder);
 
-        builder.OpenElement(0, Element);
+        // A null/empty Element falls back to the default element instead of handing
+        // OpenElement an invalid name (#76).
+        builder.OpenElement(0, string.IsNullOrWhiteSpace(Element) ? DefaultElement : Element);
         builder.AddMultipleAttributes(1, Attributes);
 
         // Optimize if they don't provide a double click.
@@ -99,7 +114,23 @@ public class RfDoubleClick : ComponentBase
         // If this was clicked only once then fire off OnSingleClick.
         if (currentClickCount == 1)
         {
-            await Task.Delay(ClickDelay);
+            try
+            {
+                await Task.Delay(ClickDelay, lifetimeCancellation.Token);
+            }
+            catch (Exception ex) when (ex is OperationCanceledException || ex is ObjectDisposedException)
+            {
+                // The component was disposed while the click delay was pending:
+                // drop the single click instead of invoking the callback after disposal (#76).
+                return;
+            }
+
+            // Belt and braces: the delay can also complete in the same tick as disposal,
+            // so re-check the lifetime before invoking the parent callback (#76).
+            if (lifetimeCancellation.IsCancellationRequested)
+            {
+                return;
+            }
 
             if (currentClickCount == 1 && OnSingleClick.HasDelegate == true)
             {
@@ -120,6 +151,16 @@ public class RfDoubleClick : ComponentBase
             await OnDoubleClick.InvokeAsync(e);
             currentClickCount = 0;
         }
+    }
+
+    /// <summary>
+    /// Disposes the component: cancels any pending single-click delay so no callback
+    /// is invoked after disposal.
+    /// </summary>
+    public void Dispose()
+    {
+        lifetimeCancellation.Cancel();
+        lifetimeCancellation.Dispose();
     }
 }
 
