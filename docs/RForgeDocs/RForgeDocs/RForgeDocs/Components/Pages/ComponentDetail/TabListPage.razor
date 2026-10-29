@@ -231,6 +231,99 @@
                 Tabs can display loading content using the <code>LoadingPanel</code> render fragment.
                 During loading, the tab will show a loading indicator and call the <code>OnLoad</code> callback.
             </p>
+            <h2>Disposal-Safe Loading</h2>
+            <p>
+                An <code>OnLoad</code> callback is an async task owned by your page, not by <code>RfTabList</code>.
+                The tab list shows the <code>LoadingPanel</code> until your callback returns, but it does not cancel
+                the callback when the user navigates away mid-load: Blazor disposes the page while your await is
+                still in flight, and the continuation keeps running. Calling <code>StateHasChanged</code> (or
+                updating any state that triggers a re-render) at that point throws
+                <code>ObjectDisposedException</code> and surfaces as an unhandled exception on the circuit.
+            </p>
+            <p>
+                The guard belongs in the hosting page: implement <code>IDisposable</code>, cancel a
+                <code>CancellationTokenSource</code> in <code>Dispose</code>, pass its token to the awaited work,
+                treat <code>OperationCanceledException</code> as a normal early return, and gate every post-load
+                state update behind a disposed flag. The Loader Example and the Tab List playground implement
+                exactly this pattern.
+            </p>
+
+            <pre><code>@@implements IDisposable
+
+@@code {
+    // Cancelled in Dispose so in-flight loads abort instead of resuming
+    // onto a dead circuit.
+    private CancellationTokenSource LoadCancellation { get; } = new();
+
+    // True once Dispose has run; gates every post-load state update.
+    private bool IsDisposed { get; set; }
+
+    private void SetLoadedAt(string value)
+    {
+        if (IsDisposed)
+        {
+            // Navigated away mid-load: there is no renderer left to update.
+            return;
+        }
+
+        LoadedAt = value;
+        StateHasChanged();
+    }
+
+    private async Task LoadTabContent(string tabId)
+    {
+        try
+        {
+            await Task.Delay(3000, LoadCancellation.Token); // Or your real async fetch
+        }
+        catch (OperationCanceledException)
+        {
+            return; // Disposed mid-load: abandon the continuation.
+        }
+
+        SetLoadedAt(DateTime.Now.ToString("HH:mm:ss"));
+    }
+
+    public void Dispose()
+    {
+        IsDisposed = true;
+        LoadCancellation.Cancel();
+        LoadCancellation.Dispose();
+    }
+}</code></pre>
+
+            <div class="notification is-info">
+                <strong>FIX (#104):</strong> The loader example previously awaited a fixed <code>Task.Delay</code>
+                inside its <code>OnLoad</code> callbacks and called <code>StateHasChanged</code> when the delay
+                finished, with no disposal guard. Opening Slow Load and navigating away within the 3 second delay
+                resumed the continuation onto the disposed page and threw <code>ObjectDisposedException</code> on
+                the circuit. The Loader Example and the Tab List playground now follow the cancellation pattern
+                above, so navigating away mid-load throws nothing. No change to <code>RfTabList</code> or
+                <code>RfTab</code>, so there is no consumer compile break. Repro: open
+                <code>/tab-list/example/loader-example</code>, select Slow Load, and navigate away within
+                3 seconds.
+            </div>
+
+            <h2>Async Context Events</h2>
+            <p>
+                Tabs and the tab list communicate through <code>RfTabListContext</code>, whose
+                <code>OnTabRegister</code> event is async and multicast: each <code>RfTab</code> raises it
+                while registering and the <code>RfTabList</code> subscribes to adopt the tab. Extra
+                subscribers can attach to the same event.
+            </p>
+            <p>
+                Raising the event awaits <strong>every</strong> subscriber before it returns, so a tab is
+                not considered registered until all handlers finish their tasks. Subscribers are invoked in
+                registration order and run to completion. If exactly one subscriber faults, its exception is
+                rethrown unchanged to the raiser; if more than one faults, the faults are combined into a
+                single <code>AggregateException</code>. A subscriber that throws before its first
+                <code>await</code> does not stop the others from running.
+            </p>
+            <div class="notification is-warning">
+                <strong>BEHAVIOR CHANGE (#90):</strong> Previously only the LAST registered subscriber's task
+                was awaited; earlier handlers ran fire and forget and their exceptions went unobserved.
+                Every subscriber is now awaited before <code>RaiseOnTabRegister</code> returns.
+            </div>
 
             <h2>Styling with Bulma</h2>
             <p>

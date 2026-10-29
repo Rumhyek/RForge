@@ -20,8 +20,7 @@ public class CountdownTimer_BugSweep
     // any run); the real completion path never sets Completed → Status wrong in both directions
     // for anything keyed off it. stuck, low. (timeout 200ms keeps the ctor legal — see #84.)
     [TestMethod]
-    [Ignore("pending #82 — #68 bug-sweep repro, red-by-construction")]
-    public void Status_LifecycleContract()
+    public async Task Status_LifecycleContract()
     {
         using var timer = new CountdownTimer(200);
 
@@ -29,6 +28,11 @@ public class CountdownTimer_BugSweep
 
         Assert.AreNotEqual(TimerStatus.Completed, timer.Status,
             "Subscribing an elapsed handler must not mark the timer Completed before it ever ran.");
+
+        await timer.StartAsync();
+
+        Assert.AreEqual(TimerStatus.Completed, timer.Status,
+            "A countdown that ran to completion must report Completed, not still Running.");
     }
 
     // BUG #83 — CountdownTimer.cs:55: StartAsync has no Status==Running guard → a concurrent
@@ -38,7 +42,6 @@ public class CountdownTimer_BugSweep
     // claimed "~2x speed / elapsed twice": it is another silent-fault path, same family as #81.
     // race, med.
     [TestMethod]
-    [Ignore("pending #83 — #68 bug-sweep repro, red-by-construction")]
     public void DoubleStart_ElapsedFiresOnce()
     {
         using var cts = new CancellationTokenSource();

@@ -33,7 +33,7 @@ public class RfTabListContext
     {
         if (OnTabRegister != null)
         {
-            await OnTabRegister.Invoke(this, args);
+            await AsyncEventInvoker.InvokeAllAsync(OnTabRegister, this, args);
         }
     }
 }

@@ -2,6 +2,8 @@
 
 @rendermode InteractiveAuto
 
+@implements IDisposable
+
 <ExampleDetail Title="Loader Example"
                SubTitle="Tab List"
                ComponentName="Tab List"
@@ -178,8 +180,26 @@
     private string QuickLoadTime { get; set; } = "";
     private string SlowLoadTime { get; set; } = "";
 
+    /// <summary>
+    /// Cancelled when the component is disposed so in-flight load delays abort
+    /// instead of resuming onto a dead circuit.
+    /// </summary>
+    private CancellationTokenSource LoadCancellation { get; } = new();
+
+    /// <summary>
+    /// True once Dispose has run; guards StateHasChanged on async continuations.
+    /// </summary>
+    private bool IsDisposed { get; set; }
+
     private void AddToLog(string message)
     {
+        if (IsDisposed)
+        {
+            // The component was navigated away from mid-load; there is no
+            // renderer left to update, so drop the late continuation.
+            return;
+        }
+
         LoadingLog.Add($"{DateTime.Now:HH:mm:ss.fff} - {message}");
         StateHasChanged();
     }
@@ -193,7 +213,15 @@
     private async Task LoadQuickContent(string tabId)
     {
         AddToLog($"Starting quick load for tab: {tabId}");
-        await Task.Delay(1000); // Simulate 1 second loading
+        try
+        {
+            await Task.Delay(1000, LoadCancellation.Token); // Simulate 1 second loading
+        }
+        catch (OperationCanceledException)
+        {
+            return; // Component disposed mid-load; abandon the continuation.
+        }
+
         QuickLoadTime = DateTime.Now.ToString("HH:mm:ss");
         AddToLog($"Quick load completed for tab: {tabId}");
     }
@@ -201,8 +229,27 @@
     private async Task LoadSlowContent(string tabId)
     {
         AddToLog($"Starting slow load for tab: {tabId}");
-        await Task.Delay(3000); // Simulate 3 seconds loading
+        try
+        {
+            await Task.Delay(3000, LoadCancellation.Token); // Simulate 3 seconds loading
+        }
+        catch (OperationCanceledException)
+        {
+            return; // Component disposed mid-load; abandon the continuation.
+        }
+
         SlowLoadTime = DateTime.Now.ToString("HH:mm:ss");
         AddToLog($"Slow load completed for tab: {tabId}");
+    }
+
+    /// <summary>
+    /// Stops in-flight load delays and marks the component disposed so late
+    /// continuations never call StateHasChanged on a dead circuit.
+    /// </summary>
+    public void Dispose()
+    {
+        IsDisposed = true;
+        LoadCancellation.Cancel();
+        LoadCancellation.Dispose();
     }
 }
