@@ -713,6 +713,7 @@ public partial class RfDataGrid<TRowData>
     {
         if (ShowPaging == true && CurrentPageIndex != 0)
         {
+            CurrentPageIndex = 0;
             await CurrentPageIndexChanged.InvokeAsync(0);
         }
 
