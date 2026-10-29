@@ -44,16 +44,21 @@ public class CountdownTimer : IDisposable
     /// <param name="elapsedDelegate">The function to fire when the timer completes.</param>
     public CountdownTimer OnElapsed(Action elapsedDelegate)
     {
-        Status = TimerStatus.Completed;
         _elapsedDelegate = elapsedDelegate;
         return this;
     }
 
     /// <summary>
-    /// Call to start / restart the timer.
+    /// Call to start / restart the timer. If the timer is already running, this call is ignored:
+    /// a second start cannot spawn a concurrent countdown loop.
     /// </summary>
     public async Task StartAsync()
     {
+        if (Status == TimerStatus.Running)
+        {
+            return;
+        }
+
         _percentComplete = 0;
         Status = TimerStatus.Running;
         await DoWorkAsync();
@@ -74,6 +79,7 @@ public class CountdownTimer : IDisposable
 
             if (_percentComplete >= _ticksToTimeout)
             {
+                Status = TimerStatus.Completed;
                 _elapsedDelegate?.Invoke();
                 break;
             }
