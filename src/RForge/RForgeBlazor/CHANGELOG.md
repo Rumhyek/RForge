@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fixed `RfContextMenu`: menu DOM ids are now unique per instance. The `aria-controls` / menu
+  `id` value came from a per-instance `Random`, so instances could draw the same number and
+  render duplicate DOM ids, silently breaking the trigger's `aria-controls` link and any JS
+  targeting the menu. Consumer-visible: the id suffix changed from a random 6-digit number to
+  a sequential per-process number (the `context-menu-` prefix is unchanged) (#77).
 - Fixed `RfNotificationManager`: `INotificationManager.ClearAll()` no longer throws. The component's
   `OnClearAll` handler was an unimplemented `throw new NotImplementedException()`, so every `ClearAll()`
   call crashed into the caller and aborted the event multicast to later subscribers. It now disposes any
