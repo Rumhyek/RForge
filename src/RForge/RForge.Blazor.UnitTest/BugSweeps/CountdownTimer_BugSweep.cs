@@ -42,7 +42,6 @@ public class CountdownTimer_BugSweep
     // claimed "~2x speed / elapsed twice": it is another silent-fault path, same family as #81.
     // race, med.
     [TestMethod]
-    [Ignore("pending #83 — #68 bug-sweep repro, red-by-construction")]
     public void DoubleStart_ElapsedFiresOnce()
     {
         using var cts = new CancellationTokenSource();
