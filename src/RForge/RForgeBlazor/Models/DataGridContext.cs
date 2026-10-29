@@ -61,7 +61,7 @@ public class DataGridContext
     public async Task SortChanged(DataGridSortBy sort)
     {
         if (OnSortChanged != null)
-            await OnSortChanged.Invoke(this, sort);
+            await AsyncEventInvoker.InvokeAllAsync(OnSortChanged, this, sort);
     }
 
     /// <summary>
@@ -72,6 +72,62 @@ public class DataGridContext
     public async Task FilterChanged(DataGridFilterBy filter)
     {
         if (OnFilterChanged != null)
-            await OnFilterChanged.Invoke(this, filter);
+            await AsyncEventInvoker.InvokeAllAsync(OnFilterChanged, this, filter);
+    }
+}
+
+/// <summary>
+/// Raises multicast <see cref="AsyncEventHandler{TEventArgs}"/> events so that every subscriber
+/// is awaited. Shared by the context raisers so the fault policy is identical everywhere.
+/// </summary>
+/// <remarks>
+/// Invoking a task-returning multicast delegate with <c>Delegate.Invoke</c> runs every subscriber
+/// but returns only the LAST subscriber's task, so earlier subscribers run fire-and-forget: their
+/// exceptions go unobserved and the raiser returns while their work is still in flight. This helper
+/// instead invokes each entry of <see cref="Delegate.GetInvocationList"/> individually and awaits
+/// every returned task via <see cref="Task.WhenAll(IEnumerable{Task})"/>.
+/// Fault policy (identical for every context that uses this helper): all subscribers always run to
+/// completion; if exactly one subscriber faults, its exception is rethrown unchanged; if more than
+/// one faults, the faults are combined into a single <see cref="AggregateException"/> containing
+/// every subscriber exception.
+/// </remarks>
+internal static class AsyncEventInvoker
+{
+    /// <summary>
+    /// Invokes every subscriber of a multicast async event handler and awaits all of their tasks.
+    /// </summary>
+    /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
+    /// <param name="multicast">The multicast event delegate to invoke. Must not be <c>null</c>.</param>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The event arguments.</param>
+    /// <returns>A task that completes when every subscriber's task has completed.</returns>
+    internal static async Task InvokeAllAsync<TEventArgs>(AsyncEventHandler<TEventArgs> multicast, object sender, TEventArgs e)
+    {
+        var subscribers = multicast.GetInvocationList();
+        var tasks = new List<Task>(subscribers.Length);
+        foreach (AsyncEventHandler<TEventArgs> subscriber in subscribers)
+        {
+            try
+            {
+                tasks.Add(subscriber.Invoke(sender, e));
+            }
+            catch (Exception ex)
+            {
+                // A subscriber that throws before its first await must not stop the others.
+                tasks.Add(Task.FromException(ex));
+            }
+        }
+
+        var all = Task.WhenAll(tasks);
+        try
+        {
+            await all;
+        }
+        catch
+        {
+            if (all.Exception?.InnerExceptions.Count > 1)
+                throw new AggregateException("One or more async event subscribers failed.", all.Exception.InnerExceptions);
+            throw;
+        }
     }
 }
