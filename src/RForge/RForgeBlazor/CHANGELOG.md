@@ -25,6 +25,10 @@
   flight is now ignored. Previously it collapsed the node mid-load and raised a duplicate,
   misordered `NodeExpandChange`, leaving children under a collapsed node (#98).
 - Fixed `RfDropDown` / `RfDropDownMulti`: the `CssClass` parameter is now applied to the dropdown root element and `CssFilterClass` to the filter input. Both parameters existed but were silently ignored; existing consumers that set them will now see their styles apply (#66).
+- Fixed `CountdownTimer`: `Status` now tracks the real lifecycle. Subscribing an elapsed handler
+  via `OnElapsed` no longer marks a never-run timer `Completed`, and a countdown that runs to
+  completion now ends `Completed` instead of staying `Running`. Code keyed off `Status` (completion
+  checks, restart logic) will observe the corrected values (#82).
 - CI: merges to `main` no longer push packages to nuget.org. Each merge still builds and
   publishes packages to the GitHub package feed and creates a draft release; packages reach
   nuget.org only when a maintainer publishes a release (#116).
