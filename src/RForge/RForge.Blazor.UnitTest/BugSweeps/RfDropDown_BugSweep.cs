@@ -63,7 +63,6 @@ public class RfDropDown_BugSweep
     // only SelectedItemsChanged (SelectedItems left null) executes SelectedItems.Add(item) → NRE.
     // IsSelected tolerates null; the add path does not. crash, high.
     [TestMethod]
-    [Ignore("pending #74 — #68 bug-sweep repro, red-by-construction")]
     public void ItemClick_NullSelectedItems_DoesNotThrow()
     {
         List<string> emitted = null;

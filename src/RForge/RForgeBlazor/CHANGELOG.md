@@ -9,6 +9,12 @@
   (e.g. page 3 instead of page 1 after filtering from page 3). The callback now zeroes the local
   index before emitting, matching the sort path. Behavior is unchanged for consumers that echo
   `CurrentPageIndex` back to the grid (#92).
+- Fixed `RfDropDownMulti`: tag deselect now honors a custom `ItemComparer`. `OnDeselectClick`
+  removed the item with `List.Remove` (reference equality) while `IsSelected` and item clicks
+  compared with `ItemComparer`, so clicking the 'x' on a tag for an item that was comparer-equal
+  but not reference-equal to the `SelectedItems` entry removed nothing, emitted no
+  `SelectedItemsChanged`, and left the tag stuck. The remove now goes through `ItemComparer`,
+  matching the item-click toggle path. Consumers using the default comparer see no change (#75).
 - Fixed `RfDataGrid`: the Next and Last pager buttons no longer emit page index `-1` when the grid
   is empty (`TotalCount=0`, so `TotalPages=0`). Previously `OnNextPageClick` / `OnLastPageClick`
   computed `TotalPages - 1` and fired `CurrentPageIndexChanged(-1)`, which consumers fed into a
@@ -31,7 +37,19 @@
 - Fixed `RfTreeNode`: a toggle click that arrives while an expand/collapse load is still in
   flight is now ignored. Previously it collapsed the node mid-load and raised a duplicate,
   misordered `NodeExpandChange`, leaving children under a collapsed node (#98).
+- Fixed `RfDropDownMulti`: the first item click no longer throws `NullReferenceException` when a
+  consumer binds only `SelectedItemsChanged`. `SelectedItems` was never started when unset; the
+  click path now starts the list, adds the item, and emits `SelectedItemsChanged` (#74).
 - Fixed `RfDropDown` / `RfDropDownMulti`: the `CssClass` parameter is now applied to the dropdown root element and `CssFilterClass` to the filter input. Both parameters existed but were silently ignored; existing consumers that set them will now see their styles apply (#66).
+- Fixed `CountdownTimer`: `Status` now tracks the real lifecycle. Subscribing an elapsed handler
+  via `OnElapsed` no longer marks a never-run timer `Completed`, and a countdown that runs to
+  completion now ends `Completed` instead of staying `Running`. Code keyed off `Status` (completion
+  checks, restart logic) will observe the corrected values (#82).
+- Fixed `CountdownTimer`: `StartAsync` now ignores a start call while the timer is already running.
+  Previously a double-start (e.g. a double-tapped button) tried to run a second countdown loop,
+  which `PeriodicTimer` rejects: the second `StartAsync` task faulted silently (fire-and-forget
+  callers never saw it, awaiting callers got an exception mid-countdown). The ignored second call
+  now returns a completed task, and elapsed fires exactly once per countdown (#83).
 - CI: merges to `main` no longer push packages to nuget.org. Each merge still builds and
   publishes packages to the GitHub package feed and creates a draft release; packages reach
   nuget.org only when a maintainer publishes a release (#116).
@@ -41,3 +59,10 @@
   every later Alert/Confirm/Prompt queued forever and no dialog ever rendered again. The
   component now unregisters with an identity check; the existing no-arg `Unregister()` on
   `IDialogManager` is unchanged for existing callers (#86).
+- Fixed `RfDialogManager`: a null or throwing dialog callback no longer closes the dialog as if
+  the action succeeded. The confirm, cancel, and multi-action handlers wrapped the user callback
+  in a bare `catch {}`, which swallowed every failure, including a guaranteed
+  `NullReferenceException` when `OnAlert` / `OnConfirm` / `OnPrompt` / `OnAction` was null: the
+  operation was lost with zero diagnostics. Callback failures now propagate to the caller while
+  the dialog state still unwinds through `try/finally` (`IsLoading` clears and queued dialogs
+  advance), so nothing latches on a failed callback (#87).
