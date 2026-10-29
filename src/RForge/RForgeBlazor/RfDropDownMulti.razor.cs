@@ -128,7 +128,10 @@ public partial class RfDropDownMulti<TItem> : RfDropDownBase<TItem>
     {
         if (IsReadonly == true) return;
 
-        if (SelectedItems.Remove(item) == false) return;
+        // #75: remove by ItemComparer, like IsSelected and OnItemClick do. List.Remove used
+        // reference equality, so an ItemComparer-equal but not reference-equal item made the
+        // remove miss and the handler returned without emitting SelectedItemsChanged.
+        if (SelectedItems.RemoveAll(i => ItemComparer(i, item) == true) == 0) return;
 
         await SelectedItemsChanged.InvokeAsync(SelectedItems);
         StateHasChanged();

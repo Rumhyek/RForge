@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Fixed `RfDropDownMulti`: tag deselect now honors a custom `ItemComparer`. `OnDeselectClick`
+  removed the item with `List.Remove` (reference equality) while `IsSelected` and item clicks
+  compared with `ItemComparer`, so clicking the 'x' on a tag for an item that was comparer-equal
+  but not reference-equal to the `SelectedItems` entry removed nothing, emitted no
+  `SelectedItemsChanged`, and left the tag stuck. The remove now goes through `ItemComparer`,
+  matching the item-click toggle path. Consumers using the default comparer see no change (#75).
 - Fixed `RfDataGrid`: the Next and Last pager buttons no longer emit page index `-1` when the grid
   is empty (`TotalCount=0`, so `TotalPages=0`). Previously `OnNextPageClick` / `OnLastPageClick`
   computed `TotalPages - 1` and fired `CurrentPageIndexChanged(-1)`, which consumers fed into a
