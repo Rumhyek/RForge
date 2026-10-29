@@ -59,3 +59,35 @@ bUnit is 1.x: use `TestContext.RenderComponent<T>(ComponentParameter.CreateParam
 (bUnit 2.x's `TestContext.Render` does not exist here). MSTest's `TestContext`
 collides with `Bunit.TestContext` — alias it (`using BunitTestContext = Bunit.TestContext;`).
 The runner container has the net10 runtime only: build all TFMs, run tests with `-f net10.0`.
+
+## Snapshots must be culture-invariant (#110)
+
+A Verify snapshot is a committed file: the expected output in each `.verified.txt`
+was recorded under one host culture. Any part of the verified payload that came
+from a culture-dependent `ToString()` (a decimal, a date, a number list) prints a
+different decimal separator or date order on a comma-decimal host such as de-DE
+or fr-FR, so the test goes red with no behavior change at all.
+`Rf_StyleWhen.TestLongStyle` hit exactly this: `(1m / 3m).ToString()` produced
+`0,333...` under de-DE against a committed `0.333...` snapshot (issue #110,
+fixed in PR #144).
+
+The pattern: format every value that can reach a `Verify(...)` payload
+culture-invariantly, so the string is identical on every host:
+
+```csharp
+(1m / 3m).ToString(CultureInfo.InvariantCulture)  // always "0.3333333333333333333333333333"
+(1m / 3m).ToString()                              // host culture decides dot or comma
+```
+
+Verify does not normalize this for you: the separator is baked into the string
+before Verify ever sees it. The same rule covers any assertion that compares a
+formatted string against a committed fixture.
+
+To prove a snapshot is culture-invariant, run the test class under a comma
+culture; it must stay green:
+
+```bash
+LC_ALL=de_DE.UTF-8 dotnet test src/RForge/RForge.Blazor.UnitTest -f net10.0 --filter "Rf_StyleWhen"
+```
+
+(#110's tester used exactly this run as the red-at-base, green-at-head evidence.)
