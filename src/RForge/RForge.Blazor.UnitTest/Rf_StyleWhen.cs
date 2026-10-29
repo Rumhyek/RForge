@@ -1,4 +1,5 @@
-﻿using RForgeBlazor;
+﻿using System.Globalization;
+using RForgeBlazor;
 
 namespace RForge.Blazor.UnitTest;
 
@@ -38,7 +39,7 @@ public class Rf_StyleWhen : VerifyBase
     [TestMethod]
     public Task TestLongStyle()
     {
-        return Verify(Rf.StyleWhen(("uhynjactezacqhbcfpwapejwhmbbjekbakexigucapixhrhxqhaychiyyfbvfpnnhyuhppmcyuqjqhqtprgauieryzjpukhwkherktwvpkyzhptijjrudhidpfetfnxwjhurhhkgukcvbtwqpefanhkydhzctgfmdfwtepumujixyvxdxzujmcxqdayigrqazwyvhfppqqkpixkfhvkzunekkfzmykfadhwwkzzzfympikzggnrntmdjwcwftmzzngvurvverhtrjnqhaxavnntaunrrgfwctbmfpkwkwjqywxjfyykpwjaxfurbbdncfbccdvcaqhfcbbffeqcjkuzewgegndrzyiuxxayfvfmtubekzxxwwrrnxiqbzxqkvwkknurgwkrjtnmmmrvdrkmwnnpqzjwuiqqrnfyvmxgzqzcqjryakcfjwuvfcuvwddzpvwjivjtnayujbnemdzviuzudamaekuwkndgvhbfrzjwgpzbinvpbpceygqxa", (1m / 3m).ToString(), true)));
+        return Verify(Rf.StyleWhen(("uhynjactezacqhbcfpwapejwhmbbjekbakexigucapixhrhxqhaychiyyfbvfpnnhyuhppmcyuqjqhqtprgauieryzjpukhwkherktwvpkyzhptijjrudhidpfetfnxwjhurhhkgukcvbtwqpefanhkydhzctgfmdfwtepumujixyvxdxzujmcxqdayigrqazwyvhfppqqkpixkfhvkzunekkfzmykfadhwwkzzzfympikzggnrntmdjwcwftmzzngvurvverhtrjnqhaxavnntaunrrgfwctbmfpkwkwjqywxjfyykpwjaxfurbbdncfbccdvcaqhfcbbffeqcjkuzewgegndrzyiuxxayfvfmtubekzxxwwrrnxiqbzxqkvwkknurgwkrjtnmmmrvdrkmwnnpqzjwuiqqrnfyvmxgzqzcqjryakcfjwuvfcuvwddzpvwjivjtnayujbnemdzviuzudamaekuwkndgvhbfrzjwgpzbinvpbpceygqxa", (1m / 3m).ToString(CultureInfo.InvariantCulture), true)));
     }
 
     [TestMethod]
