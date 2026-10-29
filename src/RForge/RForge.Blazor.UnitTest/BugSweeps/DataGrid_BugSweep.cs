@@ -92,7 +92,6 @@ public class DataGrid_BugSweep
     // If the parent does not echo the parameter back, pager labels and next-click math run on
     // the stale page index. math, med.
     [TestMethod]
-    [Ignore("pending #92 — #68 bug-sweep repro, red-by-construction")]
     public void FilterChange_ResetsLocalPageIndex()
     {
         var emitted = new List<int>();
