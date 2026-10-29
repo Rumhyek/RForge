@@ -49,10 +49,16 @@ public class CountdownTimer : IDisposable
     }
 
     /// <summary>
-    /// Call to start / restart the timer.
+    /// Call to start / restart the timer. If the timer is already running, this call is ignored:
+    /// a second start cannot spawn a concurrent countdown loop.
     /// </summary>
     public async Task StartAsync()
     {
+        if (Status == TimerStatus.Running)
+        {
+            return;
+        }
+
         _percentComplete = 0;
         Status = TimerStatus.Running;
         await DoWorkAsync();

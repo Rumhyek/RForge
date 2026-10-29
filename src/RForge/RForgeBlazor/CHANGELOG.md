@@ -38,6 +38,11 @@
   via `OnElapsed` no longer marks a never-run timer `Completed`, and a countdown that runs to
   completion now ends `Completed` instead of staying `Running`. Code keyed off `Status` (completion
   checks, restart logic) will observe the corrected values (#82).
+- Fixed `CountdownTimer`: `StartAsync` now ignores a start call while the timer is already running.
+  Previously a double-start (e.g. a double-tapped button) tried to run a second countdown loop,
+  which `PeriodicTimer` rejects: the second `StartAsync` task faulted silently (fire-and-forget
+  callers never saw it, awaiting callers got an exception mid-countdown). The ignored second call
+  now returns a completed task, and elapsed fires exactly once per countdown (#83).
 - CI: merges to `main` no longer push packages to nuget.org. Each merge still builds and
   publishes packages to the GitHub package feed and creates a draft release; packages reach
   nuget.org only when a maintainer publishes a release (#116).
