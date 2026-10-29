@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Fixed `RfDataGrid`: changing the filter now resets the pager to the first page.
+  `OnFilterChangedCallback` emitted `CurrentPageIndexChanged(0)` but left the local
+  `CurrentPageIndex` at its stale value, so a consumer that does not echo the new index back kept
+  seeing the old page in the pager label, and the next Next/Last click emitted a stale page number
+  (e.g. page 3 instead of page 1 after filtering from page 3). The callback now zeroes the local
+  index before emitting, matching the sort path. Behavior is unchanged for consumers that echo
+  `CurrentPageIndex` back to the grid (#92).
 - Fixed `RfDropDownMulti`: tag deselect now honors a custom `ItemComparer`. `OnDeselectClick`
   removed the item with `List.Remove` (reference equality) while `IsSelected` and item clicks
   compared with `ItemComparer`, so clicking the 'x' on a tag for an item that was comparer-equal
