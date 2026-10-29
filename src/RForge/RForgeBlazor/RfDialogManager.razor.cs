@@ -217,10 +217,20 @@ public partial class RfDialogManager : IDisposable
 
     /// <summary>
     /// Disposes the component. Unregisters with the injected dialog manager.
+    /// When the injected service is the library's own <see cref="Services.DialogManager"/>,
+    /// the unregister carries this instance's identity so a stale component replaced by a
+    /// newer one cannot unregister it (#86).
     /// </summary>
     public void Dispose()
     {
-        DialogManager.Unregister();
+        if (DialogManager is Services.DialogManager manager)
+        {
+            manager.Unregister(this);
+        }
+        else
+        {
+            DialogManager.Unregister();
+        }
     }
 
     #region Computeds

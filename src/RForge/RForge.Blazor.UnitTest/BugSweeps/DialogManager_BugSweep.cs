@@ -38,7 +38,6 @@ public class DialogManager_BugSweep
     // manager after a swap unregisters the NEW one: every later Alert/Confirm/Prompt queues
     // forever and no dialog ever renders again. stuck, med.
     [TestMethod]
-    [Ignore("pending #86 — #68 bug-sweep repro, red-by-construction")]
     public void OlderInstanceDisposed_DialogsStillShow()
     {
         var first = ctx.RenderComponent<RfDialogManager>();
