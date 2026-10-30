@@ -95,3 +95,10 @@
   operation was lost with zero diagnostics. Callback failures now propagate to the caller while
   the dialog state still unwinds through `try/finally` (`IsLoading` clears and queued dialogs
   advance), so nothing latches on a failed callback (#87).
+- Fixed `RfTabList`: a programmatic `ActiveTabId` change now activates the targeted tab.
+  `OnParametersSet` only validated the parameter for non-blank, so a parent-driven change moved the
+  header highlight but never loaded the panel: the new tab's `OnLoad` / `OnShow` never fired and its
+  panel stayed hidden until the user clicked the tab. The change now goes through the same
+  activation path a click uses, so the panel loads and shows. Initial render and user-click
+  behavior are unchanged, and a parent re-rendering a stale `ActiveTabId` does not undo a click
+  the user already made (#95).
