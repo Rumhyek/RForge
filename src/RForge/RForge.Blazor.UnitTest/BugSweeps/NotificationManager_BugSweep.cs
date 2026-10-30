@@ -58,7 +58,6 @@ public class NotificationManager_BugSweep
     // call OnClearBy*.Invoke(...) WITHOUT the null-conditional the siblings use (ClearAll:19,
     // OnShow:42) → NullReferenceException when no RfNotificationManager is subscribed. crash, med.
     [TestMethod]
-    [Ignore("pending #79 — #68 bug-sweep repro, red-by-construction")]
     public void ClearBy_NoSubscribers_NoThrow()
     {
         var bare = new NotificationManager(); // no component ever subscribed — no dispatcher needed

@@ -19,10 +19,10 @@ public class NotificationManager : INotificationManager
     public void ClearAll() => OnClearAll?.Invoke();
 
     /// <inheritdoc />
-    public void ClearAllByPostion(RfNotificationPosition position) => OnClearByPosition.Invoke(position);
+    public void ClearAllByPostion(RfNotificationPosition position) => OnClearByPosition?.Invoke(position);
 
     /// <inheritdoc />
-    public void ClearAllBySeverity(RfNotificationSeverity severity) => OnClearBySeverity.Invoke(severity);
+    public void ClearAllBySeverity(RfNotificationSeverity severity) => OnClearBySeverity?.Invoke(severity);
 
     /// <inheritdoc />
     public void ClearAllError() => ClearAllBySeverity(RfNotificationSeverity.Error);
