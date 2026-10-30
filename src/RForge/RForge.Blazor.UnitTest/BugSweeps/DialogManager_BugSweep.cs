@@ -88,7 +88,6 @@ public class DialogManager_BugSweep
     // IDialogManagerBackend is documented for server-side PUSH callers — a thread-pool caller
     // (SignalR hub, timer) throws "not associated with the Dispatcher" / renders off-context. race, med.
     [TestMethod]
-    [Ignore("pending #88 — #68 bug-sweep repro, red-by-construction")]
     public void BackendPushFromBackgroundThread_Works()
     {
         var cut = ctx.RenderComponent<RfDialogManager>();
