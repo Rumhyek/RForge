@@ -17,35 +17,46 @@ public class ApiUserDataGridPageProcessor : IUserDataGridPageProcessor
 
     public async Task<List<UserData>> GetAll()
     {
-        try
-        {
-            var httpClient = _httpClientFactory.CreateClient("api");
+        var httpClient = _httpClientFactory.CreateClient("api");
 
-            var response = await httpClient.GetAsync("api/users/all");
+        var response = await httpClient.GetAsync("api/users/all");
 
-            return await response.Content.ReadFromJsonAsync<List<UserData>>();
-        }
-        catch (Exception e)
-        {
-        }
-
-        return null;
+        return await ReadApiResult<List<UserData>>(response, "api/users/all");
     }
 
     public async Task<GridPageResults<UserData>> GetPage(UserDataGridGetPageData options)
     {
+        var httpClient = _httpClientFactory.CreateClient("api");
+
+        var response = await httpClient.PostAsJsonAsync<UserDataGridGetPageData>("api/users/page", options);
+
+        return await ReadApiResult<GridPageResults<UserData>>(response, "api/users/page");
+    }
+
+    /// <summary>
+    /// Reads the deserialized payload of an API response, surfacing every failure (transport,
+    /// HTTP status, or unreadable/empty payload) as an error naming the endpoint. Failures are
+    /// never swallowed into null: callers dereference these results, and the hidden null meant
+    /// either an NRE circuit death or a data grid stuck in skeleton mode forever (bug #100).
+    /// </summary>
+    private static async Task<T> ReadApiResult<T>(HttpResponseMessage response, string endpoint)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException(
+                $"API call '{endpoint}' failed with status code {(int)response.StatusCode}"
+                + (string.IsNullOrEmpty(response.ReasonPhrase) ? "." : $" ({response.ReasonPhrase})."));
+        }
+
         try
         {
-            var httpClient = _httpClientFactory.CreateClient("api");
-
-            var response = await httpClient.PostAsJsonAsync<UserDataGridGetPageData>("api/users/page", options);
-
-            return await response.Content.ReadFromJsonAsync<GridPageResults<UserData>>();
+            return await response.Content.ReadFromJsonAsync<T>()
+                ?? throw new InvalidDataException($"API call '{endpoint}' returned no content.");
         }
-        catch (Exception e)
+        catch (JsonException e)
         {
+            throw new InvalidDataException(
+                $"API call '{endpoint}' returned a payload that could not be read: {e.Message}", e);
         }
-
-        return null;
     }
 }
