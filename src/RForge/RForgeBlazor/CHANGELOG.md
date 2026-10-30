@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Fixed `RfDialogManager` / `RfNotificationManager`: dialogs and notifications can now be pushed
+  from any thread. `RfDialogManager.Show()` and the notification component's service-event handlers
+  (`OnShow`, `OnClearAll`, `OnClearByPosition`, `OnClearBySeverity`, and the countdown-timer
+  removal) mutated state and called `StateHasChanged` directly on the caller's thread, so the
+  documented server-side push callers (`IDialogManagerBackend` / `INotificationManagerBackend`
+  driven by a SignalR hub or a timer) threw "The current thread is not associated with the
+  Dispatcher" or rendered off-context. The state mutation and re-render now run through the
+  Blazor dispatcher (`InvokeAsync`); UI-thread call sites behave exactly as before and rendered
+  output is unchanged (#88).
 - Fixed `RfDropDown` / `RfDropDownMulti`: rendering no longer throws a `NullReferenceException` when an item or selection must render with no template set. The invoked `@ChildContent` fallbacks (trigger display, show-at-top row, and item loop, in both components) are now null-guarded: with `ChildContent`, `RowItemTemplate`, and `SelectedItemTemplate` all unset, the slots render empty instead of crashing the render (#73).
 - Fixed `RfDoubleClick`: a pending `OnSingleClick` no longer fires after the component is
   disposed (the click-delay continuation now tracks the component lifetime), and an `Element`
