@@ -173,3 +173,58 @@ The second command prints one guard line per invoked site (14 for these two
 files at the time of writing: 7 per file, 4 template invocations plus 3
 `ChildContent` fallbacks each). A site with no line above it is a crash
 waiting for a consumer who omits that template.
+
+## A custom ItemComparer must reach every match site (#75)
+
+`RfDropDownMulti` answers "is this item selected?" and "remove this item" at
+three sites in `RfDropDownMulti.razor.cs`: the `IsSelected` membership test,
+the `OnItemClick` add/remove toggle, and the tag 'x' handler
+`OnDeselectClick`. `ItemComparer` is the parameter through which a consumer
+with identity-by-Id models defines what "same item" means; a comparer that
+steers two of the three sites is a partial contract.
+
+Before the fix the tag handler was the odd site out. `OnDeselectClick` called
+`SelectedItems.Remove(item)`, which is `List<T>`'s default equality
+(`EqualityComparer<TItem>.Default`: reference equality unless `TItem`
+overrides `Equals`), while `IsSelected` and `OnItemClick` both compared with
+`ItemComparer`. With a custom comparer set, a click on a tag carrying an
+instance that was comparer-equal but not reference-equal to the
+`SelectedItems` entry made `Remove` return false: silent early return, no
+`SelectedItemsChanged`, and the tag stayed stuck. The #71 red-run arbitration
+showed the naive path always hits (the razor tag loop iterates the list's own
+instances), so the reachable vehicle is an in-place selection swap: the
+consumer mutates the bound `List<T>` (clear and re-add an equal-but-new
+instance), Blazor has no change detection on `List<T>` so no re-render
+happens, and the still-visible tag keeps its click closure over the departed
+instance.
+
+Consumer-visible before PR #158 (merge `947ea4d`): that tag click did
+nothing. After: `OnDeselectClick` removes with `SelectedItems.RemoveAll(i =>
+ItemComparer(i, item) == true)`, the exact expression `OnItemClick` uses, so a
+comparer-equal entry is dropped, `SelectedItemsChanged` fires, and the tag
+disappears. A true miss (zero removals) still early-returns without emitting.
+Default-comparer consumers see no change: the component's fallback comparer is
+`EqualityComparer<TItem>.Default`, what `List.Remove` already used, so the fix
+is behavior-preserving for them. The consumer-visible change for custom
+comparers rode with the fix PR as a `CHANGELOG.md` bullet (it feeds
+`PackageReleaseNotes`). `RfDropDownMulti_BugSweep.TagDeselect_HonorsItemComparer`
+pins the behavior; it was authored fresh on the fix issue (sweep PR #115
+committed no repro for this row, the #104 precedent) and ships un-ignored as
+the TDD red-to-green step.
+
+The audit rule: when a component exposes a custom-equality parameter, every
+site that matches or removes an item by value must route through it; one site
+left on `List<T>` defaults is a silent no-op waiting for the consumer who sets
+the parameter:
+
+```bash
+cd src/RForge/RForgeBlazor
+grep -nE 'SelectedItems\.(Remove|RemoveAll|Contains|Any|IndexOf)\(' RfDropDownMulti.razor.cs
+```
+
+Every line the command prints must mention `ItemComparer` (three at the time
+of writing: the `IsSelected` `Any`, the `OnItemClick` toggle, the
+`OnDeselectClick` remove). The pattern deliberately excludes the positional
+`RemoveAt` trims under `MaxSelectableItems`, which match no item. A printed
+line without `ItemComparer` is this bug class: re-test it with a comparer
+stricter than reference equality.
