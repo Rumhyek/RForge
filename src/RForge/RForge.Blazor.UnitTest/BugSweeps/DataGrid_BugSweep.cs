@@ -138,7 +138,6 @@ public class DataGrid_BugSweep
     // (`css += $"{css} "`) instead of CssClass → the consumer's header CssClass is silently
     // dropped (a stray space is appended instead). math, med.
     [TestMethod]
-    [Ignore("pending #93 — #68 bug-sweep repro, red-by-construction")]
     public void CssClass_AppearsInHeader()
     {
         RenderFragment headers = b =>
