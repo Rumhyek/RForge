@@ -129,3 +129,47 @@ comm -3 \
 
 The grep assumes the house pattern of `public Task Name()` test methods (as in
 `Rf_Class` and `Rf_ClassWhen`); widen it if a class uses other signatures.
+
+## Invoked RenderFragments need a null guard (#73)
+
+Razor renders a `RenderFragment` in two forms that compile differently. A bare
+`@ChildContent` becomes a `RenderTreeBuilder.AddContent` call and is null-safe
+when the parameter was never set. The *invoked* form, `@ChildContent(item)`,
+becomes `ChildContent.Invoke(item)` and throws `NullReferenceException` inside
+`BuildRenderTree` when the parameter is null: the crash happens during render
+and takes the whole component down, not just the slot.
+
+The #68 sweep found this class at six sites, three in each dropdown component:
+the selected-value, show-at-top-row, and item-loop `ChildContent` fallbacks in
+`RfDropDown.razor` (lines 23, 84, 121) and `RfDropDownMulti.razor` (lines 30,
+105, 143). The title's "7 sites" is arithmetic drift in the discovery note:
+canary-4 plus "5 more sites" is 6, and a grep of main confirms exactly 6. The
+`@SelectedItemTemplate`, `@RowItemTemplate`, and `@EmptyContentTemplate`
+invocations were already null-guarded and stayed untouched.
+
+Consumer-visible before the fix: a dropdown with a selection but neither the
+matching template nor `ChildContent` (e.g. `SelectedItem` set with no
+templates at all) threw the NRE at render and never painted. PR #128 (merge
+`7231fb3`) guards every invoked site with `else if (ChildContent != null)`,
+mirroring each file's own `@if (Template != null)` idiom: the slot now renders
+empty while rows, chips, and the selected anchor still render. The render
+change is consumer-visible, so it carries a `CHANGELOG.md` bullet (it feeds
+`PackageReleaseNotes`). Six `// BUG #73` tests in `RfDropDown_BugSweep.cs`
+pin it, one per site, all `*DoesNotThrow` (the multi-component repros live in
+that same class).
+
+When fixing a template-render crash, find every invoked site in the component
+and check each one sits under a null test; leave bare `@Frag` sites alone,
+they are already null-safe and do not need a "fix":
+
+```bash
+cd src/RForge/RForgeBlazor
+grep -nE '@(ChildContent|[A-Za-z]+Template)\(' RfDropDown.razor RfDropDownMulti.razor
+grep -B2 -E '@(ChildContent|[A-Za-z]+Template)\(' RfDropDown.razor RfDropDownMulti.razor \
+  | grep -E '!= null'
+```
+
+The second command prints one guard line per invoked site (14 for these two
+files at the time of writing: 7 per file, 4 template invocations plus 3
+`ChildContent` fallbacks each). A site with no line above it is a crash
+waiting for a consumer who omits that template.
