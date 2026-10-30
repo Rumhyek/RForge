@@ -74,7 +74,6 @@ public class CountdownTimer_BugSweep
     // Add* caller (see NotificationManager_BugSweep / #80 interaction). The arithmetic model
     // must validate/derive ticks from the duration instead. math→crash, med.
     [TestMethod]
-    [Ignore("pending #84 — #68 bug-sweep repro, red-by-construction")]
     public void ShortDuration_IsNotCrashOnCtor()
     {
         using var timer = new CountdownTimer(60); // nominal 60 ms toast lifetime
@@ -82,5 +81,29 @@ public class CountdownTimer_BugSweep
         // Today: ArgumentOutOfRangeException('period') — 60/100 = 0.6 ms is below the OS
         // timer quantum and the ctor refuses. A fix validates or re-derives the tick model.
         Assert.IsTrue(true, "reaching here means sub-100ms durations construct");
+    }
+
+    // BUG #84 — CountdownTimer.cs:28: fixed _ticksToTimeout=100 → interval = ShowFor/100.
+    // Below the OS timer resolution the requested interval is silently rounded up while the
+    // model still waits for 100 of them, so short durations drift up to ~15x (ShowFor=100ms
+    // -> ~1-2s real on Windows-quantum hosts; measured 398ms, ~4x, on this Linux runner's
+    // RED run). Timing-based, marked honestly per #68 F15: the bound ShowFor*2 + 100ms is
+    // one an honest tick model clears with margin (duration + at most one coarsened tick +
+    // scheduler jitter) and the fixed 100-tick model violates. math/timing, low.
+    [TestMethod]
+    public async Task ShortDuration_ClosesWithinFactor()
+    {
+        const int ShowForMs = 100;
+        var closed = false;
+        using var timer = new CountdownTimer(ShowForMs).OnElapsed(() => Volatile.Write(ref closed, true));
+
+        var sw = Stopwatch.StartNew();
+        await timer.StartAsync();
+        sw.Stop();
+
+        Assert.IsTrue(Volatile.Read(ref closed), "OnElapsed must fire when the countdown closes.");
+        Assert.IsTrue(sw.ElapsedMilliseconds <= ShowForMs * 2 + 100,
+            $"CountdownTimer({ShowForMs}) closed in {sw.ElapsedMilliseconds}ms: the fixed 100-tick " +
+            "model waits 100 sub-quantum intervals, so elapsed drifts far past the requested duration.");
     }
 }
