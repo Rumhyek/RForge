@@ -209,7 +209,9 @@ public class StubApiHandlerFactory : IHttpClientFactory
 
     public StubApiHandlerFactory(StubApiMode mode) => _mode = mode;
 
-    public HttpClient CreateClient(string name) => new HttpClient(new StubApiHandler(_mode));
+    // The real client sets BaseAddress from the host environment (Program.cs); the stub matches.
+    public HttpClient CreateClient(string name) =>
+        new HttpClient(new StubApiHandler(_mode)) { BaseAddress = new Uri("http://localhost/") };
 
     private class StubApiHandler : HttpMessageHandler
     {
