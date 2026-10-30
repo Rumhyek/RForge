@@ -2,10 +2,15 @@ using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using RForgeDocs.Abstractions.DataModels;
 using RForgeDocs.Abstractions.Services;
+using RForgeDocs.Client.Implementation;
 using RForgeDocs.Client.Pages.Examples.DataGrid;
 using RForgeDocsLibrary.Implementation;
 using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using BunitTestContext = Bunit.TestContext;
 
 namespace RForge.Blazor.UnitTest.BugSweeps;
@@ -107,5 +112,123 @@ public class Docs_BugSweep
         Assert.AreEqual(expected, results.TotalCount,
             "null-Bio rows must be filtered out while every matching Bio is returned.");
         CollectionAssert.AllItemsAreNotNull(results.Data.Select(d => d.Bio).ToList());
+    }
+
+    // BUG #100 — RForgeDocs.Client/Implementation/ApiUserDataGridPageProcessor.cs:28-32 (and
+    // ApiFindUsersProcessor/ApiSaveUserProcessor): empty catch -> return null on ANY failure.
+    // DevTools-blocking the API makes the minimum example grid swallow the error: GetAll()
+    // returns null, Data stays null, and the page sits on the RfDataGrid skeleton forever with
+    // no error surfaced anywhere; callers that deref the null NRE-kill the circuit. repro F31.
+    [TestMethod]
+    public void ApiFailure_ShowsErrorNotCrash()
+    {
+        // The real client processor, pointed at a transport that fails every call the way
+        // DevTools request-blocking does (the sweep's repro). Last registration wins.
+        ctx.Services.AddSingleton<IUserDataGridPageProcessor>(
+            new ApiUserDataGridPageProcessor(new StubApiHandlerFactory(StubApiMode.ConnectionRefused)));
+
+        Exception thrown = null;
+        try
+        {
+            // First render auto-loads through RfDataGrid's OnLoadData; drive OnLoad directly too
+            // so a failure surfaces whether the page raises it during render or on reload.
+            var cut = ctx.RenderComponent<MinimumExamplePage>();
+            cut.InvokeAsync(() => cut.Instance.OnLoad()).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            thrown = ex;
+        }
+
+        Assert.IsNotNull(thrown,
+            "when the users API fails, the failure must surface to the page as an error naming "
+            + "the failing endpoint; today the processor swallows it, the grid never leaves "
+            + "skeleton mode, and the user waits forever on data that is never coming.");
+
+        StringAssert.Contains(thrown.ToString(), "api/users/all",
+            "the surfaced failure must identify the failing API call so the docs page shows a "
+            + "meaningful error, not a mystery crash (stack of thrown exception).");
+
+        Assert.IsFalse(thrown.ToString().Contains("NullReferenceException"),
+            "the failure must arrive as a descriptive API error, not later as a null-deref "
+            + "crash from callers dereferencing the swallowed null: " + thrown);
+    }
+
+    // BUG #100 — ApiUserDataGridPageProcessor.GetPage swallows HTTP failures (a 500 from
+    // /api/users/page returns null); the playground derefs it (DataGridPage OnLoad ->
+    // response.TotalCount) -> NRE circuit death on "Force Reload".
+    [TestMethod]
+    public void GetPage_ApiReturns500_SurfacesErrorNotHiddenNull()
+    {
+        var processor = new ApiUserDataGridPageProcessor(new StubApiHandlerFactory(StubApiMode.ServerError500));
+
+        Exception thrown = null;
+        GridPageResults<UserData> results = null;
+        try
+        {
+            results = processor.GetPage(new UserDataGridGetPageData
+            {
+                Filters = new UserDataGridFilterData(),
+                PageIndex = 0,
+                PageSize = 20,
+            }).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            thrown = ex;
+        }
+
+        Assert.IsNull(results,
+            "a failed page call must never hand back a null the callers deref (that NRE is the "
+            + "circuit death); if a result object is returned it must be a real one.");
+        Assert.IsNotNull(thrown,
+            "a 500 from api/users/page must surface as an error naming endpoint and status code, "
+            + "not be swallowed into null.");
+        StringAssert.Contains(thrown.Message, "api/users/page",
+            "the surfaced error must name the failing endpoint.");
+    }
+}
+
+/// <summary>How <see cref="StubApiHandlerFactory"/> makes API calls fail.</summary>
+public enum StubApiMode
+{
+    /// <summary>The request itself never completes (DevTools request blocking / offline).</summary>
+    ConnectionRefused,
+
+    /// <summary>The server answers 500 with a plain-text body that is not the expected JSON.</summary>
+    ServerError500,
+}
+
+/// <summary>
+/// Test-only IHttpClientFactory handing out HttpClients whose transport fails every request
+/// the selected <see cref="StubApiMode"/> way, so the Api* processors see real API failures.
+/// </summary>
+public class StubApiHandlerFactory : IHttpClientFactory
+{
+    private readonly StubApiMode _mode;
+
+    public StubApiHandlerFactory(StubApiMode mode) => _mode = mode;
+
+    public HttpClient CreateClient(string name) => new HttpClient(new StubApiHandler(_mode));
+
+    private class StubApiHandler : HttpMessageHandler
+    {
+        private readonly StubApiMode _mode;
+
+        public StubApiHandler(StubApiMode mode) => _mode = mode;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (_mode == StubApiMode.ConnectionRefused)
+            {
+                throw new HttpRequestException($"Simulated blocked network call to '{request.RequestUri}'.");
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError)
+            {
+                RequestMessage = request,
+                Content = new StringContent("The server exploded, no JSON here.", System.Text.Encoding.UTF8, "text/plain"),
+            });
+        }
     }
 }
