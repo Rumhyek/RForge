@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>RForge.Blazor.AutoApi.Generator</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <description>Source generator that turns RForge Auto API interfaces into minimal API endpoints (server) and HttpClient implementations (WebAssembly client).</description>
+    <readme>readme.md</readme>
+    <tags>blazor source-generator minimal-api webassembly</tags>
+    <dependencies>
+      <!-- The analyzer has no runtime dependencies; consumers need the attributes and IHttpClientFactory. -->
+      <group targetFramework="net8.0">
+        <dependency id="RForge.Blazor.AutoApi.Abstractions" version="$version$" />
+        <dependency id="Microsoft.Extensions.Http" version="8.0.1" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="$outdir$RForge.Blazor.AutoApi.Generator.dll" target="analyzers/dotnet/cs" />
+    <file src="..\RForge.Blazor.AutoApi.Abstractions\readme.md" target="" />
+  </files>
+</package>

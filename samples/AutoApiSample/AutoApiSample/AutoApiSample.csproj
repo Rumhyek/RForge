@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AutoApiSample.Client\AutoApiSample.Client.csproj" />
+        <ProjectReference Include="..\AutoApiSample.Shared\AutoApiSample.Shared.csproj" />
+        <ProjectReference Include="..\..\..\src\RForge\RForge.Blazor.AutoApi.Generator\RForge.Blazor.AutoApi.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+    </ItemGroup>
+
+</Project>
