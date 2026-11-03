@@ -167,7 +167,7 @@ public partial class RfDgHeader
             string css = "";
 
             if (string.IsNullOrWhiteSpace(CssClass) == false)
-                css += $"{css} ";
+                css += $"{CssClass} ";
 
             if (AllowSorting == true)
                 css += "sortable ";

@@ -8,6 +8,7 @@
   subscribed. The two calls invoked `OnClearBy*` without the null-conditional the sibling
   members (`ClearAll`, `OnShow`) already used, so clearing before a notification manager was
   mounted crashed the caller; the calls are now no-ops with no subscriber (#79).
+- Fixed `RfDgHeader`: the consumer's `CssClass` now appears on the rendered `<th>`. `HeaderCss` interpolated its own accumulator (`css += $"{css} "`) instead of `CssClass`, so a header `CssClass` was silently dropped and only a stray space was appended. Consumer-visible: existing grids that set a header `CssClass` and never saw it applied will now get the class (and its styling) on the header cell (#93).
 - Fixed `RfDialogManager` / `RfNotificationManager`: dialogs and notifications can now be pushed
   from any thread. `RfDialogManager.Show()` and the notification component's service-event handlers
   (`OnShow`, `OnClearAll`, `OnClearByPosition`, `OnClearBySeverity`, and the countdown-timer
