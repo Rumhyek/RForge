@@ -1,0 +1,72 @@
+﻿@page "/todos"
+@rendermode InteractiveAuto
+@using AutoApiSample.Shared
+@using RForge.Blazor.AutoApi
+@inject ITodoService TodoService
+
+<PageTitle>Todos</PageTitle>
+
+<h1>Todos</h1>
+
+<p>
+    Rendering with <strong>@RendererInfo.Name</strong>.
+    The same <code>ITodoService</code> calls run directly on the server or over HTTP from WebAssembly.
+</p>
+
+<form @onsubmit="AddAsync" class="d-flex gap-2 mb-3">
+    <input class="form-control" placeholder="What needs doing?" @bind="newTitle" disabled="@(!RendererInfo.IsInteractive)" />
+    <button class="btn btn-primary" type="submit" disabled="@(!RendererInfo.IsInteractive)">Add</button>
+</form>
+
+@if (error is not null)
+{
+    <div class="alert alert-warning">@error</div>
+}
+
+@if (items is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var item in items)
+        {
+            <li class="list-group-item d-flex align-items-center gap-2">
+                <input type="checkbox" class="form-check-input" checked="@item.Done"
+                       @onchange="() => RunAsync(() => TodoService.ToggleAsync(item.Id))" />
+                <span class="flex-grow-1 @(item.Done ? "text-decoration-line-through" : "")">@item.Title</span>
+                <button class="btn btn-sm btn-outline-danger" @onclick="() => RunAsync(() => TodoService.DeleteAsync(item.Id))">Delete</button>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<TodoItem>? items;
+    private string newTitle = "";
+    private string? error;
+
+    protected override async Task OnInitializedAsync() => items = await TodoService.GetAllAsync();
+
+    private Task AddAsync() => RunAsync(async () =>
+    {
+        await TodoService.AddAsync(newTitle);
+        newTitle = "";
+    });
+
+    private async Task RunAsync(Func<Task> action)
+    {
+        try
+        {
+            error = null;
+            await action();
+            items = await TodoService.GetAllAsync();
+        }
+        catch (RfException ex)
+        {
+            // Same exception type in Interactive Server and WebAssembly.
+            error = ex.Message;
+        }
+    }
+}
