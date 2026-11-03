@@ -1,4 +1,4 @@
-﻿using RForge.Abstractions;
+﻿using RForge.Blazor.Abstractions;
 
 namespace RForgeDocs.Abstractions.DataModels;
 

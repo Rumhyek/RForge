@@ -157,7 +157,7 @@ and check each one sits under a null test; leave bare `@Frag` sites alone,
 they are already null-safe and do not need a "fix":
 
 ```bash
-cd src/RForge/RForgeBlazor
+cd src/RForge/RForge.Blazor
 grep -nE '@(ChildContent|[A-Za-z]+Template)\(' RfDropDown.razor RfDropDownMulti.razor
 grep -B2 -E '@(ChildContent|[A-Za-z]+Template)\(' RfDropDown.razor RfDropDownMulti.razor \
   | grep -E '!= null'
@@ -212,7 +212,7 @@ left on `List<T>` defaults is a silent no-op waiting for the consumer who sets
 the parameter:
 
 ```bash
-cd src/RForge/RForgeBlazor
+cd src/RForge/RForge.Blazor
 grep -nE 'SelectedItems\.(Remove|RemoveAll|Contains|Any|IndexOf)\(' RfDropDownMulti.razor.cs
 ```
 
@@ -287,7 +287,7 @@ saying why no public seam exists.
 
 ## Benchmarks must consume what they measure (#113, #114)
 
-`src/RForge/RForgeBlazor.Benchmark` compares the library helpers
+`src/RForge/RForge.Blazor.Benchmark` compares the library helpers
 (`Rf.Class`, `Rf.ClassWhen`, `Rf.StyleWhen`) against hand written foreach
 versions. Four defects made its numbers unreliable, found by the #68 sweep
 (findings F44 and F45) and fixed in two PRs.
@@ -315,7 +315,7 @@ versions. Four defects made its numbers unreliable, found by the #68 sweep
 Run one benchmark with the command name as the first argument, for example:
 
 ```bash
-dotnet run -c Release --project src/RForge/RForgeBlazor.Benchmark -- rf-style-when-one
+dotnet run -c Release --project src/RForge/RForge.Blazor.Benchmark -- rf-style-when-one
 ```
 
 The commands are `rf-class-when-many`, `rf-class-when-one`,

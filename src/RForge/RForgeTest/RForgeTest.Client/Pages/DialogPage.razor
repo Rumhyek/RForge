@@ -1,6 +1,6 @@
-﻿@using RForge.Abstractions
-@using RForgeBlazor.Services
-@using RForge.Abstractions.Modal
+﻿@using RForge.Blazor.Abstractions
+@using RForge.Blazor.Services
+@using RForge.Blazor.Abstractions.Modal
 
 @inject IDialogManager dialogManager
 @inject INotificationManager notificationManager
@@ -217,10 +217,10 @@
         await Task.Delay(2000);
 
         if (message == null)
-            notificationManager.AddWarning($"No message given", "Failed to Save", options => options.Position = RForge.Abstractions.Notifications.RfNotificationPosition.BottomRight);
+            notificationManager.AddWarning($"No message given", "Failed to Save", options => options.Position = RForge.Blazor.Abstractions.Notifications.RfNotificationPosition.BottomRight);
         else
 
-            notificationManager.AddSuccess($"Mesage: {message}", "Successfully Saved!", options => options.Position = RForge.Abstractions.Notifications.RfNotificationPosition.BottomRight);
+            notificationManager.AddSuccess($"Mesage: {message}", "Successfully Saved!", options => options.Position = RForge.Blazor.Abstractions.Notifications.RfNotificationPosition.BottomRight);
     }
 
     public void ShowMultiAction(string message, string title = null)

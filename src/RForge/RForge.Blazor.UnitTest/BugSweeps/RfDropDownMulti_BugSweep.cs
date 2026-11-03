@@ -1,8 +1,8 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RForge.Abstractions.DropDowns;
-using RForgeBlazor;
+using RForge.Blazor.Abstractions.DropDowns;
+using RForge.Blazor;
 using System;
 using System.Collections.Generic;
 using System.Linq;

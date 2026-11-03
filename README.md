@@ -42,9 +42,9 @@ There are two packages. One for the blazor app and one for the library if any.
 This is optional but may be useful if you want to use common enums across the backend and frontend.
 
 ##### Command Line
-```dotnet add package RForge.Abstractions```
+```dotnet add package RForge.Blazor.Abstractions```
 ##### Package Manager Console
-```Install-Package RForge.Abstractions```
+```Install-Package RForge.Blazor.Abstractions```
 
 ### Import the namespaces
 To simplify namespacing while using RForge, the package is designed with most all components sitting within the root RForge namespace.
@@ -52,9 +52,9 @@ To simplify namespacing while using RForge, the package is designed with most al
 You may want to include the following namespaces in your _import.razor for ease of use.
 
 ```csharp
-@using RForgeBlazor
-@using RForgeBlazor.Services
-@using RForge.Abstractions
+@using RForge.Blazor
+@using RForge.Blazor.Services
+@using RForge.Blazor.Abstractions
 ```
 
 | Namespace | Purpose
@@ -70,7 +70,7 @@ In order for some components to work they must first have their services registe
 Open up `Program.cs` and add the following line before the var `app = builder.Build();`.
 
 ```csharp
-using RForgeBlazor;
+using RForge.Blazor;
 //...
 builder.Services.AddRfForgeBlazorServices();
 //...

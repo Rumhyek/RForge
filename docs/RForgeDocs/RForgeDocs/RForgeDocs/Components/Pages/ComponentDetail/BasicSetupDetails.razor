@@ -34,10 +34,10 @@
     </p>
 
     <h6>Command Line</h6>
-    <pre><code>dotnet add package RForge.Abstractions</code></pre>
+    <pre><code>dotnet add package RForge.Blazor.Abstractions</code></pre>
 
     <h6>Package Manager Console</h6>
-    <pre><code>Install-Package RForge.Abstractions</code></pre>
+    <pre><code>Install-Package RForge.Blazor.Abstractions</code></pre>
 
     <h2>Import the namespaces</h2>
 
@@ -48,9 +48,9 @@
 
     <p>You may want to include the following namespaces in your <code>_import.razor</code> for ease of use.</p>
     <pre><code>
-@@using RForgeBlazor
-@@using RForgeBlazor.Services
-@@using RForge.Abstractions
+@@using RForge.Blazor
+@@using RForge.Blazor.Services
+@@using RForge.Blazor.Abstractions
 </code></pre>
 
     <table>
@@ -95,7 +95,7 @@
     </div>
 
     <pre><code>
-using RForgeBlazor;
+using RForge.Blazor;
 //...
 builder.Services.AddRfForgeBlazorServices();
 //...

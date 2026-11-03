@@ -80,18 +80,18 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
             }
         }
 
-        if (options.SortOrder != RForge.Abstractions.RfSortOrder.None)
+        if (options.SortOrder != RForge.Blazor.Abstractions.RfSortOrder.None)
         {
             switch (options.SortKey)
             {
                 case nameof(UserData.Id):
-                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                    if (options.SortOrder == RForge.Blazor.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.Id);
                     else
                         query = query.OrderByDescending(u => u.Id);
                     break;
                 case nameof(UserDataGridFilterData.FullName):
-                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                    if (options.SortOrder == RForge.Blazor.Abstractions.RfSortOrder.Ascending)
                         query = query
                             .OrderBy(u => u.LastName)
                             .ThenBy(u => u.FirstName);
@@ -101,43 +101,43 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
                             .ThenByDescending(u => u.FirstName);
                     break;
                 case nameof(UserData.FirstName):
-                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                    if (options.SortOrder == RForge.Blazor.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.FirstName);
                     else
                         query = query.OrderByDescending(u => u.FirstName);
                     break;
                 case nameof(UserData.LastName):
-                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                    if (options.SortOrder == RForge.Blazor.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.LastName);
                     else
                         query = query.OrderByDescending(u => u.LastName);
                     break;
                 case nameof(UserData.Username):
-                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                    if (options.SortOrder == RForge.Blazor.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.Username);
                     else
                         query = query.OrderByDescending(u => u.Username);
                     break;
                 case nameof(UserData.Email):
-                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                    if (options.SortOrder == RForge.Blazor.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.Email);
                     else
                         query = query.OrderByDescending(u => u.Email);
                     break;
                 case nameof(UserData.Bio):
-                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                    if (options.SortOrder == RForge.Blazor.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.Bio);
                     else
                         query = query.OrderByDescending(u => u.Bio);
                     break;
                 case nameof(UserData.DateCreated):
-                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                    if (options.SortOrder == RForge.Blazor.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.DateCreated);
                     else
                         query = query.OrderByDescending(u => u.DateCreated);
                     break;
                 case nameof(UserData.IsAdmin):
-                    if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)
+                    if (options.SortOrder == RForge.Blazor.Abstractions.RfSortOrder.Ascending)
                         query = query.OrderBy(u => u.IsAdmin);
                     else
                         query = query.OrderByDescending(u => u.IsAdmin);

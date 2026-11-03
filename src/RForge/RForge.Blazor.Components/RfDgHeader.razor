@@ -1,0 +1,16 @@
+@using RForge.Blazor.Abstractions.DataGrids
+@implements IDisposable
+
+<th @onclick="OnColumnClick" class="@HeaderCss" @attributes="AdditionalAttributes">
+    @ChildContent
+
+    @if (AllowSorting == true)
+    {
+        <a class="table--sort-icon">
+            <span class="fas fa-sort"></span>
+            <span class="fas fa-sort-up"></span>
+            <span class="fas fa-sort-down"></span>
+        </a>
+    }
+
+</th>

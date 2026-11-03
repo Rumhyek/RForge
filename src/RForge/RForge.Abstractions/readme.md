@@ -1,2 +1,0 @@
-
-# RForge.Abstractions

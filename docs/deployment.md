@@ -35,8 +35,8 @@ to people who ask for prereleases.
    ```
 
 2. In a PR, rename `## Unreleased` to `## Version X.Y.Z` in both changelogs, then merge it:
-   - `src/RForge/RForgeBlazor/CHANGELOG.md`
-   - `src/RForge/RForge.Abstractions/CHANGELOG.md`
+   - `src/RForge/RForge.Blazor.Components/CHANGELOG.md`
+   - `src/RForge/RForge.Blazor.Abstractions/CHANGELOG.md`
 
    Each file's full text becomes that package's release notes on nuget.org.
 

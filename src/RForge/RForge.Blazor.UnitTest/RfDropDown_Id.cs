@@ -1,5 +1,5 @@
-using RForgeBlazor;
-using RForgeBlazor.Models;
+using RForge.Blazor;
+using RForge.Blazor.Models;
 
 namespace RForge.Blazor.UnitTest;
 

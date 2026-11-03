@@ -12,20 +12,20 @@
     </Examples>
         *@
     <RepoLinks>
-        @ComponentDetail.SideLink(("RfDialogManager.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDialogManager.razor"))
-        @ComponentDetail.SideLink(("RfDialogManager.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/RfDialogManager.razor.cs"))
+        @ComponentDetail.SideLink(("RfDialogManager.razor", TagInfo.Razor, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/RfDialogManager.razor"))
+        @ComponentDetail.SideLink(("RfDialogManager.razor.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/RfDialogManager.razor.cs"))
         @ComponentDetail.SpacerLink()
-        @ComponentDetail.SideLink(("IDialogManager.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Services/IDialogManager.cs"))
-        @ComponentDetail.SideLink(("IDialogManagerBackend.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Modal/IDialogManagerBackend.cs"))
+        @ComponentDetail.SideLink(("IDialogManager.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/Services/IDialogManager.cs"))
+        @ComponentDetail.SideLink(("IDialogManagerBackend.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Abstractions/Modal/IDialogManagerBackend.cs"))
         @ComponentDetail.SpacerLink()
-        @ComponentDetail.SideLink(("RfDialogOption.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOption.cs"))
-        @ComponentDetail.SideLink(("RfDialogOptionAlert.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionAlert.cs"))
-        @ComponentDetail.SideLink(("RfDialogOptionConfirm.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionConfirm.cs"))
-        @ComponentDetail.SideLink(("RfDialogOptionPrompt.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionPrompt.cs"))
-        @ComponentDetail.SideLink(("RfDialogOptionMultiAction.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForgeBlazor/Models/RfDialogOptionMultiAction.cs"))
+        @ComponentDetail.SideLink(("RfDialogOption.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/Models/RfDialogOption.cs"))
+        @ComponentDetail.SideLink(("RfDialogOptionAlert.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/Models/RfDialogOptionAlert.cs"))
+        @ComponentDetail.SideLink(("RfDialogOptionConfirm.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/Models/RfDialogOptionConfirm.cs"))
+        @ComponentDetail.SideLink(("RfDialogOptionPrompt.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/Models/RfDialogOptionPrompt.cs"))
+        @ComponentDetail.SideLink(("RfDialogOptionMultiAction.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/Models/RfDialogOptionMultiAction.cs"))
         @ComponentDetail.SpacerLink()
-        @ComponentDetail.SideLink(("RfDialogMultiActionButtonOptions.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Modal/RfDialogMultiActionButtonOptions.cs"))
-        @ComponentDetail.SideLink(("RfPlacement.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/Modal/RfPlacement.cs"))
+        @ComponentDetail.SideLink(("RfDialogMultiActionButtonOptions.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Abstractions/Modal/RfDialogMultiActionButtonOptions.cs"))
+        @ComponentDetail.SideLink(("RfPlacement.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Abstractions/Modal/RfPlacement.cs"))
     </RepoLinks>
 
     <Purpose>
@@ -77,7 +77,7 @@
                 Pererrabley it should be as high up the DOM tree to ensure some CSS rule doesn't affect it.
             </p>
             <p>
-                Secondly, the page will need to inject <code>RForgeBlazor.Services.IDialogManager.cs</code>. 
+                Secondly, the page will need to inject <code>RForge.Blazor.Services.IDialogManager.cs</code>. 
                 This interface is used to communicate between <code>RfDialogManager</code> and the page.
                 This interface supports several overloads for each alert, confirm, and prompt.
             </p>
@@ -90,7 +90,7 @@
 
             <h4>Standard Request Flow</h4>
             <p>
-                The <code>RfDialogManager</code> works off calling <code>RForgeBlazor.Services.IDialogManager.cs</code> and providing the method a callback function when completed.
+                The <code>RfDialogManager</code> works off calling <code>RForge.Blazor.Services.IDialogManager.cs</code> and providing the method a callback function when completed.
             </p>
 
             <h4>Failing Callbacks</h4>

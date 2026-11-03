@@ -1,0 +1,129 @@
+@using RForge.Blazor.Abstractions.DropDowns
+@using RForge.Blazor.Services
+@typeparam TItem
+
+@inherits RfDropDownBase<TItem>
+
+<div class="dropdown @DropdownCss">
+    <div class="dropdown-trigger">
+        <button class="button" type="button" aria-haspopup="true" aria-controls="@DropdownId" @onclick="@OnDropDownClick">
+            @if (SelectedItem == null)
+            {
+                <span class="place-holder">@PlaceholderText</span>
+            }
+            else
+            {
+                <span class="@CssSelectedClass">
+                    @if (SelectedItemTemplate != null)
+                    {
+                        @SelectedItemTemplate(SelectedItem)
+                    }
+                    else if (ChildContent != null)
+                    {
+                        @ChildContent(SelectedItem)
+                    }
+                </span>
+            }
+            <span class="rf-icon icon is-small @IsLoadingCss">
+                <i class="fa-solid fa-angle-down" aria-hidden="true"></i>
+                <span class="loader"></span>
+            </span>
+        </button>
+    </div>
+    <div class="dropdown-menu" id="@DropdownId" role="menu">
+        <div class="dropdown-content @CssHelper.AddIf(ShowFilter,"has-filter")">
+
+            @if (ShowFilter == true)
+            {
+                bool hasFilterIcon = string.IsNullOrWhiteSpace(FilterIcon) == false && IsLoading == false;
+                <div class="dropdown-item is-filter">
+                    <div class="field">
+                        <div class="control @CssHelper.AddIf(hasFilterIcon || IsLoading, "has-icons-right") @IsLoadingCss">
+                            <input type="search" class="@FilterInputCss" placeholder="@FilterPlaceholderText" @bind-value=Filter @oninput=@OnFilterChange />
+
+                            @if (hasFilterIcon == true)
+                            {
+                                <span class="icon is-small is-right">
+                                    <i class="@FilterIcon"></i>
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @{
+                bool showAtTop = false;
+                if (SelectedItem != null)
+                {
+                    switch (ShowSelectedItemInDropDown)
+                    {
+                        case RfShowSelectionInDropDown.Always:
+                            showAtTop = true;
+                            break;
+                        case RfShowSelectionInDropDown.OnlyWhenNotInList:
+                            showAtTop = Items == null || Items.Any(i => IsSelected(i) == true) == false;
+                            break;
+                    }
+                }
+            }
+
+            @if (showAtTop == true)
+            {
+                <a class="dropdown-item @CssRowItemClass is-selected"
+                   @onclick=@(async () => await OnItemClick(SelectedItem))
+                   @onkeydown=@(async (e) => await OnItemKeyDown(e, SelectedItem))
+                   tabindex="0">
+
+                    @if (RowItemTemplate != null)
+                    {
+                        @RowItemTemplate(SelectedItem)
+                    }
+                    else if (ChildContent != null)
+                    {
+                        @ChildContent(SelectedItem)
+                    }
+                </a>
+            }
+
+            @if (Items == null || Items.Count == 0)
+            {
+                <div class="dropdown-item">
+                    @if (EmptyContentTemplate != null)
+                    {
+                        @EmptyContentTemplate(EmptyContentText)
+                    }
+                    else
+                    {
+                        @EmptyContentText
+                    }
+                </div>
+            }
+            else
+            {
+
+                @foreach (var item in Items)
+                {
+                    string rowCss = null;
+                    CssHelper.AddIfTrue(ref rowCss, IsSelected(item), "is-selected");
+
+                    <a class="dropdown-item @CssRowItemClass @rowCss"
+                       @onclick=@(async () => await OnItemClick(item))
+                       @onkeydown=@(async (e) => await OnItemKeyDown(e, item))
+                       tabindex="0">
+
+                        @if (RowItemTemplate != null)
+                        {
+                            @RowItemTemplate(item)
+                        }
+                        else if (ChildContent != null)
+                        {
+                            @ChildContent(item)
+                        }
+
+                    </a>
+                }
+            }
+        </div>
+    </div>
+</div>

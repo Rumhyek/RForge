@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RForge.Abstractions.Notifications;
-using RForgeBlazor.Services;
+using RForge.Blazor.Abstractions.Notifications;
+using RForge.Blazor.Services;
 using System.Collections.Generic;
 
 namespace RForge.Blazor.UnitTest;

@@ -1,7 +1,7 @@
 using RForgeDocs;
 using RForgeDocs.Components;
 using RForgeDocs.EndPoints;
-using RForgeBlazor;
+using RForge.Blazor;
 
 var builder = WebApplication.CreateBuilder(args);
 

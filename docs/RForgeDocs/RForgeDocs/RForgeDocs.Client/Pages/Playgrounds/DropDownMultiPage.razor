@@ -1,6 +1,6 @@
 ﻿@page "/dropdown-multi/playground"
-@using RForge.Abstractions
-@using RForge.Abstractions.DropDowns
+@using RForge.Blazor.Abstractions
+@using RForge.Blazor.Abstractions.DropDowns
 @using RForgeDocs.Abstractions.DataModels
 @using RForgeDocs.Abstractions.Services
 @rendermode InteractiveAuto
@@ -262,7 +262,7 @@
 
 
     /// <summary>
-    /// Determines how to render the selected item within a drop down options. Does not affect the <see cref="RForgeBlazor.Models.RfDropDownBase{TItem}.Items"/> output.
+    /// Determines how to render the selected item within a drop down options. Does not affect the <see cref="RForge.Blazor.Models.RfDropDownBase{TItem}.Items"/> output.
     /// </summary>
     [Parameter]
     public RfShowSelectionInDropDown ShowSelectedItemInDropDown { get; set; } = RfShowSelectionInDropDown.OnlyWhenNotInList;

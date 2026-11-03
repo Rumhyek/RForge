@@ -19,7 +19,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="3.6.4" />
     <PackageReference Include="MSTest.TestFramework" Version="3.6.4" />
     <PackageReference Include="Verify.MSTest" Version="28.4.0" />
-    <ProjectReference Include="..\RForgeBlazor\RForgeBlazor.csproj" />
+    <ProjectReference Include="..\RForge.Blazor.Components\RForge.Blazor.Components.csproj" />
     <!-- #99: Docs_BugSweep repros exercise the docs app (page + processor) directly. -->
     <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocsLibrary\RForgeDocsLibrary.csproj" />
     <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocs\RForgeDocs.Client\RForgeDocs.Client.csproj" />

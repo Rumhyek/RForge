@@ -1,9 +1,9 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RForge.Abstractions.DataGrids;
-using RForgeBlazor;
-using RForgeBlazor.Models;
+using RForge.Blazor.Abstractions.DataGrids;
+using RForge.Blazor;
+using RForge.Blazor.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
