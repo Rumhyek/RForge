@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Builds the packed RForge.Blazor.Events package the way a net8 app on the .NET 8 SDK would, at the
+       default C# 12. global.json pins the SDK. Warnings are errors so that an analyzer the old compiler
+       refuses to load (CS9057) fails the build instead of silently disabling the generator. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NuGetAudit>false</NuGetAudit>
+    <IsPackable>false</IsPackable>
+    <EventsVersion Condition="'$(EventsVersion)' == ''">0.0.0-smoke</EventsVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../Shared/Probes.cs" />
+    <PackageReference Include="RForge.Blazor.Events" Version="$(EventsVersion)" />
+  </ItemGroup>
+
+</Project>

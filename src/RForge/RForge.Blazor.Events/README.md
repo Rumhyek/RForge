@@ -2,7 +2,7 @@
 
 **Typed events and reactive state for Blazor components, wherever they sit in the tree.**
 
-> **Status: pre-release `0.0.1-rc4`** on NuGet. Tested with 96 unit/generator tests plus a browser-driven pass over every sample page. See the [design specification](https://github.com/Rumhyek/RForge/blob/main/docs/events/design/index.md).
+> **Status:** new in RForge.Blazor 1.0.0. Tested with 96 unit/generator tests on each of net8, net9 and net10, plus a browser-driven pass over every sample page. See the [design specification](https://github.com/Rumhyek/RForge/blob/main/docs/events/design/index.md).
 
 Blazor makes parent ↔ child communication easy. Communicating *across* the tree usually means a hand-written service with C# events, plus subscribing, unsubscribing, `InvokeAsync`, `StateHasChanged` and error handling in every component that uses it.
 
@@ -22,7 +22,7 @@ RForge.Blazor.Events handles that for you. It's inspired by Svelte's stores and 
 ## Install
 
 ```bash
-dotnet add package RForge.Blazor.Events --version 0.0.1-rc4
+dotnet add package RForge.Blazor.Events
 ```
 
 One package contains the runtime, the source generator and the analyzers. Add it to **every project that contains event-aware components** (in a Blazor Web App, both the server and the `.Client` project), because NuGet doesn't pass analyzers through project references. See [Setup](https://github.com/Rumhyek/RForge/blob/main/docs/events/tutorials/01-setup.md) for the full walkthrough.
@@ -118,7 +118,9 @@ Details: [docs/events/design/render-modes.md](https://github.com/Rumhyek/RForge/
 
 ## Requirements
 
-- **.NET 10** or later (C# 14).
+- **.NET 8, 9 or 10.** `[Subscribe]`, state, scopes and the analyzers work with the .NET 8 SDK and newer.
+- **`[UseState]` needs C# 13**, because it is declared as a partial property. net9 and net10 projects already compile at C# 13 or later. A net8 project defaults to C# 12, so it needs the .NET 9 SDK or newer and `<LangVersion>13</LangVersion>` (or `latest`).
+- **Async lambdas at C# 12.** In a net8 project at the default C# 12, `builder.On<MyEvent>(async e => ...)` is ambiguous between the `Task` and `ValueTask` overloads (CS0121). Pass a method group, cast the lambda to `Func<MyEvent, Task>`, or set `LangVersion` to 13 or later, which resolves it.
 - Members annotated with `[Subscribe]` / `[UseState]` must be in a **code-behind** (`.razor.cs`) partial class, not in a `@code` block. Source generators can't see the Razor compiler's output, and `RFEVT001` reports it if you forget ([ADR-004](https://github.com/Rumhyek/RForge/blob/main/docs/events/design/decisions.md#adr-004-annotated-members-require-code-behind)).
 - Event-aware `.razor` files start with **`@inherits RfEventComponent`**. Razor otherwise declares `: ComponentBase`, which conflicts with a base class declared in the code-behind ([ADR-017](https://github.com/Rumhyek/RForge/blob/main/docs/events/design/decisions.md#adr-017-base-class-goes-in-inherits)).
 
@@ -149,8 +151,8 @@ dotnet test  src/RForge/RForge.sln
 
 | Project | Contents |
 |---|---|
-| `src/RForge.Blazor.Events` | Runtime library (`net10.0`). Packs the generator into `analyzers/dotnet/cs`. |
-| `src/RForge.Blazor.Events.Generators` | Incremental source generator + analyzers (`netstandard2.0`) |
+| `src/RForge/RForge.Blazor.Events` | Runtime library (`net8.0`, `net9.0`, `net10.0`). Packs the generator into `analyzers/dotnet/cs`. |
+| `src/RForge/RForge.Blazor.Events.Generators` | Incremental source generator + analyzers (`netstandard2.0`) |
 | `tests/RForge.Blazor.Events.Tests` | Routing, delivery, state, persistence and bUnit component tests |
 | `tests/RForge.Blazor.Events.Generators.Tests` | Generated-code, incremental-caching and diagnostic tests |
 | `samples/RForge.Blazor.Events.Sample(.Client)` | Example app |

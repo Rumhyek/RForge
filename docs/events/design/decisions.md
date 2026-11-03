@@ -20,7 +20,7 @@ To change a decision, add a new ADR that supersedes it rather than rewriting his
 | [005](#adr-005-bubble-is-the-default-route) | `Bubble` is the default route | Accepted |
 | [006](#adr-006-statescope-option-c) | StateScope: Option C | Accepted |
 | [007](#adr-007-no-js-and-no-cross-island-bridge) | No JS and no cross-island bridge | Accepted |
-| [008](#adr-008-net-10-minimum) | .NET 10 minimum | Accepted |
+| [008](#adr-008-net-8-9-and-10) | .NET 8, 9 and 10 | Accepted |
 | [009](#adr-009-record-equality-for-change-detection) | Record equality for change detection | Accepted |
 | [010](#adr-010-the-root-hub-is-scoped) | The root hub is Scoped | Accepted |
 | [011](#adr-011-scope-objects-are-cascaded-with-isfixed) | Scope objects are cascaded with `IsFixed` | Accepted |
@@ -147,17 +147,17 @@ To change a decision, add a new ADR that supersedes it rather than rewriting his
 
 ---
 
-## ADR-008: .NET 10 minimum
+## ADR-008: .NET 8, 9 and 10
 
-**Status:** Accepted
+**Status:** Accepted. Revised for 1.0.0; it originally set a .NET 10 minimum.
 
-**Context.** The design uses C# 13 partial properties (generated `[UseState]` properties), C# 11 static abstract interface members (`IState<T>.Initial`), .NET 8 `DispatchExceptionAsync` and root-level cascading values, .NET 9 `RendererInfo`, and .NET 10 persistent-state improvements.
+**Context.** The design uses C# 13 partial properties (generated `[UseState]` properties), C# 11 static abstract interface members (`IState<T>.Initial`), and .NET 8 `DispatchExceptionAsync` and root-level cascading values. All of that is available on .NET 8 except partial properties, which are a language feature rather than a runtime one. The library does not use `RendererInfo` (.NET 9).
 
-**Decision.** Target **`net10.0`** / C# 14. The generator assembly targets `netstandard2.0`, as Roslyn requires.
+**Decision.** Target **`net8.0`, `net9.0` and `net10.0`**, matching the rest of the RForge packages. The generator assembly targets `netstandard2.0`, as Roslyn requires, and is built against Roslyn 4.8 so it also loads in the compiler that ships with the .NET 8 SDK. `[UseState]` needs C# 13, so a net8 project needs the .NET 9 SDK or newer and `LangVersion` 13 or later.
 
-**Alternatives.** *.NET 8 LTS:* a wider audience, but it would lose partial properties (more awkward generated API), `RendererInfo` (harder non-interactive detection) and the newer persistence APIs.
+**Alternatives.** *.NET 10 only:* no language-version caveats, but it would exclude net8 and net9 apps. *Another form for `[UseState]`:* would work at C# 12, but the generated API is more awkward.
 
-**Consequences.** Smaller reach at first. No compatibility shims to maintain.
+**Consequences.** Two caveats for a net8 project at the default C# 12. `[UseState]` is unavailable. `SubscriptionBuilder.On(async e => ...)` is ambiguous between its `Task` and `ValueTask` overloads (CS0121), because overload resolution priority only applies from C# 13. The net8 build defines the priority attribute itself, so a net8 project that raises `LangVersion` to 13 or later resolves it. The README lists the workarounds for C# 12.
 
 ---
 

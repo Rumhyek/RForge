@@ -1,8 +1,8 @@
 # RForge.Blazor.Events: Design Specification
 
 > **Status:** Draft · 2026-10-06
-> **Target:** .NET 10+ / C# 14
-> **Implementation:** published as pre-release `0.0.1-rc4`; source in `src/`, with tests in `tests/` and examples in `samples/`. Decisions changed by implementation are recorded as ADR-016 and ADR-017.
+> **Target:** .NET 8, 9 and 10 (`[UseState]` needs C# 13)
+> **Implementation:** source in `src/RForge/RForge.Blazor.Events`, with tests in `tests/` and examples in `samples/`. Decisions changed by implementation are recorded as ADR-016 and ADR-017.
 
 ## Purpose
 
@@ -58,7 +58,7 @@ RForge.Blazor.Events provides **typed events and reactive state that any compone
 
 ```
 RForge.Blazor.Events (NuGet package)
-├── lib/net10.0/RForge.Blazor.Events.dll
+├── lib/{net8.0,net9.0,net10.0}/RForge.Blazor.Events.dll
 │   ├── Contracts   IEvent, IState<T>, Route, ScopeTarget
 │   ├── Runtime     IRfEventHub / IRfEventHubScope, IStateStore<T>, delivery engine
 │   ├── Blazor      RfEventComponent, SubscriptionBuilder, handles, EventScope, StateScope

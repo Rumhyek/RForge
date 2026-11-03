@@ -43,8 +43,8 @@ Why these locations:
 Add the [`RForge.Blazor.Events`](https://www.nuget.org/packages/RForge.Blazor.Events) package to **both** projects:
 
 ```bash
-dotnet add MyApp.Client package RForge.Blazor.Events --version 0.0.1-rc4
-dotnet add MyApp package RForge.Blazor.Events --version 0.0.1-rc4
+dotnet add MyApp.Client package RForge.Blazor.Events
+dotnet add MyApp package RForge.Blazor.Events
 ```
 
 or in each `.csproj`:
@@ -52,11 +52,11 @@ or in each `.csproj`:
 ```xml
 <!-- MyApp.Client/MyApp.Client.csproj and MyApp/MyApp.csproj -->
 <ItemGroup>
-  <PackageReference Include="RForge.Blazor.Events" Version="0.0.1-rc4" />
+  <PackageReference Include="RForge.Blazor.Events" Version="1.0.0" />
 </ItemGroup>
 ```
 
-The package contains the runtime library **and** the source generator/analyzers, so nothing else is needed. It's a pre-release, so in the Visual Studio package manager tick **Include prerelease** to find it.
+The package contains the runtime library **and** the source generator/analyzers, so nothing else is needed.
 
 **Why both projects?** The runtime library would reach the server through its reference to `MyApp.Client`, but NuGet doesn't pass a package's **analyzers** (which include the source generator) through project references. Any project that contains components using `[Subscribe]` or `[UseState]` needs its own reference. Referencing the package in both projects also keeps them on the same version.
 

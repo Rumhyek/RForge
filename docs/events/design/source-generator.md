@@ -61,7 +61,7 @@ Any accessibility is allowed (private is typical). Static methods, generic metho
 
 ### `[UseState]`
 
-Applied to a **partial property with only a `get` accessor** (C# 13+ partial properties; this library targets C# 14).
+Applied to a **partial property with only a `get` accessor** (C# 13+ partial properties, so a net8 project needs `LangVersion` 13 or later).
 
 | Form | Property type | Re-renders on |
 |---|---|---|
@@ -190,7 +190,7 @@ Generated overrides call `base.RegisterSubscriptions(builder)` first. A componen
 | `RFEVT013` | Warning | State type isn't a `record`, so change detection falls back to reference equality |
 | `RFEVT014` | Warning | Type deriving from `RfEventComponent` implements `IDisposable`/`IAsyncDisposable` directly. Override `DisposeAsyncCore`. |
 
-Code fixes are planned but **not yet implemented** as of 0.0.1-rc4: make the type partial (`RFEVT002`), convert a property to a partial get-only property (`RFEVT006`), and move a manual override into `OnRegisterSubscriptions` (`RFEVT009`).
+Code fixes are planned but **not yet implemented**: make the type partial (`RFEVT002`), convert a property to a partial get-only property (`RFEVT006`), and move a manual override into `OnRegisterSubscriptions` (`RFEVT009`).
 
 ## Packaging
 

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- A net8 app on whatever SDK is newest, with the language version raised to 13 or later. This is
+       where async lambdas passed to SubscriptionBuilder.On and [UseState] work for a net8 app. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <DefineConstants>$(DefineConstants);ASYNC_LAMBDAS</DefineConstants>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NuGetAudit>false</NuGetAudit>
+    <IsPackable>false</IsPackable>
+    <EventsVersion Condition="'$(EventsVersion)' == ''">0.0.0-smoke</EventsVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../Shared/Probes.cs" />
+    <Compile Include="../Shared/UseStateProbe.cs" />
+    <PackageReference Include="RForge.Blazor.Events" Version="$(EventsVersion)" />
+  </ItemGroup>
+
+</Project>

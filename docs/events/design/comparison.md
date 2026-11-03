@@ -24,7 +24,7 @@ How RForge.Blazor.Events relates to what Blazor developers can already use, with
 | **Ceremony per feature** | Medium | Low | Low | High (action + reducer + feature) | Low (record + attribute) | Very low |
 | **Works without a base class** | Yes | Yes | Yes | No (for auto-subscribe) | Partially ([compat paths](components.md#using-the-hub-without-the-base-class)) | N/A |
 | **Tooling** | None | None | None | Redux DevTools, middleware | Analyzers (code fixes planned) | Svelte DevTools |
-| **Maturity** | N/A | Small, stable | Built in (.NET 8+) | Mature, widely used | Pre-release (0.0.1-rc4) | Mature |
+| **Maturity** | N/A | Small, stable | Built in (.NET 8+) | Mature, widely used | New in 1.0.0 | Mature |
 
 ## Notes on each
 
