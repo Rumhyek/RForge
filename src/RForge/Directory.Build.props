@@ -1,0 +1,13 @@
+<Project>
+
+  <!-- Package metadata shared by every RForge.Blazor package. Per-package values (id, title,
+       description, tags, readme) stay in each project file. -->
+  <PropertyGroup>
+    <Authors>Rumhyek</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://rforge.azurewebsites.net</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Rumhyek/RForge</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+</Project>

@@ -10,14 +10,12 @@
         <!-- Razor derives the namespace of .razor files from this, and the code-behind files use RForge.Blazor. -->
         <RootNamespace>RForge.Blazor</RootNamespace>
 
-        <PackageId>RForge.Blazor</PackageId>
-        <Product>RForge.Blazor</Product>
-        <Version>$(Version)</Version>
-        <Authors>Rumhyek</Authors>
+        <PackageId>RForge.Blazor.Components</PackageId>
+        <Product>RForge.Blazor.Components</Product>
         <PackageTags>blazor; components; library</PackageTags>
         <Title>Light Weight Blazor Components</Title>
-        <Description>A light weight blazor component library that makes use of Bulma.css and focuses on memory efficeiency.</Description>
-        <RepositoryUrl>https://github.com/rumhyek/rforge</RepositoryUrl>
+        <Description>A light weight blazor component library that makes use of Bulma.css and focuses on memory efficiency.</Description>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
         
     </PropertyGroup>
 

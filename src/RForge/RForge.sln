@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events.Sample
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events.Sample.Client", "..\..\samples\RForge.Blazor.Events.Sample.Client\RForge.Blazor.Events.Sample.Client.csproj", "{6734D025-1B28-4DB9-B884-EA2B30CEB609}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Bundle", "RForge.Blazor.Bundle\RForge.Blazor.Bundle.csproj", "{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -299,6 +301,18 @@ Global
 		{6734D025-1B28-4DB9-B884-EA2B30CEB609}.Release|x64.Build.0 = Release|Any CPU
 		{6734D025-1B28-4DB9-B884-EA2B30CEB609}.Release|x86.ActiveCfg = Release|Any CPU
 		{6734D025-1B28-4DB9-B884-EA2B30CEB609}.Release|x86.Build.0 = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|x64.Build.0 = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|x86.Build.0 = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|x64.ActiveCfg = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|x64.Build.0 = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|x86.ActiveCfg = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,6 +4,9 @@
     <id>RForge.Blazor.AutoApi.Generator</id>
     <version>$version$</version>
     <authors>$authors$</authors>
+    <license type="expression">MIT</license>
+    <projectUrl>$projecturl$</projectUrl>
+    <repository type="git" url="$repo$" />
     <description>Source generator that turns RForge Auto API interfaces into minimal API endpoints (server) and HttpClient implementations (WebAssembly client).</description>
     <readme>readme.md</readme>
     <tags>blazor source-generator minimal-api webassembly</tags>

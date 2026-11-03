@@ -4,17 +4,14 @@
         <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
-        <Description>Placeholder</Description>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
 
         <PackageId>RForge.Blazor.Abstractions</PackageId>
         <Product>RForge.Blazor.Abstractions</Product>
-        <Version>$(Version)</Version>
-        <Authors>Rumhyek</Authors>
         <PackageTags>blazor; components; library, abstraction</PackageTags>
         <Title>Light Weight Blazor Components</Title>
         <Description>The abstraction layer of RForge to support serverside features.</Description>
-        <RepositoryUrl>https://github.com/rumhyek/rforge</RepositoryUrl>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>

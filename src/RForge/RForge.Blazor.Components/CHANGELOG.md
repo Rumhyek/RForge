@@ -1,4 +1,15 @@
-# RForge.Blazor
+# RForge.Blazor.Components
+
+## Version 1.0.0
+
+This package was published as `RForge.Blazor` before 1.0.0. `RForge.Blazor` is now a bundle of the whole RForge.Blazor family (see its changelog), and the components live here. Nothing else changed since 0.15.0.
+
+Breaking changes (names only):
+
+- The package ID is `RForge.Blazor.Components`. Replace your `RForge.Blazor` package reference with it, or keep `RForge.Blazor` to get everything.
+- The namespaces `RForgeBlazor`, `RForgeBlazor.Models` and `RForgeBlazor.Services` are now `RForge.Blazor`, `RForge.Blazor.Models` and `RForge.Blazor.Services`. Update your `using` and `@using` lines.
+- The shared enums and contracts in `RForge.Blazor.Abstractions` moved from the `RForge.Abstractions` namespaces to `RForge.Blazor.Abstractions` (same sub-namespaces).
+- The assembly is `RForge.Blazor.Components.dll` (it was `RForgeBlazor.dll`).
 
 ## Version 0.15.0
 

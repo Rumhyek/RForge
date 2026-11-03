@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Dependency-only package: installing RForge.Blazor installs the whole family. It has no code of its own. -->
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <!-- NU5128: no lib folder for the target frameworks in the dependency groups. Intended. -->
+        <NoWarn>$(NoWarn);NU5128</NoWarn>
+
+        <PackageId>RForge.Blazor</PackageId>
+        <Product>RForge.Blazor</Product>
+        <Title>RForge.Blazor</Title>
+        <Description>All of RForge.Blazor in one package: the light weight Bulma component library, typed events and state, and the auto API generator.</Description>
+        <PackageTags>blazor; components; events; library</PackageTags>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <!-- PrivateAssets="none" keeps the analyzers (the Events and AutoApi source generators) flowing to
+         whoever installs this package. NuGet otherwise marks project dependencies exclude="Build,Analyzers". -->
+    <ItemGroup>
+        <ProjectReference Include="..\RForge.Blazor.Components\RForge.Blazor.Components.csproj" PrivateAssets="none" />
+        <ProjectReference Include="..\RForge.Blazor.Abstractions\RForge.Blazor.Abstractions.csproj" PrivateAssets="none" />
+        <ProjectReference Include="..\RForge.Blazor.Events\RForge.Blazor.Events.csproj" PrivateAssets="none" />
+        <ProjectReference Include="..\RForge.Blazor.AutoApi.Abstractions\RForge.Blazor.AutoApi.Abstractions.csproj" PrivateAssets="none" />
+        <ProjectReference Include="..\RForge.Blazor.AutoApi.Generator\RForge.Blazor.AutoApi.Generator.csproj" PrivateAssets="none" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <Target Name="InjectPackageReleaseNotes" BeforeTargets="GenerateNuspec" Condition="Exists('CHANGELOG.md')">
+        <PropertyGroup>
+            <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/CHANGELOG.md"))</PackageReleaseNotes>
+        </PropertyGroup>
+    </Target>
+
+</Project>
