@@ -1,0 +1,9 @@
+@inherits RfEventComponent
+
+<p class="mb-1">Events received since this listener appeared: <strong>@_received.Count</strong></p>
+<ul class="small mb-0">
+    @foreach (var message in _received.TakeLast(5))
+    {
+        <li>@message</li>
+    }
+</ul>

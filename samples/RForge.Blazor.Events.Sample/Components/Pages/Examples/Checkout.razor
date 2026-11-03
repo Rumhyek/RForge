@@ -1,0 +1,42 @@
+@page "/examples/checkout"
+@rendermode InteractiveServer
+
+<ExampleHeader Title="Checkout" Level="Complex" Mode="Interactive Server (prerendered)">
+    A storefront with a root cart and a self-contained checkout flow. It combines named scopes, async
+    handlers, error isolation and state carried over from prerendering.
+</ExampleHeader>
+
+<SavedCartLoader />
+
+<div class="d-flex align-items-center gap-3 mb-3">
+    <h2 class="h5 mb-0 me-auto">Products</h2>
+    <CartBadge />
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="row row-cols-2 row-cols-md-3 g-2 mb-3">
+            @foreach (var product in Catalog.Products)
+            {
+                <div class="col"><ProductCard Product="product" /></div>
+            }
+        </div>
+        <CartSummary />
+    </div>
+    <div class="col-lg-5 d-flex flex-column gap-3">
+        <CheckoutPanel />
+        <OrderLog />
+    </div>
+</div>
+
+<HowItWorks>
+    <p><strong>Try it:</strong> reload the page and read the note under the cart. Go through checkout, and once with an email containing <em>crash</em>.</p>
+    <ul>
+        <li><strong>Prerender persistence.</strong> <code>SavedCartLoader</code> fills <code>CartState</code> during prerendering. <code>PersistState(…CartState)</code> serializes it into the page, and the interactive circuit restores it instead of loading again. The note says <em>Static</em> because the load happened during prerendering.</li>
+        <li><strong>Root vs. scoped state.</strong> <code>CartState</code> lives at the root and is shared by the catalog, badge, summary and checkout. <code>CheckoutForm</code> lives in the checkout's <code>StateScope</code>.</li>
+        <li><strong>Named route.</strong> <em>Place order</em> publishes <code>OrderSubmitted</code> with <code>Route.Named("checkout", Broadcast)</code>. The order log outside the scope never sees it (its counter stays 0).</li>
+        <li><strong>Async handler + cancellation.</strong> <code>PaymentProcessor</code> awaits a fake payment with the handler's <code>CancellationToken</code>, which is cancelled if you navigate away. It then publishes <code>OrderConfirmed</code>, which bubbles up to the order log.</li>
+        <li><strong>Error isolation.</strong> With an email containing <em>crash</em>, <code>AnalyticsTracker</code> throws. Its <code>ErrorBoundary</code> shows the error while the payment still completes.</li>
+        <li><strong>Events + selectors.</strong> <code>CartBadge</code> re-renders for count changes (selector) and pulses on <code>ItemAdded</code> (event).</li>
+    </ul>
+</HowItWorks>

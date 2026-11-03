@@ -1,0 +1,25 @@
+<PageTitle>@Title · RForge.Blazor.Events</PageTitle>
+
+<div class="example-header mb-4">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <h1 class="mb-0 me-2">@Title</h1>
+        <span class="badge @(Level == "Complex" ? "text-bg-danger" : "text-bg-success")">@Level</span>
+        <span class="badge text-bg-secondary" title="Render mode">@Mode</span>
+    </div>
+    <div class="lead">@ChildContent</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    /// <summary>"Simple" or "Complex".</summary>
+    [Parameter]
+    public string Level { get; set; } = "Simple";
+
+    [Parameter]
+    public string Mode { get; set; } = "";
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

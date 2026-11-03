@@ -1,0 +1,9 @@
+@inherits RfEventComponent
+
+<div class="btn-group btn-group-sm" role="group" aria-label="Theme">
+    @foreach (var theme in Themes)
+    {
+        <button class="btn @(Current == theme.Name ? "btn-dark" : "btn-outline-dark")" @onclick="() => Pick(theme)">@theme.Name</button>
+    }
+</div>
+<RenderBadge Count="@(++_renders)" />

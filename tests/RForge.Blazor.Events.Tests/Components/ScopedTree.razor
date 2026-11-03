@@ -1,0 +1,17 @@
+<RootPingListener />
+<PingListener Id="top" />
+<EventScope Name="outer">
+    <PingListener Id="outer" />
+    <NamedPingListener />
+    <EventScope Name="inner">
+        <PingListener Id="inner" />
+        <Publisher @ref="InnerPublisher" Id="inner-pub" />
+    </EventScope>
+    <EventScope Name="sibling">
+        <PingListener Id="sibling" />
+    </EventScope>
+</EventScope>
+
+@code {
+    public Publisher InnerPublisher = default!;
+}

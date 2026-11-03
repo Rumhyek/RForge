@@ -1,0 +1,6 @@
+@inherits RfEventComponent
+
+<span class="cart-badge @(_pulse ? "pulse" : "")" title="Items in cart">
+    🛒 <span class="badge rounded-pill text-bg-primary">@Count</span>
+</span>
+<RenderBadge Count="@(++_renders)" />

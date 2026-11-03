@@ -1,0 +1,25 @@
+@* Plain container that nests itself. No parameters about notifications are passed down. *@
+<div class="nested-box">
+    <div class="nested-label">level @Level</div>
+    @if (Level < Depth)
+    {
+        <NestedBox Level="Level + 1" Depth="Depth" />
+    }
+    else
+    {
+        <div class="d-flex flex-wrap gap-2">
+            <NotifyButton Label="Info" Message="Saved draft" Level="ToastLevel.Info" />
+            <NotifyButton Label="Success" Message="Profile updated" Level="ToastLevel.Success" />
+            <NotifyButton Label="Warning" Message="Storage almost full" Level="ToastLevel.Warning" />
+            <NotifyButton Label="Danger" Message="Payment failed" Level="ToastLevel.Danger" />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Level { get; set; } = 1;
+
+    [Parameter]
+    public int Depth { get; set; } = 4;
+}

@@ -1,0 +1,6 @@
+@inherits RfEventComponent
+
+<form class="input-group input-group-sm mb-2" @onsubmit="AddAsync">
+    <input class="form-control" placeholder="New item…" @bind="_title" @bind:event="oninput" />
+    <button class="btn btn-primary" type="submit" disabled="@string.IsNullOrWhiteSpace(_title)">Add</button>
+</form>

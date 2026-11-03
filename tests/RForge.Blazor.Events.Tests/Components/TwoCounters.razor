@@ -1,0 +1,13 @@
+<StateScope TState="CounterState">
+    <div id="a"><CounterView /><Publisher @ref="A" /></div>
+</StateScope>
+<StateScope TState="CounterState" Initial="@(new CounterState(10, "b"))">
+    <div id="b"><CounterView /><Publisher @ref="B" /></div>
+</StateScope>
+<div id="root"><CounterView /><Publisher @ref="Root" /></div>
+
+@code {
+    public Publisher A = default!;
+    public Publisher B = default!;
+    public Publisher Root = default!;
+}

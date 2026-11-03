@@ -38,3 +38,18 @@ jobs:
       # Test projects run on every target framework they declare.
       - name: Test with dotnet
         run: dotnet test --configuration Release --no-build
+
+      # Build the packed Events package the way an app would, on the .NET 8 SDK (pinned by the
+      # project's global.json) and on the newest SDK. See tests/RForge.Blazor.Events.ConsumerSmoke.
+      - name: Pack Events for the consumer smoke test
+        run: dotnet pack RForge.Blazor.Events/RForge.Blazor.Events.csproj --configuration Release --output "${{ runner.temp }}/smoke-feed" -p:Version=0.0.0-smoke
+
+      - name: Consumer smoke test (.NET 8 SDK, C# 12)
+        working-directory: tests/RForge.Blazor.Events.ConsumerSmoke/Sdk8
+        run: |
+          dotnet --version
+          dotnet build "-p:RestoreSources=${{ runner.temp }}/smoke-feed%3Bhttps://api.nuget.org/v3/index.json"
+
+      - name: Consumer smoke test (net8 app, C# 13 or later)
+        working-directory: tests/RForge.Blazor.Events.ConsumerSmoke/Latest
+        run: dotnet build "-p:RestoreSources=${{ runner.temp }}/smoke-feed%3Bhttps://api.nuget.org/v3/index.json"

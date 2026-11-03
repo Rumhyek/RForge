@@ -1,0 +1,11 @@
+<div class="how-it-works card mt-4">
+    <div class="card-header"><strong>How it works</strong></div>
+    <div class="card-body">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
