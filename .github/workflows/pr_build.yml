@@ -1,0 +1,40 @@
+name: Build and Test
+
+on:
+  pull_request:
+    branches: [main]
+  # Allows for running manually from Actions tab
+  workflow_dispatch:
+
+concurrency:
+  group: pr-build-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: src/RForge
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.x
+            9.x
+            10.x
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      # Test projects run on every target framework they declare.
+      - name: Test with dotnet
+        run: dotnet test --configuration Release --no-build

@@ -223,6 +223,7 @@ public class RfDropDownBase_BugSweep
         var postDisposeOnLoad = 0;
         var disposed = false;
         var filterChangedGate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var filterChangedEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         Func<string, Task> spy = filter =>
         {
@@ -233,6 +234,7 @@ public class RfDropDownBase_BugSweep
 
         Func<string, Task> gatedFilterChanged = async filter =>
         {
+            filterChangedEntered.TrySetResult(true);
             await filterChangedGate.Task; // park the pump inside the load sequence
         };
 
@@ -246,11 +248,16 @@ public class RfDropDownBase_BugSweep
             ComponentParameter.CreateParameter("OnLoad", EventCallback.Factory.Create<string>(this, spy)));
 
         cut.Find("input[type=search]").Input("x"); // pump pops "x" and parks inside FilterChanged
-        Assert.IsTrue(WaitUntil(() => cut.Markup.Contains("is-loading")),
-            "the pump never entered the load; markup never showed the loading state");
+        // Wait for the callback itself: the loading state renders before the pump calls it, and
+        // releasing the gate earlier lets the pump run straight through to OnLoad.
+        Assert.IsTrue(filterChangedEntered.Task.Wait(5000),
+            "the pump never reached FilterChanged");
 
         disposed = true;
-        ctx.Dispose(); // dispose while the pump is mid-sequence, after its pop
+        // Dispose the component directly. ctx.Dispose() only queues the component's disposal on
+        // the renderer dispatcher, which the pump can still be holding, so it can return before
+        // Dispose has run and the cancel would land after the callback.
+        cut.Instance.Dispose(); // dispose while the pump is mid-sequence, after its pop
         filterChangedGate.SetResult(true); // the awaited callback completes post-dispose
 
         Thread.Sleep(100); // a surviving pump resumes and fires OnLoad into the disposed component
