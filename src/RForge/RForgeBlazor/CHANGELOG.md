@@ -8,6 +8,7 @@
   subscribed. The two calls invoked `OnClearBy*` without the null-conditional the sibling
   members (`ClearAll`, `OnShow`) already used, so clearing before a notification manager was
   mounted crashed the caller; the calls are now no-ops with no subscriber (#79).
+- Fixed `RfDgHeader`: the consumer's `CssClass` now appears on the rendered `<th>`. `HeaderCss` interpolated its own accumulator (`css += $"{css} "`) instead of `CssClass`, so a header `CssClass` was silently dropped and only a stray space was appended. Consumer-visible: existing grids that set a header `CssClass` and never saw it applied will now get the class (and its styling) on the header cell (#93).
 - Fixed `RfDropDown` / `RfDropDownMulti`: rendering no longer throws a `NullReferenceException` when an item or selection must render with no template set. The invoked `@ChildContent` fallbacks (trigger display, show-at-top row, and item loop, in both components) are now null-guarded: with `ChildContent`, `RowItemTemplate`, and `SelectedItemTemplate` all unset, the slots render empty instead of crashing the render (#73).
 - Fixed `RfDoubleClick`: a pending `OnSingleClick` no longer fires after the component is
   disposed (the click-delay continuation now tracks the component lifetime), and an `Element`
