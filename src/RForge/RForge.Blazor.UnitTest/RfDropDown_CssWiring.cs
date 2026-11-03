@@ -1,7 +1,7 @@
 using System.Reflection;
-using RForge.Abstractions.DropDowns;
-using RForgeBlazor;
-using RForgeBlazor.Models;
+using RForge.Blazor.Abstractions.DropDowns;
+using RForge.Blazor;
+using RForge.Blazor.Models;
 
 namespace RForge.Blazor.UnitTest;
 

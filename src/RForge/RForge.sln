@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeBlazor", "RForgeBlazor\RForgeBlazor.csproj", "{2660F5A7-928C-4D3D-9970-0E9C5CDDA1B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Blazor.Components", "RForge.Blazor.Components\RForge.Blazor.Components.csproj", "{2660F5A7-928C-4D3D-9970-0E9C5CDDA1B6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Abstractions", "RForge.Abstractions\RForge.Abstractions.csproj", "{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Blazor.Abstractions", "RForge.Blazor.Abstractions\RForge.Blazor.Abstractions.csproj", "{EE827250-04A0-4FAF-BBC4-7526F3FF1C1F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeTest", "RForgeTest\RForgeTest\RForgeTest.csproj", "{1D09BAC7-D6C2-4E69-85BD-D1BD8E6CB15A}"
 EndProject
@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{3D1AE443-6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Blazor.UnitTest", "RForge.Blazor.UnitTest\RForge.Blazor.UnitTest.csproj", "{08BB1CEA-DDE8-41E0-82D4-62A18FF7F655}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForgeBlazor.Benchmark", "RForgeBlazor.Benchmark\RForgeBlazor.Benchmark.csproj", "{C4AABCBE-6DBC-45AD-874C-BC362A3996E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Benchmark", "RForge.Blazor.Benchmark\RForge.Blazor.Benchmark.csproj", "{C4AABCBE-6DBC-45AD-874C-BC362A3996E4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.AutoApi.Abstractions", "RForge.Blazor.AutoApi.Abstractions\RForge.Blazor.AutoApi.Abstractions.csproj", "{C5D05858-C964-43B8-B4ED-5AA1FDF5AAE3}"
 EndProject
@@ -48,6 +48,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events.Sample", "..\..\samples\RForge.Blazor.Events.Sample\RForge.Blazor.Events.Sample.csproj", "{C2C4FF3B-FFCE-40B5-AC68-B65EDC6E6A12}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events.Sample.Client", "..\..\samples\RForge.Blazor.Events.Sample.Client\RForge.Blazor.Events.Sample.Client.csproj", "{6734D025-1B28-4DB9-B884-EA2B30CEB609}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Bundle", "RForge.Blazor.Bundle\RForge.Blazor.Bundle.csproj", "{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -299,6 +301,18 @@ Global
 		{6734D025-1B28-4DB9-B884-EA2B30CEB609}.Release|x64.Build.0 = Release|Any CPU
 		{6734D025-1B28-4DB9-B884-EA2B30CEB609}.Release|x86.ActiveCfg = Release|Any CPU
 		{6734D025-1B28-4DB9-B884-EA2B30CEB609}.Release|x86.Build.0 = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|x64.Build.0 = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Debug|x86.Build.0 = Debug|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|x64.ActiveCfg = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|x64.Build.0 = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|x86.ActiveCfg = Release|Any CPU
+		{417ADD1E-94B9-4F4E-9BD6-65D6FF81687E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

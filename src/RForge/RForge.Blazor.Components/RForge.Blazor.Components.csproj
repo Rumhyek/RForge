@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+        <Nullable>disable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <ImplicitUsings>enable</ImplicitUsings>
+        
+        <!-- Razor derives the namespace of .razor files from this, and the code-behind files use RForge.Blazor. -->
+        <RootNamespace>RForge.Blazor</RootNamespace>
+
+        <PackageId>RForge.Blazor.Components</PackageId>
+        <Product>RForge.Blazor.Components</Product>
+        <PackageTags>blazor; components; library</PackageTags>
+        <Title>Light Weight Blazor Components</Title>
+        <Description>A light weight blazor component library that makes use of Bulma.css and focuses on memory efficiency.</Description>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+        
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <PackageReference Include="Markdig" Version="0.38.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\RForge.Blazor.Abstractions\RForge.Blazor.Abstractions.csproj" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <Target Name="InjectPackageReleaseNotes" BeforeTargets="GenerateNuspec" Condition="Exists('CHANGELOG.md')">
+        <PropertyGroup>
+            <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/CHANGELOG.md"))</PackageReleaseNotes>
+        </PropertyGroup>
+    </Target>
+
+</Project>

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using RForgeDocs.Client;
-using RForgeBlazor;
+using RForge.Blazor;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

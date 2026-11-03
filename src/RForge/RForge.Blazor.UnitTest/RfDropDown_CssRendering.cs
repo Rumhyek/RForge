@@ -1,10 +1,10 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
-using RForge.Abstractions.DropDowns;
+using RForge.Blazor.Abstractions.DropDowns;
 
 using BunitTestContext = Bunit.TestContext;
-using SingleDropDown = RForgeBlazor.RfDropDown<string>;
-using MultiDropDown = RForgeBlazor.RfDropDownMulti<string>;
+using SingleDropDown = RForge.Blazor.RfDropDown<string>;
+using MultiDropDown = RForge.Blazor.RfDropDownMulti<string>;
 
 #pragma warning disable BL0005 // Component parameters set directly: intentional in bUnit test fixtures.
 /// <summary>

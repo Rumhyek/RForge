@@ -25,7 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-        <ProjectReference Include="..\..\RForgeBlazor\RForgeBlazor.csproj" />
+        <ProjectReference Include="..\..\RForge.Blazor.Components\RForge.Blazor.Components.csproj" />
     </ItemGroup>
 
     <ItemGroup>

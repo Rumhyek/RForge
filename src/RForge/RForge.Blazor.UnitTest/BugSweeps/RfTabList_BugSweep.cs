@@ -1,7 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RForgeBlazor;
+using RForge.Blazor;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

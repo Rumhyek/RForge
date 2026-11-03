@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-using RForgeBlazor;
+using RForge.Blazor;
 
 namespace RForge.Blazor.UnitTest;
 

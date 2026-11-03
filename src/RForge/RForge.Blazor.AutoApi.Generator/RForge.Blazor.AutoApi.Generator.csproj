@@ -17,7 +17,7 @@
   <!-- PackageVersion is only known once the SDK targets have run. -->
   <Target Name="SetNuspecProperties" BeforeTargets="GenerateNuspec">
     <PropertyGroup>
-      <NuspecProperties>version=$(PackageVersion);authors=$(Authors);outdir=$(OutputPath)</NuspecProperties>
+      <NuspecProperties>version=$(PackageVersion);authors=$(Authors);outdir=$(OutputPath);projecturl=$(PackageProjectUrl);repo=$(RepositoryUrl)</NuspecProperties>
     </PropertyGroup>
   </Target>
 

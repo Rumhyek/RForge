@@ -2,7 +2,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RForgeBlazor;
+using RForge.Blazor;
 using System.Collections.Generic;
 using System.Linq;
 using BunitTestContext = Bunit.TestContext;

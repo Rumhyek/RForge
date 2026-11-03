@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeDocs.Client", "RForge
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External Libraries", "External Libraries", "{F93E07ED-E94E-459D-8575-F03433B62844}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeBlazor", "..\..\src\RForge\RForgeBlazor\RForgeBlazor.csproj", "{3553A14A-B41F-4C34-86BB-F83A4ABD9486}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Blazor.Components", "..\..\src\RForge\RForge.Blazor.Components\RForge.Blazor.Components.csproj", "{3553A14A-B41F-4C34-86BB-F83A4ABD9486}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Abstractions", "..\..\src\RForge\RForge.Abstractions\RForge.Abstractions.csproj", "{1ABCFEE1-E1EF-4F43-8EF9-84C4231204E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForge.Blazor.Abstractions", "..\..\src\RForge\RForge.Blazor.Abstractions\RForge.Blazor.Abstractions.csproj", "{1ABCFEE1-E1EF-4F43-8EF9-84C4231204E7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RForgeDocs.Abstractions", "RForgeDocs.Abstractions\RForgeDocs.Abstractions.csproj", "{6FD5D181-F63D-4645-8E67-F579512F50C2}"
 EndProject

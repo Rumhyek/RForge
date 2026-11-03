@@ -1,6 +1,6 @@
 ﻿@page "/treeview/example/basic-example"
 
-@using RForgeBlazor.Services
+@using RForge.Blazor.Services
 
 @rendermode InteractiveAuto
 
@@ -173,7 +173,7 @@
         public string Genre { get; set; }
     }
 
-    private void OnNodeClick(RForgeBlazor.Models.TreeViewNodeOnClickEventArgs<object> node)
+    private void OnNodeClick(RForge.Blazor.Models.TreeViewNodeOnClickEventArgs<object> node)
     {
         if (node.NodeData is AddMovieData addMovieData)
         {

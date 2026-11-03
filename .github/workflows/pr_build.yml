@@ -39,17 +39,35 @@ jobs:
       - name: Test with dotnet
         run: dotnet test --configuration Release --no-build
 
-      # Build the packed Events package the way an app would, on the .NET 8 SDK (pinned by the
-      # project's global.json) and on the newest SDK. See tests/RForge.Blazor.Events.ConsumerSmoke.
-      - name: Pack Events for the consumer smoke test
-        run: dotnet pack RForge.Blazor.Events/RForge.Blazor.Events.csproj --configuration Release --output "${{ runner.temp }}/smoke-feed" -p:Version=0.0.0-smoke
+      # Pack every package and build them the way an app would. See tests/RForge.Blazor.ConsumerSmoke.
+      - name: Pack the packages for the consumer smoke tests
+        run: dotnet pack --configuration Release --output "${{ runner.temp }}/smoke-feed" -p:Version=0.0.0-smoke
+
+      # The RForge.Blazor bundle has to depend on every package and must not hide their analyzers.
+      - name: Check the RForge.Blazor bundle package
+        run: |
+          nupkg="${{ runner.temp }}/smoke-feed/RForge.Blazor.0.0.0-smoke.nupkg"
+          nuspec="$(unzip -p "$nupkg" RForge.Blazor.nuspec)"
+          for id in Components Abstractions Events AutoApi.Abstractions AutoApi.Generator; do
+            echo "$nuspec" | grep -q "id=\"RForge.Blazor.$id\"" || { echo "::error::The bundle does not depend on RForge.Blazor.$id"; exit 1; }
+          done
+          if echo "$nuspec" | grep -q 'exclude='; then
+            echo "::error::A bundle dependency sets exclude=, so its analyzers would not reach the app (use PrivateAssets=\"none\")"; exit 1
+          fi
+          if unzip -l "$nupkg" | grep -q ' lib/'; then
+            echo "::error::The bundle must not contain a lib folder"; exit 1
+          fi
 
       - name: Consumer smoke test (.NET 8 SDK, C# 12)
-        working-directory: tests/RForge.Blazor.Events.ConsumerSmoke/Sdk8
+        working-directory: tests/RForge.Blazor.ConsumerSmoke/Sdk8
         run: |
           dotnet --version
           dotnet build "-p:RestoreSources=${{ runner.temp }}/smoke-feed%3Bhttps://api.nuget.org/v3/index.json"
 
       - name: Consumer smoke test (net8 app, C# 13 or later)
-        working-directory: tests/RForge.Blazor.Events.ConsumerSmoke/Latest
+        working-directory: tests/RForge.Blazor.ConsumerSmoke/Latest
+        run: dotnet build "-p:RestoreSources=${{ runner.temp }}/smoke-feed%3Bhttps://api.nuget.org/v3/index.json"
+
+      - name: Consumer smoke test (RForge.Blazor bundle only)
+        working-directory: tests/RForge.Blazor.ConsumerSmoke/Bundle
         run: dotnet build "-p:RestoreSources=${{ runner.temp }}/smoke-feed%3Bhttps://api.nuget.org/v3/index.json"

@@ -4,15 +4,15 @@
                  SubTitle="A percent progress and completion countdown abstraction">
 
     <RepoLinks>
-        @ComponentDetail.SideLink(("CountdownTimer.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/CountdownTimer.cs"))
-        @ComponentDetail.SideLink(("TimerStatus.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Abstractions/TimerStatus.cs"))
+        @ComponentDetail.SideLink(("CountdownTimer.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Abstractions/CountdownTimer.cs"))
+        @ComponentDetail.SideLink(("TimerStatus.cs", TagInfo.Enum, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Abstractions/TimerStatus.cs"))
     </RepoLinks>
 
     <Purpose>
         <div class="content">
 
             <p>
-                <code>CountdownTimer</code> (in <code>RForge.Abstractions</code>) runs a fixed duration and reports back
+                <code>CountdownTimer</code> (in <code>RForge.Blazor.Abstractions</code>) runs a fixed duration and reports back
                 while it runs: it aims for 100 ticks (one per percent), calls your <code>OnTick</code> callback with the
                 percent complete on every tick, and calls your <code>OnElapsed</code> callback once when the countdown
                 actually finishes. The library uses it internally to time toast auto dismissal in

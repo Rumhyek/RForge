@@ -1,7 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RForge.Abstractions;
+using RForge.Blazor.Abstractions;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace RForge.Blazor.UnitTest.BugSweeps;
 
 /// <summary>
-/// Repro tests from the #68 bug sweep for RForge.Abstractions CountdownTimer.
+/// Repro tests from the #68 bug sweep for RForge.Blazor.Abstractions CountdownTimer.
 /// Red-by-construction; un-ignore when the fix issue lands.
 /// </summary>
 [TestClass]

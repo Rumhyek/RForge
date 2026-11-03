@@ -1,9 +1,9 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RForgeBlazor;
-using RForgeBlazor.Models;
-using RForgeBlazor.Services;
+using RForge.Blazor;
+using RForge.Blazor.Models;
+using RForge.Blazor.Services;
 using System;
 using System.Threading.Tasks;
 using BunitTestContext = Bunit.TestContext;

@@ -34,9 +34,10 @@ to people who ask for prereleases.
    dotnet test src/RForge/RForge.sln
    ```
 
-2. In a PR, rename `## Unreleased` to `## Version X.Y.Z` in both changelogs, then merge it:
-   - `src/RForge/RForgeBlazor/CHANGELOG.md`
-   - `src/RForge/RForge.Abstractions/CHANGELOG.md`
+2. In a PR, rename `## Unreleased` to `## Version X.Y.Z` in the changelog of each package that changed, then merge it:
+   - `src/RForge/RForge.Blazor.Components/CHANGELOG.md`
+   - `src/RForge/RForge.Blazor.Abstractions/CHANGELOG.md`
+   - `src/RForge/RForge.Blazor.Bundle/CHANGELOG.md` (the `RForge.Blazor` bundle)
 
    Each file's full text becomes that package's release notes on nuget.org.
 
@@ -56,9 +57,8 @@ to people who ask for prereleases.
 
 6. Confirm the release landed:
    - Both publish workflows passed in the Actions tab.
-   - [RForge.Blazor](https://www.nuget.org/packages/RForge.Blazor) and
-     [RForge.Blazor.Abstractions](https://www.nuget.org/packages/RForge.Blazor.Abstractions)
-     show the new version. nuget.org can take a few minutes to index it.
+   - All six packages in [The packages](#the-packages) show the new version on nuget.org.
+     It can take a few minutes to index them.
    - The [docs site](https://rforge.azurewebsites.net) loads.
 
 A nuget.org version can never be replaced or reused. It can only be unlisted, so
@@ -68,7 +68,7 @@ a bad release has to be fixed with a new version number.
 
 [GitVersion](https://gitversion.net) works out the version from Git history and
 `GitVersion.yml`. The csproj files don't hold a version number; workflows pass it
-in with `-p:Version`. Both packages always get the same version.
+in with `-p:Version`. All six packages always get the same version.
 
 - **Starting point:** the newest `vX.Y.Z` tag, unless `next-version` in
   `GitVersion.yml` is higher. It's set to `1.0.0` for the v1 release and should be
@@ -83,6 +83,28 @@ in with `-p:Version`. Both packages always get the same version.
 
 When you squash-merge, keep any `+semver:` line in the final commit message, or the
 bump is lost.
+
+## The packages
+
+`deploy_main` and `deploy_release` pack every packable project in `src/RForge`, so adding a package project is enough to ship it.
+
+| Package | Project | What it is |
+|---|---|---|
+| `RForge.Blazor` | `RForge.Blazor.Bundle` | The bundle: no code, depends on every package below |
+| `RForge.Blazor.Components` | `RForge.Blazor.Components` | The component library |
+| `RForge.Blazor.Abstractions` | `RForge.Blazor.Abstractions` | Enums and contracts shared with the components |
+| `RForge.Blazor.Events` | `RForge.Blazor.Events` | Typed events and state. The source generator ships inside it. |
+| `RForge.Blazor.AutoApi.Abstractions` | `RForge.Blazor.AutoApi.Abstractions` | Attributes for the auto API generator |
+| `RForge.Blazor.AutoApi.Generator` | `RForge.Blazor.AutoApi.Generator` | The auto API source generator |
+
+Two details keep the bundle working:
+
+- Each project reference in `RForge.Blazor.Bundle.csproj` has `PrivateAssets="none"`. NuGet otherwise marks project dependencies `exclude="Build,Analyzers"`, and people who install the bundle would not get the source generators.
+- The references must not set `ReferenceOutputAssembly="false"`, or NuGet leaves them out of the dependency list and the bundle installs nothing.
+
+`pr_build` unpacks the bundle on every PR and checks both.
+
+Shared metadata (authors, license, repository and project URL) is in `src/RForge/Directory.Build.props`.
 
 ## Where packages go
 
@@ -115,12 +137,11 @@ your username on nuget.org and choose **Trusted Publishing**.
 | Repository | `RForge` |
 | Workflow File | `deploy_release.yml` |
 | Environment | Blank |
-| Scope | Push only new package versions |
+| Scope | Push new packages and package versions |
 | Glob pattern | `RForge.Blazor*` |
 
 Update the policy if you rename the workflow file or add an environment to its job.
-A brand-new package ID needs the "Push new packages and package versions" scope for
-its first push.
+The scope includes new package IDs, so adding a package project needs no policy change.
 
 ## Releasing without workflows
 
@@ -137,8 +158,9 @@ dotnet pack src/RForge/RForge.sln -c Release --output $out -p:Version=$version -
 
 $feeds = [ordered]@{ "https://nuget.pkg.github.com/Rumhyek/index.json" = (gh auth token); "https://api.nuget.org/v3/index.json" = $env:NUGET_API_KEY }
 foreach ($feed in $feeds.GetEnumerator()) {
-    dotnet nuget push "$out\RForge.Blazor.Abstractions.$version.nupkg" --source $feed.Key --api-key $feed.Value
-    dotnet nuget push "$out\RForge.Blazor.$version.nupkg" --source $feed.Key --api-key $feed.Value
+    foreach ($package in Get-ChildItem "$out\*.nupkg") {
+        dotnet nuget push $package.FullName --source $feed.Key --api-key $feed.Value --skip-duplicate
+    }
 }
 ```
 

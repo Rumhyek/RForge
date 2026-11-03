@@ -44,7 +44,7 @@ public class RfDropDown_ItemComparer : BunitTestContext
     [TestMethod]
     public void Given_RenderedDropDownWithoutItemComparer_When_ReadItemComparer_Then_DefaultComparerIsAssigned()
     {
-        var cut = RenderComponent<RForgeBlazor.RfDropDown<string>>();
+        var cut = RenderComponent<RForge.Blazor.RfDropDown<string>>();
 
         Assert.IsNotNull(cut.Instance.ItemComparer);
     }
@@ -53,7 +53,7 @@ public class RfDropDown_ItemComparer : BunitTestContext
     [TestMethod]
     public void Given_DefaultItemComparer_When_CompareNulls_Then_OnlyNullEqualsNull()
     {
-        var cut = RenderComponent<RForgeBlazor.RfDropDown<string>>();
+        var cut = RenderComponent<RForge.Blazor.RfDropDown<string>>();
         var comparer = cut.Instance.ItemComparer;
 
         Assert.IsTrue(comparer(null, null)); // null equals null
@@ -65,7 +65,7 @@ public class RfDropDown_ItemComparer : BunitTestContext
     [TestMethod]
     public void Given_DefaultItemComparer_When_CompareStrings_Then_UsesValueEquality()
     {
-        var cut = RenderComponent<RForgeBlazor.RfDropDown<string>>();
+        var cut = RenderComponent<RForge.Blazor.RfDropDown<string>>();
         var comparer = cut.Instance.ItemComparer;
 
         Assert.IsTrue(comparer("test", "test")); // same strings
@@ -77,7 +77,7 @@ public class RfDropDown_ItemComparer : BunitTestContext
     [TestMethod]
     public void Given_DefaultItemComparerForNullableInts_When_CompareValues_Then_UsesValueEqualityAcrossNull()
     {
-        var cut = RenderComponent<RForgeBlazor.RfDropDown<int?>>();
+        var cut = RenderComponent<RForge.Blazor.RfDropDown<int?>>();
         var comparer = cut.Instance.ItemComparer;
 
         Assert.IsTrue(comparer(null, null)); // null equals null
@@ -92,7 +92,7 @@ public class RfDropDown_ItemComparer : BunitTestContext
     [TestMethod]
     public void Given_DefaultItemComparerForCustomObjects_When_CompareInstances_Then_UsesEqualsOverride()
     {
-        var cut = RenderComponent<RForgeBlazor.RfDropDown<TestItem>>();
+        var cut = RenderComponent<RForge.Blazor.RfDropDown<TestItem>>();
         var comparer = cut.Instance.ItemComparer;
 
         var item1 = new TestItem { Id = 1, Name = "Test" };
@@ -116,7 +116,7 @@ public class RfDropDown_ItemComparer : BunitTestContext
         Func<string, string, bool> caseInsensitive =
             (a, b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
 
-        var cut = RenderComponent<RForgeBlazor.RfDropDown<string>>(
+        var cut = RenderComponent<RForge.Blazor.RfDropDown<string>>(
             Param("ItemComparer", caseInsensitive));
 
         Assert.AreSame(caseInsensitive, cut.Instance.ItemComparer); // kept, not replaced
@@ -127,7 +127,7 @@ public class RfDropDown_ItemComparer : BunitTestContext
     [TestMethod]
     public void Given_RenderedDropDownWithDefaultComparer_When_ItemEqualsSelectedItem_Then_OnlyMatchingRowIsSelected()
     {
-        var cut = RenderComponent<RForgeBlazor.RfDropDown<string>>(new[]
+        var cut = RenderComponent<RForge.Blazor.RfDropDown<string>>(new[]
         {
             Param("Items", new List<string> { "Item1", "Item2" }),
             Param("SelectedItem", "Item2"),
@@ -146,7 +146,7 @@ public class RfDropDown_ItemComparer : BunitTestContext
         Func<string, string, bool> caseInsensitive =
             (a, b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
 
-        var cut = RenderComponent<RForgeBlazor.RfDropDown<string>>(new[]
+        var cut = RenderComponent<RForge.Blazor.RfDropDown<string>>(new[]
         {
             Param("Items", new List<string> { "abc", "XYZ" }),
             Param("SelectedItem", "ABC"),

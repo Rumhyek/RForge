@@ -5,7 +5,7 @@ using RForgeDocs.Abstractions.Services;
 using RForgeDocs.Client.Implementation;
 using RForgeDocs.Client.Pages.Examples.DataGrid;
 using RForgeDocsLibrary.Implementation;
-using RForgeBlazor.Services;
+using RForge.Blazor.Services;
 using RForgeDocs.Client.Implementation;
 using System;
 using System.Collections.Generic;

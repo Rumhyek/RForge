@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using RForgeBlazor.Models;
+using RForge.Blazor.Models;
 
 namespace RForge.Blazor.UnitTest.BugSweeps;
 

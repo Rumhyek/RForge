@@ -17,16 +17,19 @@
 
     <p>
         RForge Blazor components are installed via Nuget.
-        There are two packages. One for the blazor app and one for the library if any.
+        Install <code>RForge.Blazor.Components</code> for the components alone in your blazor app, plus
+        <code>RForge.Blazor.Abstractions</code> in a shared library if you have one.
+        The <code>RForge.Blazor</code> package installs the whole family instead: the components, the typed events and
+        the auto API generator.
     </p>
 
     <h3>Blazor Project Installation</h3>
 
     <h6>Command Line</h6>
-    <pre><code>dotnet add package RForge.Blazor</code></pre>
+    <pre><code>dotnet add package RForge.Blazor.Components</code></pre>
 
     <h6>Package Manager Console</h6>
-    <pre><code>Install-Package RForge.Blazor</code></pre>
+    <pre><code>Install-Package RForge.Blazor.Components</code></pre>
 
     <h3>Library Project Installation</h3>
     <p>
@@ -34,23 +37,23 @@
     </p>
 
     <h6>Command Line</h6>
-    <pre><code>dotnet add package RForge.Abstractions</code></pre>
+    <pre><code>dotnet add package RForge.Blazor.Abstractions</code></pre>
 
     <h6>Package Manager Console</h6>
-    <pre><code>Install-Package RForge.Abstractions</code></pre>
+    <pre><code>Install-Package RForge.Blazor.Abstractions</code></pre>
 
     <h2>Import the namespaces</h2>
 
     <p>
         To simplify namespacing while using RForge,
-        the package is designed with most all components sitting within the root <code>RForge</code> namespace.
+        the package is designed with most all components sitting within the root <code>RForge.Blazor</code> namespace.
     </p>
 
     <p>You may want to include the following namespaces in your <code>_import.razor</code> for ease of use.</p>
     <pre><code>
-@@using RForgeBlazor
-@@using RForgeBlazor.Services
-@@using RForge.Abstractions
+@@using RForge.Blazor
+@@using RForge.Blazor.Services
+@@using RForge.Blazor.Abstractions
 </code></pre>
 
     <table>
@@ -95,7 +98,7 @@
     </div>
 
     <pre><code>
-using RForgeBlazor;
+using RForge.Blazor;
 //...
 builder.Services.AddRfForgeBlazorServices();
 //...

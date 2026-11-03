@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\RForge\RForge.Abstractions\RForge.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\RForge\RForge.Blazor.Abstractions\RForge.Blazor.Abstractions.csproj" />
     <ProjectReference Include="..\RForgeDocs.Abstractions\RForgeDocs.Abstractions.csproj" />
   </ItemGroup>
 
