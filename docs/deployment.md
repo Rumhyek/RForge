@@ -120,9 +120,6 @@ The docs site then won't update until `deploy_rforge_docs` runs.
 - **Draft notes miss squash-merged PRs.** `.github/scripts/draft-release.sh` only
   recognizes `Merge pull request #N` commits when it refreshes the draft. That's why
   step 4 regenerates the notes.
-- **`deploy_rforge_docs` may fail on .NET 10.** It installs only the .NET 8 and 9
-  SDKs, but the library it builds also targets `net10.0`. It has not run since that
-  target was added. A failure doesn't affect the packages, but the site won't update.
 - **One test fails intermittently.** `CloseMidLoad_DoesNotStartSecondPump` can fail
   with `OnLoad('b') never started` when the machine is busy, usually when all three
   target frameworks run at once. If it's the only failure, rerun it before releasing.
