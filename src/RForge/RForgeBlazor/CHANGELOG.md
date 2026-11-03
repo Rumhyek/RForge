@@ -9,6 +9,15 @@
   members (`ClearAll`, `OnShow`) already used, so clearing before a notification manager was
   mounted crashed the caller; the calls are now no-ops with no subscriber (#79).
 - Fixed `RfDgHeader`: the consumer's `CssClass` now appears on the rendered `<th>`. `HeaderCss` interpolated its own accumulator (`css += $"{css} "`) instead of `CssClass`, so a header `CssClass` was silently dropped and only a stray space was appended. Consumer-visible: existing grids that set a header `CssClass` and never saw it applied will now get the class (and its styling) on the header cell (#93).
+- Fixed `RfDialogManager` / `RfNotificationManager`: dialogs and notifications can now be pushed
+  from any thread. `RfDialogManager.Show()` and the notification component's service-event handlers
+  (`OnShow`, `OnClearAll`, `OnClearByPosition`, `OnClearBySeverity`, and the countdown-timer
+  removal) mutated state and called `StateHasChanged` directly on the caller's thread, so the
+  documented server-side push callers (`IDialogManagerBackend` / `INotificationManagerBackend`
+  driven by a SignalR hub or a timer) threw "The current thread is not associated with the
+  Dispatcher" or rendered off-context. The state mutation and re-render now run through the
+  Blazor dispatcher (`InvokeAsync`); UI-thread call sites behave exactly as before and rendered
+  output is unchanged (#88).
 - Fixed `RfDropDown` / `RfDropDownMulti`: rendering no longer throws a `NullReferenceException` when an item or selection must render with no template set. The invoked `@ChildContent` fallbacks (trigger display, show-at-top row, and item loop, in both components) are now null-guarded: with `ChildContent`, `RowItemTemplate`, and `SelectedItemTemplate` all unset, the slots render empty instead of crashing the render (#73).
 - Fixed `RfDoubleClick`: a pending `OnSingleClick` no longer fires after the component is
   disposed (the click-delay continuation now tracks the component lifetime), and an `Element`
@@ -102,3 +111,10 @@
   operation was lost with zero diagnostics. Callback failures now propagate to the caller while
   the dialog state still unwinds through `try/finally` (`IsLoading` clears and queued dialogs
   advance), so nothing latches on a failed callback (#87).
+- Fixed `RfTabList`: a programmatic `ActiveTabId` change now activates the targeted tab.
+  `OnParametersSet` only validated the parameter for non-blank, so a parent-driven change moved the
+  header highlight but never loaded the panel: the new tab's `OnLoad` / `OnShow` never fired and its
+  panel stayed hidden until the user clicked the tab. The change now goes through the same
+  activation path a click uses, so the panel loads and shows. Initial render and user-click
+  behavior are unchanged, and a parent re-rendering a stale `ActiveTabId` does not undo a click
+  the user already made (#95).

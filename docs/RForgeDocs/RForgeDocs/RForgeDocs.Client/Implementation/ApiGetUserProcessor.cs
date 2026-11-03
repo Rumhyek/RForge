@@ -17,6 +17,13 @@ public class ApiGetUserProcessor : IGetUserProcessor
     public async Task<UserData> GetUser(int userId)
     {
         var httpClient = _httpClientFactory.CreateClient("api");
-        return await httpClient.GetFromJsonAsync<UserData>($"api/users/{userId}");
+        using var response = await httpClient.GetAsync($"api/users/{userId}");
+
+        // An unknown id is a 404 from the API; callers get null instead of an exception.
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return null;
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<UserData>();
     }
 }

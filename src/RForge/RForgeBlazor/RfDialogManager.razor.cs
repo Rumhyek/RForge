@@ -57,19 +57,28 @@ public partial class RfDialogManager : IDisposable
 
     /// <summary>
     /// Call to show a dialog message.
+    /// The state mutation and the re-render are marshalled onto the renderer's dispatcher:
+    /// <see cref="IDialogManager"/> and <see cref="IDialogManagerBackend"/> are documented for
+    /// server-side push callers, so Show() can arrive from any thread (SignalR hub, timer) and
+    /// a direct StateHasChanged there throws "The current thread is not associated with the
+    /// Dispatcher" or renders off-context (#88). Calls already on the UI thread run inline,
+    /// synchronously, exactly as before.
     /// </summary>
     /// <param name="options">The options for the dialog including its type.</param>
     public void Show(RfDialogOption options)
     {
-        if (ActiveDialog != null)
+        _ = InvokeAsync(() =>
         {
-            PendingDialogs.Enqueue(options);
-        }
-        else
-        {
-            ActiveDialog = options;
-            StateHasChanged();
-        }
+            if (ActiveDialog != null)
+            {
+                PendingDialogs.Enqueue(options);
+            }
+            else
+            {
+                ActiveDialog = options;
+                StateHasChanged();
+            }
+        });
     }
 
     /// <summary>

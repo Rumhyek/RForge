@@ -95,119 +95,140 @@ public partial class RfNotificationManager : IDisposable
 
     /// <summary>
     /// Listens to <see cref="NotificationManager.OnClearBySeverity"/>. Clears notifications by severity.
+    /// Service events can fire on any thread (push callers on a SignalR hub or timer), so the
+    /// clear and the re-render run on the renderer's dispatcher instead of the caller's thread (#88).
     /// </summary>
     /// <param name="severity">The severity of the notifications to clear.</param>
     private void NotificationManager_OnClearBySeverity(RfNotificationSeverity severity)
     {
-        bool stateHasChanged = false;
-        foreach (var notifications in Messages.Values)
+        _ = InvokeAsync(() =>
         {
-            stateHasChanged |= notifications.RemoveAll(n => n.Options.Severity == severity) > 0;
-        }
+            bool stateHasChanged = false;
+            foreach (var notifications in Messages.Values)
+            {
+                stateHasChanged |= notifications.RemoveAll(n => n.Options.Severity == severity) > 0;
+            }
 
-        if (stateHasChanged == true)
-            StateHasChanged();
+            if (stateHasChanged == true)
+                StateHasChanged();
+        });
     }
     /// <summary>
     /// Listens to <see cref="NotificationManager.OnClearByPosition"/>. Clears notifications by position.
+    /// Service events can fire on any thread (push callers on a SignalR hub or timer), so the
+    /// clear and the re-render run on the renderer's dispatcher instead of the caller's thread (#88).
     /// </summary>
     /// <param name="position">The position of the notifications to clear.</param>
     private void NotificationManager_OnClearByPosition(RfNotificationPosition position)
     {
 
-        bool stateHasChanged = false;
-        foreach (var notifications in Messages.Values)
+        _ = InvokeAsync(() =>
         {
-            stateHasChanged |= notifications.RemoveAll(n => n.Options.Position == position) > 0;
-        }
+            bool stateHasChanged = false;
+            foreach (var notifications in Messages.Values)
+            {
+                stateHasChanged |= notifications.RemoveAll(n => n.Options.Position == position) > 0;
+            }
 
-        if (stateHasChanged == true)
-            StateHasChanged();
+            if (stateHasChanged == true)
+                StateHasChanged();
+        });
     }
 
     /// <summary>
     /// Listens to <see cref="NotificationManager.OnClearAll"/>. Clears all notifications.
+    /// Service events can fire on any thread (push callers on a SignalR hub or timer), so the
+    /// clear and the re-render run on the renderer's dispatcher instead of the caller's thread (#88).
     /// </summary>
     private void NotificationManager_OnClearAll()
     {
-        bool stateHasChanged = false;
-        foreach (var notifications in Messages.Values)
+        _ = InvokeAsync(() =>
         {
-            if (notifications.Count == 0)
-                continue;
-
-            foreach (var notification in notifications)
+            bool stateHasChanged = false;
+            foreach (var notifications in Messages.Values)
             {
-                notification.Timer?.Dispose();
-                notification.Timer = null;
+                if (notifications.Count == 0)
+                    continue;
+
+                foreach (var notification in notifications)
+                {
+                    notification.Timer?.Dispose();
+                    notification.Timer = null;
+                }
+
+                notifications.Clear();
+                stateHasChanged = true;
             }
 
-            notifications.Clear();
-            stateHasChanged = true;
-        }
-
-        if (stateHasChanged == true)
-            StateHasChanged();
+            if (stateHasChanged == true)
+                StateHasChanged();
+        });
     }
 
     /// <summary>
     /// Listens to <see cref="NotificationManager.OnShow"/>. Shows a notification.
+    /// Service events can fire on any thread (push callers on a SignalR hub or timer), so the
+    /// message is added and rendered on the renderer's dispatcher instead of the caller's
+    /// thread; a direct StateHasChanged off-context throws (#88).
     /// </summary>
     /// <param name="content">The content to display in the notification.</param>
     /// <param name="baseOptions">The base options for the notification.</param>
     /// <param name="configuration">The configuration action for the notification options.</param>
     private void NotificationManager_OnShow(RenderFragment content, NotificationOptions baseOptions, Action<NotificationOptions> configuration)
     {
-        baseOptions ??= new NotificationOptions();
-
-        NotificationOptions defaultOptions = null;
-        switch (baseOptions.Severity)
+        _ = InvokeAsync(() =>
         {
-            case RfNotificationSeverity.Info:
-                defaultOptions = DefaultInfoOptions;
-                break;
-            case RfNotificationSeverity.Success:
-                defaultOptions = DefaultSuccessOptions;
-                break;
-            case RfNotificationSeverity.Warning:
-                defaultOptions = DefaultWarningOptions;
-                break;
-            case RfNotificationSeverity.Error:
-                defaultOptions = DefaultErrorOptions;
-                break;
-        }
+            baseOptions ??= new NotificationOptions();
 
-        if (defaultOptions != null)
-        {
-            baseOptions.CssClass = defaultOptions.CssClass;
-            baseOptions.Color = defaultOptions.Color;
-            baseOptions.Icon = defaultOptions.Icon;
-            baseOptions.Position = defaultOptions.Position;
-            baseOptions.Severity = defaultOptions.Severity;
-            baseOptions.ShowCloseButton = defaultOptions.ShowCloseButton;
-            baseOptions.ShowFor = defaultOptions.ShowFor;
-        }
+            NotificationOptions defaultOptions = null;
+            switch (baseOptions.Severity)
+            {
+                case RfNotificationSeverity.Info:
+                    defaultOptions = DefaultInfoOptions;
+                    break;
+                case RfNotificationSeverity.Success:
+                    defaultOptions = DefaultSuccessOptions;
+                    break;
+                case RfNotificationSeverity.Warning:
+                    defaultOptions = DefaultWarningOptions;
+                    break;
+                case RfNotificationSeverity.Error:
+                    defaultOptions = DefaultErrorOptions;
+                    break;
+            }
 
-        configuration?.Invoke(baseOptions);
+            if (defaultOptions != null)
+            {
+                baseOptions.CssClass = defaultOptions.CssClass;
+                baseOptions.Color = defaultOptions.Color;
+                baseOptions.Icon = defaultOptions.Icon;
+                baseOptions.Position = defaultOptions.Position;
+                baseOptions.Severity = defaultOptions.Severity;
+                baseOptions.ShowCloseButton = defaultOptions.ShowCloseButton;
+                baseOptions.ShowFor = defaultOptions.ShowFor;
+            }
 
-        var notification = new NotificationDetails()
-        {
-            DisplayFragment = content,
-            Id = Guid.NewGuid(),
-            Options = baseOptions,
-        };
+            configuration?.Invoke(baseOptions);
 
-        if (baseOptions.ShowFor.HasValue && baseOptions.ShowFor > 0)
-        {
-            notification.Timer = new CountdownTimer(baseOptions.ShowFor.Value)
-                .OnElapsed(() => OnRemoveNotification(notification));
+            var notification = new NotificationDetails()
+            {
+                DisplayFragment = content,
+                Id = Guid.NewGuid(),
+                Options = baseOptions,
+            };
 
-            _ = notification.Timer.StartAsync();
-        }
+            if (baseOptions.ShowFor.HasValue && baseOptions.ShowFor > 0)
+            {
+                notification.Timer = new CountdownTimer(baseOptions.ShowFor.Value)
+                    .OnElapsed(() => OnRemoveNotification(notification));
 
-        Messages[baseOptions.Position].Add(notification);
+                _ = notification.Timer.StartAsync();
+            }
 
-        StateHasChanged();
+            Messages[baseOptions.Position].Add(notification);
+
+            StateHasChanged();
+        });
     }
 
     /// <summary>
@@ -232,25 +253,30 @@ public partial class RfNotificationManager : IDisposable
     }
 
     /// <summary>
-    /// Removes a notification.
+    /// Removes a notification. The countdown timer's elapsed callback fires on a thread-pool
+    /// thread, so the removal and re-render run on the renderer's dispatcher; calls already on
+    /// the UI thread (e.g. the close button) still run inline, synchronously (#88).
     /// </summary>
     /// <param name="notification">The notification to remove.</param>
     internal void OnRemoveNotification(NotificationDetails notification)
     {
         if (notification == null) return;
 
-        notification.Timer?.Dispose();
-        notification.Timer = null;
-
-        foreach (var location in Messages.Keys)
+        _ = InvokeAsync(() =>
         {
-            var notifications = Messages[location];
-            if (notifications.RemoveAll(n => n.Id == notification.Id) > 0)
+            notification.Timer?.Dispose();
+            notification.Timer = null;
+
+            foreach (var location in Messages.Keys)
             {
-                StateHasChanged();
-                return;
+                var notifications = Messages[location];
+                if (notifications.RemoveAll(n => n.Id == notification.Id) > 0)
+                {
+                    StateHasChanged();
+                    return;
+                }
             }
-        }
+        });
     }
 
     /// <summary>

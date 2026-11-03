@@ -67,7 +67,6 @@ public class RfTabList_BugSweep
     // programmatic ActiveTabId change never calls SetActiveTab. The header highlight moves but
     // the panel never loads/shows — OnLoad/OnShow never fire until the user clicks. stuck, med.
     [TestMethod]
-    [Ignore("pending #95 — #68 bug-sweep repro, red-by-construction")]
     public void ActiveTabIdChange_LoadsNewTab()
     {
         int bLoads = 0;
