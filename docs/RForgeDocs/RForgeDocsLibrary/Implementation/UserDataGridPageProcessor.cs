@@ -98,7 +98,7 @@ public class UserDataGridPageProcessor : IUserDataGridPageProcessor
                     else
                         query = query
                             .OrderByDescending(u => u.LastName)
-                            .OrderByDescending(u => u.FirstName);
+                            .ThenByDescending(u => u.FirstName);
                     break;
                 case nameof(UserData.FirstName):
                     if (options.SortOrder == RForge.Abstractions.RfSortOrder.Ascending)

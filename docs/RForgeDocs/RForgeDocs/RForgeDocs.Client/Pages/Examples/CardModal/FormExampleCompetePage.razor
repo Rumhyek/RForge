@@ -87,7 +87,17 @@
 
             <h3 class="title">Click to Edit User</h3>
 
-            <UserCard User=CurrentUser ShowEditButton=true OnEdit=OnUserCardEditCallback />
+            @if (UserNotFound == true)
+            {
+                <div class="notification is-warning">
+                    No user with the id <strong>@UserId</strong> exists. Remove the <code>UserId</code> query
+                    parameter to load a random user.
+                </div>
+            }
+            else
+            {
+                <UserCard User=CurrentUser ShowEditButton=true OnEdit=OnUserCardEditCallback />
+            }
 
         </article>
     </div>
@@ -173,6 +183,7 @@
     public int? UserId { get; set; }
 
     private UserData CurrentUser { get; set; }
+    private bool UserNotFound { get; set; }
     private EditUserFormData EditUser { get; set; }
     private bool IsSavingUser { get; set; }
 
@@ -190,7 +201,10 @@
     protected override async Task OnParametersSetAsync()
     {
         if (UserId.HasValue == true)
+        {
             CurrentUser = await getUserProcessor.GetUser(UserId.Value);
+            UserNotFound = CurrentUser == null;
+        }
             
     }
 
