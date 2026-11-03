@@ -140,20 +140,34 @@ public partial class RfTabList : ComponentBase, IDisposable
 
     }
 
+    // #96: true while a click-initiated tab switch is awaiting consumer callbacks. ActiveTab is
+    // only assigned after the old tab's OnHide returns, so without this a second click in that
+    // window passed the guard again: the old tab was hidden twice and two tabs loaded interleaved.
+    private bool isSwitchingTab;
+
     private async Task OnTabClick(RfTabInfo tabInfo)
     {
-        if (ActiveTab == tabInfo) return;
+        if (ActiveTab == tabInfo || isSwitchingTab == true) return;
 
-        if (ActiveTab != null)
-            await ActiveTab.Tab.TabListOnHide();
+        isSwitchingTab = true;
+        try
+        {
+            if (ActiveTab != null)
+                await ActiveTab.Tab.TabListOnHide();
 
-        ActiveTab = tabInfo;
-        ActiveTabId = tabInfo.Tab.TabId;
-        if (ActiveTabIdChanged.HasDelegate)
-            await ActiveTabIdChanged.InvokeAsync(ActiveTabId);
+            ActiveTab = tabInfo;
+            ActiveTabId = tabInfo.Tab.TabId;
+            if (ActiveTabIdChanged.HasDelegate)
+                await ActiveTabIdChanged.InvokeAsync(ActiveTabId);
 
-        await tabInfo.Tab.TabListOnLoad();
-        await tabInfo.Tab.TabListOnShow();
+            await tabInfo.Tab.TabListOnLoad();
+            await tabInfo.Tab.TabListOnShow();
+        }
+        finally
+        {
+            isSwitchingTab = false;
+        }
+
         StateHasChanged();
     }
 

@@ -116,13 +116,13 @@
                                                OnSingleClick=@(async () => await onRowClick(row))
                                                OnDoubleClick=@(async () => await onRowDoubleClick(row))
                                                ClickDelay=@DoubleClickDelay>
-                                    @Cells(row)
+                                    @Cells?.Invoke(row)
                                 </RfDoubleClick>
                             }
                             else
                             {
                                 <tr class="@rowCss" @onclick=@(async () => await onRowClick(row))>
-                                    @Cells(row)
+                                    @Cells?.Invoke(row)
                                 </tr>
                             }
 
