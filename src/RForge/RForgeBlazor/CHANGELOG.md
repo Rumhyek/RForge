@@ -72,6 +72,14 @@
   and the raiser returned while their work was still in flight (e.g. `SortChanged` could return
   while a data load was still running). All subscribers now run to completion; a single subscriber
   fault is rethrown unchanged, multiple faults are combined into one `AggregateException` (#90).
+- Fixed `RfDropDown` / `RfDropDownMulti`: the filter pump no longer misbehaves across close,
+  reopen and dispose. A filter `OnLoad` that threw used to latch the `is-loading` spinner on
+  forever (the pump set `IsLoading` without a `try/finally`) and the exception was silently
+  lost. Close, reopen and dispose now cancel the in-flight pump instead of orphaning it:
+  consumer `FilterChanged`/`OnLoad` callbacks no longer fire after the dropdown is closed or
+  the component is disposed, two pumps can no longer race the same filter queue into
+  duplicate or out-of-order loads, and a keystroke typed during an in-flight load is loaded
+  exactly once, after that load completes (#71).
 - Fixed `RfDropDown`: a consumer `OnLoad` that throws no longer disables the dropdown forever.
   `OpenDropDown` set `IsLoading` without a `try/finally`, so the thrown load left the spinner
   (`is-loading`) latched on and the open-guard rejected every later click; the latch now clears

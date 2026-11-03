@@ -3,6 +3,7 @@ using RForge.Abstractions.DropDowns;
 using RForgeBlazor.Services;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading;
 
 namespace RForgeBlazor.Models;
 
@@ -217,58 +218,102 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
 
     private ConcurrentStack<FilterEventArgs> _filterChanges = new ConcurrentStack<FilterEventArgs>();
     private Task _filterHandler = null;
+    // #71: the filter pump gets one CancellationTokenSource per generation. Close, reopen and
+    // Dispose cancel the in-flight pump instead of orphaning it; a fire-and-forget Task's own
+    // Dispose() cancels nothing, which is what let CANARY-2 call back post-dispose.
+    private CancellationTokenSource _filterCts = null;
 
-    private async Task handleFilters()
+    private async Task handleFilters(CancellationToken ct)
     {
-        while (_filterChanges.IsEmpty == false)
+        try
         {
-            if (FilterRateLimit > 0)
+            while (_filterChanges.IsEmpty == false && ct.IsCancellationRequested == false)
             {
-                bool rateLimited = false;
-
-                do
+                if (FilterRateLimit > 0)
                 {
-                    if (_filterChanges.TryPeek(out var filter) == true)
-                    {
-                        double elapsedMs = Stopwatch.GetElapsedTime(filter.RecordedTimestamp).TotalMilliseconds;
+                    bool rateLimited = false;
 
-                        if (elapsedMs >= FilterRateLimit)
+                    do
+                    {
+                        if (_filterChanges.TryPeek(out var filter) == true)
                         {
-                            rateLimited = true;
+                            double elapsedMs = Stopwatch.GetElapsedTime(filter.RecordedTimestamp).TotalMilliseconds;
+
+                            if (elapsedMs >= FilterRateLimit)
+                            {
+                                rateLimited = true;
+                            }
+                            else
+                            {
+                                // #72 (CANARY-3): wait the REMAINING window, not the time already
+                                // elapsed; the old code slept elapsed+1 ms and re-peeked in a
+                                // geometric loop (~8 wakes for a 250ms config). The stamp is a
+                                // monotonic Stopwatch timestamp and the delay is clamped to a
+                                // positive value, so no system-clock jump can hand Task.Delay a
+                                // negative argument and kill the pump.
+                                await Task.Delay(Math.Max((int)(FilterRateLimit - elapsedMs) + 1, 1), ct);
+                            }
                         }
                         else
                         {
-                            // #72 (CANARY-3): wait the REMAINING window, not the time already
-                            // elapsed; the old code slept elapsed+1 ms and re-peeked in a
-                            // geometric loop (~8 wakes for a 250ms config). The stamp is a
-                            // monotonic Stopwatch timestamp and the delay is clamped to a
-                            // positive value, so no system-clock jump can hand Task.Delay a
-                            // negative argument and kill the pump.
-                            await Task.Delay(Math.Max((int)(FilterRateLimit - elapsedMs) + 1, 1));
+                            //something is locking the peek give it some time
+                            await Task.Delay(10, ct);
+                            continue;
                         }
-                    }
-                    else
+                    } while (rateLimited == false);
+                }
+
+                // #71: cancelled while rate-waiting (close/reopen/dispose): do not start a load.
+                if (ct.IsCancellationRequested == true) return;
+
+                if (_filterChanges.TryPop(out var changes) == true)
+                {
+                    _filterChanges.Clear();
+
+                    if (IsOpen == false) return;
+
+                    IsLoading = true;
+                    StateHasChanged();
+
+                    try
                     {
-                        //something is locking the peek give it some time
-                        await Task.Delay(10);
-                        continue;
+                        await FilterChanged.InvokeAsync(changes.Filter);
+
+                        // #71 (CANARY-2): cancelled/disposed while awaiting a consumer callback -
+                        // the remaining callback must not fire into a closed or disposed component.
+                        ct.ThrowIfCancellationRequested();
+
+                        await OnLoad.InvokeAsync((string)changes.Filter);
                     }
-                } while (rateLimited == false);
+                    finally
+                    {
+                        // #71 (same class as #70): a consumer load that throws must not latch
+                        // IsLoading forever — the pump is fire-and-forget, nobody would ever
+                        // clear it. Success path is unchanged: clear, then re-render.
+                        IsLoading = false;
+
+                        // #71: never touch the renderer after cancel/dispose.
+                        if (ct.IsCancellationRequested == false)
+                            StateHasChanged();
+                    }
+
+                    // #71: cancelled/disposed while the load was awaited: stop; a later pump
+                    // generation (or the already running one) owns the filter stack.
+                    if (ct.IsCancellationRequested == true) return;
+                }
             }
-
-            if (_filterChanges.TryPop(out var changes) == true)
-            {
-                _filterChanges.Clear();
-
-                if (IsOpen == false) return;
-
-                IsLoading = true;
-                StateHasChanged();
-                await FilterChanged.InvokeAsync(changes.Filter);
-                await OnLoad.InvokeAsync((string)changes.Filter);
-                IsLoading = false;
-                StateHasChanged();
-            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested == true)
+        {
+            // #71: close/reopen/dispose cancelled this pump generation - expected unwind.
+        }
+        catch (Exception)
+        {
+            // #71: a consumer load threw. The IsLoading latch was already cleared in the
+            // finally above. The pump must not rethrow: it is started fire-and-forget from
+            // keystroke dispatch, so a rethrow either crashes the dispatch (synchronous throw)
+            // or dies as an unobserved task fault. Stop this generation quietly; the next
+            // keystroke starts a fresh pump.
         }
     }
 
@@ -282,7 +327,31 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
         _filterChanges.Push(new FilterEventArgs((string)args.Value));
 
         if (_filterHandler == null || _filterHandler.IsCompleted == true)
-            _filterHandler = handleFilters();
+        {
+            // #71: each pump generation carries its own CTS so Close/Open/Dispose can cancel
+            // an in-flight pump instead of orphaning it (the double-pump race).
+            _filterCts?.Dispose();
+            _filterCts = new CancellationTokenSource();
+            _filterHandler = handleFilters(_filterCts.Token);
+        }
+    }
+
+    /// <summary>
+    /// Cancels any in-flight filter pump and clears pending filter changes. Used by close,
+    /// reopen and dispose so at most one pump is ever alive (#71).
+    /// </summary>
+    private void CancelFilterPump()
+    {
+        _filterChanges.Clear();
+
+        if (_filterCts != null)
+        {
+            _filterCts.Cancel();
+            _filterCts.Dispose();
+            _filterCts = null;
+        }
+
+        _filterHandler = null;
     }
 
     /// <summary>
@@ -295,8 +364,8 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
         IsOpen = false;
         await IsOpenChanged.InvokeAsync(false);
 
-        _filterChanges.Clear();
-        _filterHandler = null;
+        // #71: cancel the pump instead of nulling the field without cancelling it.
+        CancelFilterPump();
         if (FilterClearOnClose == true)
         {
             Filter = null;
@@ -329,8 +398,8 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
             StateHasChanged();
         }
 
-        _filterChanges.Clear();
-        _filterHandler = null;
+        // #71: cancel any surviving pump (e.g. orphaned by a close) before starting fresh.
+        CancelFilterPump();
         IsOpen = true;
         await IsOpenChanged.InvokeAsync(true);
         await OnOpen.InvokeAsync(Filter);
@@ -342,8 +411,10 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     /// </summary>
     public void Dispose()
     {
-        _filterChanges.Clear();
-        _filterHandler?.Dispose();
+        // #71 (CANARY-2): Task.Dispose() on the pump cancels nothing - cancel it via its CTS
+        // so an in-flight filter load cannot invoke consumer callbacks or touch this
+        // component after dispose.
+        CancelFilterPump();
 
         GC.SuppressFinalize(this);
     }
