@@ -68,8 +68,13 @@
 
     private List<UserData> ViewingOptions { get; set; }
 
+    private readonly LatestRequest ViewingOptionsRequest = new();
+
     public async Task OnLoad(string filter)
     {
-        ViewingOptions = await findUsersProcessor.Find(filter);
+        var ticket = ViewingOptionsRequest.Begin();
+        var found = await findUsersProcessor.Find(filter);
+        if (ViewingOptionsRequest.IsLatest(ticket) == false) return; // a newer filter already won
+        ViewingOptions = found;
     }
 }

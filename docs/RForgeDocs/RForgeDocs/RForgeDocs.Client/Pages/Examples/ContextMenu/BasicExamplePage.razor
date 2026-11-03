@@ -62,18 +62,36 @@
     {
         IsLoading = true;
         StateHasChanged();
-        await Task.Delay(1000);
 
-        NotificationManager.AddSuccess("Successfully saved!");
-        IsLoading = false;
+        // Always clear a loading flag in a finally: if the work between set and clear throws,
+        // the button would otherwise stay "is-loading" forever.
+        try
+        {
+            await Task.Delay(1000);
+
+            NotificationManager.AddSuccess("Successfully saved!");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged(); // a throwing handler skips the framework's re-render
+        }
     }
 
     private async Task OnArchiveClick()
     {
         IsLoading = true;
-        await Task.Delay(1000);
-        NotificationManager.AddSuccess("Successfully archived!");
-        IsLoading = false;
+
+        try
+        {
+            await Task.Delay(1000);
+            NotificationManager.AddSuccess("Successfully archived!");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged(); // a throwing handler skips the framework's re-render
+        }
     }
 
 }

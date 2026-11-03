@@ -187,12 +187,16 @@
     private EditUserFormData EditUser { get; set; }
     private bool IsSavingUser { get; set; }
 
+    /// <summary>
+    /// Picks a random id from the mock user ids, 1 to 100 inclusive (Random.Next's upper bound is exclusive).
+    /// </summary>
+    public static int RandomUserId(Random random) => random.Next(1, 101);
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (UserId == null)
         {
-            Random ran = new Random();
-            navigationManager.NavigateTo(navigationManager.GetUriWithQueryParameter(nameof(UserId), ran.Next(1, 100)));
+            navigationManager.NavigateTo(navigationManager.GetUriWithQueryParameter(nameof(UserId), RandomUserId(new Random())));
             return;
         }
         base.OnAfterRender(firstRender);

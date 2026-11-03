@@ -169,7 +169,10 @@
     private async Task OnLoad(string filter)
     {
         Logger.AddLog($"OnLoad(filter: '{filter}')");
-        Items = await findUsersProcessor.Find(filter);
+        var ticket = ItemsRequest.Begin();
+        var found = await findUsersProcessor.Find(filter);
+        if (ItemsRequest.IsLatest(ticket) == false) return; // a newer filter already won
+        Items = found;
         StateHasChanged();
     }
 
@@ -226,6 +229,7 @@
     /// The items to show in the dropdown.
     /// </summary>
     public List<UserData> Items { get; set; }
+    private readonly LatestRequest ItemsRequest = new();
 
     /// <summary>
     /// When <code>Items == null || Items.Count == 0</code> This text is shown in the dropdown.
