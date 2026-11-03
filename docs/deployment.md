@@ -141,6 +141,3 @@ The docs site then won't update until `deploy_rforge_docs` runs.
 - **Draft notes miss squash-merged PRs.** `.github/scripts/draft-release.sh` only
   recognizes `Merge pull request #N` commits when it refreshes the draft. That's why
   step 4 regenerates the notes.
-- **One test fails intermittently.** `CloseMidLoad_DoesNotStartSecondPump` can fail
-  with `OnLoad('b') never started` when the machine is busy, usually when all three
-  target frameworks run at once. If it's the only failure, rerun it before releasing.
