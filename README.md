@@ -20,31 +20,41 @@ However, RForge has no plans to abstract the base CSS, adding an additional laye
 # How to Setup
 Setting up RForge is simple. Follow the below steps to add RForge Blazor components to your project.
 
-1. Install the Nuget package
+1. Install the NuGet package
 1. Import the namespaces (optional)
 1. Register RForge services
 1. Include Bulma CSS
 
-### Install the Nuget Package
-RForge Blazor components are installed via Nuget. 
-There are two packages. One for the blazor app and one for the library if any.
+### Install the NuGet Package
+RForge is a family of packages that are all released at the same version.
 
-**Please note**: currently you must setup packages with github.
+| Package | Install it when |
+| --- | --- |
+| `RForge.Blazor` | You want everything: the components, typed events and state, and the auto API generator. |
+| `RForge.Blazor.Components` | You only want the UI components. |
+| `RForge.Blazor.Abstractions` | A shared class library uses the enums and contracts that the components also use. The components already depend on it. |
+| `RForge.Blazor.Events` | You only want typed events and reactive state. |
+| `RForge.Blazor.AutoApi.Abstractions` and `RForge.Blazor.AutoApi.Generator` | You only want the auto API generator. |
 
-#### Blazor Project Installation
-##### Command Line
-```dotnet add package RForge.Blazor```
-
-##### Package Manager Console
-```Install-Package RForge.Blazor```
-
-#### Library Project Installation
-This is optional but may be useful if you want to use common enums across the backend and frontend.
+`RForge.Blazor` brings the Events and AutoApi source generators into your build as analyzers. They do nothing unless your code uses their attributes or base types, but if you only want the UI components, install `RForge.Blazor.Components` instead.
 
 ##### Command Line
-```dotnet add package RForge.Blazor.Abstractions```
+```dotnet add package RForge.Blazor.Components```
+
 ##### Package Manager Console
-```Install-Package RForge.Blazor.Abstractions```
+```Install-Package RForge.Blazor.Components```
+
+Use `RForge.Blazor` in place of `RForge.Blazor.Components` to install everything.
+
+### Upgrading from 0.x
+Before 1.0.0, `RForge.Blazor` was the component library. It is now the bundle, and the components are in `RForge.Blazor.Components`. Install one of them, then update the namespaces in your code and in `_Imports.razor`:
+
+| Before | After |
+| --- | --- |
+| `RForgeBlazor`, `RForgeBlazor.Models`, `RForgeBlazor.Services` | `RForge.Blazor`, `RForge.Blazor.Models`, `RForge.Blazor.Services` |
+| `RForge.Abstractions` and its sub-namespaces | `RForge.Blazor.Abstractions` and the same sub-namespaces |
+
+The 0.x packages stay on NuGet unchanged.
 
 ### Import the namespaces
 To simplify namespacing while using RForge, the package is designed with most all components sitting within the root RForge namespace.
@@ -59,9 +69,9 @@ You may want to include the following namespaces in your _import.razor for ease 
 
 | Namespace | Purpose
 | --- | ---
-| `RForgeBlaozr` | Houses all of the blazor components.
-| `RForgeBlaozr.Services`	| Houses interfaces you may need to communicate with certain components.
-| `RForgeBlaozr.Abstractions` |	Common enums used through out the components.
+| `RForge.Blazor` | Houses all of the blazor components.
+| `RForge.Blazor.Services` | Houses interfaces you may need to communicate with certain components.
+| `RForge.Blazor.Abstractions` | Common enums used through out the components.
 
 ### Register RForge Services
 
