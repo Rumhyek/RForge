@@ -75,7 +75,6 @@ public class NotificationManager_BugSweep
     // and AddNotification(content, options) passes configuration=null → a caller-set Position is
     // silently clobbered (contradicts NotificationOptions.cs:30 docs). math, med.
     [TestMethod]
-    [Ignore("pending #85 — #68 bug-sweep repro, red-by-construction")]
     public void CallerPosition_SurvivesSeverityDefaults()
     {
         var cut = ctx.RenderComponent<RfNotificationManager>();
@@ -87,5 +86,78 @@ public class NotificationManager_BugSweep
 
         Assert.IsTrue(cut.Markup.Contains("notification-container bottom-left"),
             "Caller-set Position=BottomLeft must be honored; today the severity-default merge clobbers it to TopCenter.");
+    }
+
+    // BUG #85 — same merge: a caller-set ShowFor on AddNotification(content, options) is replaced
+    // by the severity default (Info = 10 s), so a 50 ms toast would linger for 10 s. math, med.
+    [TestMethod]
+    public void CallerShowFor_SurvivesSeverityDefaults()
+    {
+        var cut = ctx.RenderComponent<RfNotificationManager>();
+
+        cut.InvokeAsync(() => manager.AddNotification(Content("brief"), new NotificationOptions
+        {
+            Severity = RfNotificationSeverity.Info,
+            ShowFor = 50,
+        })).GetAwaiter().GetResult();
+
+        cut.WaitForState(() => cut.Markup.Contains("brief") == false, TimeSpan.FromSeconds(3));
+    }
+
+    // BUG #85 — NotificationOptions.cs:41 documents "ShowCloseButton will be set to true if
+    // ShowFor = null", but nothing implements it: a notification that never auto-closes and has
+    // no close button can never be dismissed. math, med.
+    [TestMethod]
+    public void NoShowFor_ForcesCloseButton()
+    {
+        var cut = ctx.RenderComponent<RfNotificationManager>();
+
+        cut.InvokeAsync(() => manager.AddInfo(Content("sticky"), o =>
+        {
+            o.ShowFor = null;
+            o.ShowCloseButton = false;
+        })).GetAwaiter().GetResult();
+
+        Assert.IsTrue(cut.Markup.Contains("sticky"));
+        Assert.AreEqual(1, cut.FindAll("button.delete").Count,
+            "a notification without ShowFor must always show a close button, otherwise it can never be dismissed.");
+    }
+
+    // BUG #80 — RfNotificationManager.razor.cs: the CountdownTimer elapsed handler runs on a
+    // thread-pool continuation; OnRemoveNotification mutated Messages and called StateHasChanged
+    // there with no InvokeAsync, racing the render foreach and UI-thread adds. crash/race, high.
+    // Fixed by #88's dispatcher marshalling (OnRemoveNotification now runs through InvokeAsync).
+    // Honest scope: bUnit's test dispatcher does not enforce thread affinity, so this repro
+    // cannot go red against the unmarshalled code (verified); it pins that auto-removal still
+    // completes end to end through the timer path.
+    [TestMethod]
+    public void AutoRemove_StaysOnUiContext()
+    {
+        var cut = ctx.RenderComponent<RfNotificationManager>();
+
+        cut.InvokeAsync(() => manager.AddInfo(Content("fleeting"), o => o.ShowFor = 50))
+            .GetAwaiter().GetResult();
+        Assert.IsTrue(cut.Markup.Contains("fleeting"));
+
+        cut.WaitForState(() => cut.Markup.Contains("fleeting") == false, TimeSpan.FromSeconds(3));
+    }
+
+    // BUG #85 — the same merge assigned defaultOptions.Severity (always Info) to every
+    // notification, so ClearAllError/ClearAllWarning/ClearAllSuccess never matched the toasts
+    // they were meant to clear. math, med.
+    [TestMethod]
+    public void SeverityIsPreserved_ClearAllErrorClearsErrors()
+    {
+        var cut = ctx.RenderComponent<RfNotificationManager>();
+
+        cut.InvokeAsync(() =>
+        {
+            manager.AddError(Content("an-error"));
+            manager.AddInfo(Content("an-info"), o => o.ShowFor = null);
+            manager.ClearAllError();
+        }).GetAwaiter().GetResult();
+
+        Assert.IsFalse(cut.Markup.Contains("an-error"), "ClearAllError must clear the error notification.");
+        Assert.IsTrue(cut.Markup.Contains("an-info"), "ClearAllError must leave other severities alone.");
     }
 }

@@ -197,18 +197,32 @@ public partial class RfNotificationManager : IDisposable
                     break;
             }
 
+            // #85: severity defaults only fill in what the caller left unset. An options object
+            // passed to AddNotification(content, options) carries the caller's choices already,
+            // so overwriting them here silently discarded a caller-set Position / ShowFor. The
+            // configuration lambda still runs last and wins over everything. (An enum/bool left
+            // at its zero value is indistinguishable from "unset"; use the lambda to force one.)
             if (defaultOptions != null)
             {
-                baseOptions.CssClass = defaultOptions.CssClass;
-                baseOptions.Color = defaultOptions.Color;
-                baseOptions.Icon = defaultOptions.Icon;
-                baseOptions.Position = defaultOptions.Position;
-                baseOptions.Severity = defaultOptions.Severity;
-                baseOptions.ShowCloseButton = defaultOptions.ShowCloseButton;
-                baseOptions.ShowFor = defaultOptions.ShowFor;
+                baseOptions.CssClass ??= defaultOptions.CssClass;
+                baseOptions.Icon ??= defaultOptions.Icon;
+
+                if (baseOptions.Color == default)
+                    baseOptions.Color = defaultOptions.Color;
+
+                if (baseOptions.Position == default)
+                    baseOptions.Position = defaultOptions.Position;
+
+                baseOptions.ShowCloseButton |= defaultOptions.ShowCloseButton;
+                baseOptions.ShowFor ??= defaultOptions.ShowFor;
             }
 
             configuration?.Invoke(baseOptions);
+
+            // #85: documented on NotificationOptions.ShowCloseButton - a notification that never
+            // auto-closes always gets a close button, otherwise it could never be dismissed.
+            if (baseOptions.ShowFor.HasValue == false || baseOptions.ShowFor <= 0)
+                baseOptions.ShowCloseButton = true;
 
             var notification = new NotificationDetails()
             {
@@ -222,13 +236,33 @@ public partial class RfNotificationManager : IDisposable
                 notification.Timer = new CountdownTimer(baseOptions.ShowFor.Value)
                     .OnElapsed(() => OnRemoveNotification(notification));
 
-                _ = notification.Timer.StartAsync();
+                _ = RunNotificationTimerAsync(notification);
             }
 
             Messages[baseOptions.Position].Add(notification);
 
             StateHasChanged();
         });
+    }
+
+    /// <summary>
+    /// Runs a notification's auto-close countdown and observes the result. The countdown is
+    /// started fire-and-forget, so a fault inside it used to vanish as an unobserved task
+    /// exception while the toast stayed on screen forever and its timer was never disposed (#81).
+    /// A faulted countdown now removes (and disposes) its notification instead.
+    /// </summary>
+    private async Task RunNotificationTimerAsync(NotificationDetails notification)
+    {
+        try
+        {
+            await notification.Timer.StartAsync();
+        }
+        catch (Exception)
+        {
+            // Nothing can be rethrown to (the caller is long gone), so clean up: the toast
+            // would otherwise be stuck without ever auto-closing.
+            OnRemoveNotification(notification);
+        }
     }
 
     /// <summary>

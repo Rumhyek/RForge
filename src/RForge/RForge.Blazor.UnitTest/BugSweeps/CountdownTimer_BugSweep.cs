@@ -106,4 +106,19 @@ public class CountdownTimer_BugSweep
             $"CountdownTimer({ShowForMs}) closed in {sw.ElapsedMilliseconds}ms: the fixed 100-tick " +
             "model waits 100 sub-quantum intervals, so elapsed drifts far past the requested duration.");
     }
+
+    // BUG #81 — RfNotificationManager started the timer fire-and-forget (`_ = Timer.StartAsync()`),
+    // so a throwing elapsed handler faulted an unobserved task and left the timer reporting
+    // Running forever: the next StartAsync is silently ignored by the #83 guard. The timer must
+    // surface the fault to its caller AND leave a restartable state. stuck, med.
+    [TestMethod]
+    public async Task ThrowingElapsedHandler_Surfaced()
+    {
+        using var timer = new CountdownTimer(50).OnElapsed(() => throw new InvalidOperationException("elapsed boom"));
+
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => timer.StartAsync());
+
+        Assert.AreNotEqual(TimerStatus.Running, timer.Status,
+            "a faulted run must not leave the timer stuck in Running (further StartAsync calls would be ignored).");
+    }
 }
