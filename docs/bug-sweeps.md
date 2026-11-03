@@ -5,11 +5,6 @@ It landed as test infrastructure: a bUnit harness plus **25 repro tests, all
 `[Ignore]`d and red-by-construction** — each one encodes a confirmed bug and stays
 red until its fix issue is worked.
 
-> **Note for contributors:** `AGENTS.md` still says the test project has "no bUnit".
-> That line is stale — bUnit 1.40.0 is PO-approved (spec #68 §4) and installed in
-> `RForge.Blazor.UnitTest`. This file is the current record until `AGENTS.md` is
-> updated (a PO-owned file).
-
 ## Where things live
 
 ```
@@ -58,7 +53,6 @@ If no tagged test exists for your issue (some findings had no bUnit repro — se
 bUnit is 1.x: use `TestContext.RenderComponent<T>(ComponentParameter.CreateParameter(name, value))`
 (bUnit 2.x's `TestContext.Render` does not exist here). MSTest's `TestContext`
 collides with `Bunit.TestContext` — alias it (`using BunitTestContext = Bunit.TestContext;`).
-The runner container has the net10 runtime only: build all TFMs, run tests with `-f net10.0`.
 
 ## Snapshots must be culture-invariant (#110)
 
