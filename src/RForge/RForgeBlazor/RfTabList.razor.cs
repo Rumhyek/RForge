@@ -67,6 +67,7 @@ public partial class RfTabList : ComponentBase, IDisposable
 
     private List<RfTabInfo> RegisteredTabs { get; } = new List<RfTabInfo>();
     private RfTabInfo ActiveTab { get; set; }
+    private string lastSeenActiveTabId;
     /// <summary>
     /// Invoked when the component is initialized. Subscribes to the <see cref="RfTabListContext.OnTabRegister"/> event.
     /// </summary>
@@ -83,12 +84,30 @@ public partial class RfTabList : ComponentBase, IDisposable
     /// </summary>
     /// <remarks>This method validates that the <see cref="ActiveTabId"/> parameter is not null, empty, or
     /// consists only of whitespace. If the validation fails, an exception is thrown to indicate that the parameter is
-    /// required.</remarks>
+    /// required. When <see cref="ActiveTabId"/> has been changed programmatically by the parent, the tab with the
+    /// matching <c>TabId</c> is activated so its panel loads and shows (its <c>OnLoad</c> and <c>OnShow</c>
+    /// callbacks fire).</remarks>
+    /// <returns>A task that completes once a programmatic tab change, if any, has been applied.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the <see cref="ActiveTabId"/> parameter is null, empty, or consists only of whitespace.</exception>
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if(string.IsNullOrWhiteSpace(ActiveTabId) == true)
             throw new InvalidOperationException("The ActiveTabId parameter is required and cannot be null, empty, or whitespace.");
+
+        // #95: a programmatic ActiveTabId change must actually activate the tab, not just move
+        // the header highlight. Compare against the last value we saw from the parameter path so
+        // an internal activation (a click already updated ActiveTabId) is not echoed back, and
+        // a parent re-render with its stale bound value does not undo the user's click.
+        if(string.Equals(lastSeenActiveTabId, ActiveTabId, StringComparison.Ordinal) == false)
+        {
+            lastSeenActiveTabId = ActiveTabId;
+
+            // On the first render no tabs are registered yet; Context_OnTabRegister activates the
+            // matching tab as it registers. After that, apply the change to the registered tab.
+            var targetTab = RegisteredTabs.FirstOrDefault(t => t.Tab.TabId == ActiveTabId);
+            if (targetTab != null && ActiveTab != targetTab)
+                await SetActiveTab(targetTab);
+        }
     }
 
     private async Task Context_OnTabRegister(object sender, RfTabOnRegisterEventArgs e)
