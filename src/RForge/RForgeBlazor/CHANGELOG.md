@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed `RfNotificationManager`: severity defaults no longer overwrite what the caller set. `AddNotification(content, options)` now keeps a caller-set `Position`, `ShowFor`, `Color`, `Icon` and `CssClass` (the defaults only fill in fields left unset; an enum/bool left at its zero value counts as unset, so use the `Add*` configuration lambda to force one), a notification's `Severity` is no longer reset to `Info` (which made `ClearAllError()`, `ClearAllWarning()` and `ClearAllSuccess()` miss their notifications), and a notification without `ShowFor` always shows a close button, as `NotificationOptions.ShowCloseButton` documents. A faulted auto-close countdown now removes its notification instead of leaving it stuck on screen with an undisposed timer (#85, #81).
 - Fixed `NotificationManager`: `ClearAllByPostion` / `ClearAllBySeverity` (and the
   `ClearAllError` / `ClearAllInfo` / `ClearAllSuccess` / `ClearAllWarning` shortcuts built on
   them) no longer throw a `NullReferenceException` when no `RfNotificationManager` is
