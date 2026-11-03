@@ -23,6 +23,9 @@
     <!-- #99: Docs_BugSweep repros exercise the docs app (page + processor) directly. -->
     <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocsLibrary\RForgeDocsLibrary.csproj" />
     <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocs\RForgeDocs.Client\RForgeDocs.Client.csproj" />
+    <!-- #107/#108: the docs API routes (UserEndpoints) are exercised in-process over loopback. -->
+    <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocs\RForgeDocs\RForgeDocs.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
   </ItemGroup>
 

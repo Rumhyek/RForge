@@ -9,10 +9,12 @@ namespace RForgeDocs.EndPoints
         public static void MapUserApi(this WebApplication app)
         {
             //IGetUserProcessor
-            app.MapGet("/api/users/{*userId}",
+            app.MapGet("/api/users/{userId:int}",
                 async ([FromServices] IGetUserProcessor processor, int userId) =>
                 {
-                    return Results.Ok(await processor.GetUser(userId));
+                    var user = await processor.GetUser(userId);
+
+                    return user == null ? Results.NotFound() : Results.Ok(user);
                 });
          
             //ISaveUserProcessor
