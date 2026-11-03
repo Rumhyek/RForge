@@ -1,0 +1,43 @@
+@page "/examples/plain-components"
+@rendermode InteractiveWebAssembly
+
+<ExampleHeader Title="Plain components" Level="Simple" Mode="Interactive WebAssembly">
+    Components that can't derive from <code>BusComponentBase</code> (third-party or legacy components) can still
+    read bus state through an ordinary <code>[CascadingParameter]</code>.
+</ExampleHeader>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <section class="card h-100">
+            <div class="card-header">Root theme <code>CascadeRootState&lt;ThemeState&gt;()</code></div>
+            <div class="card-body d-flex flex-column gap-3">
+                <ThemePicker />
+                <PlainThemedCard Caption="Plain component reading the root theme" />
+            </div>
+        </section>
+    </div>
+    <div class="col-md-6">
+        <section class="card h-100">
+            <div class="card-header">Scoped theme <code>&lt;StateScope CascadeValue="true"&gt;</code></div>
+            <div class="card-body">
+                <StateScope TState="ThemeState" Initial="ThemeState.Ocean" CascadeValue="true">
+                    <div class="d-flex flex-column gap-3">
+                        <ThemePicker />
+                        <PlainThemedCard Caption="Plain component inside the StateScope" />
+                    </div>
+                </StateScope>
+            </div>
+        </section>
+    </div>
+</div>
+
+<HowItWorks>
+    <p><strong>Try it:</strong> change each theme. The two halves don't affect each other.</p>
+    <ul>
+        <li><code>PlainThemedCard</code> is a plain <code>ComponentBase</code> with <code>[CascadingParameter] ThemeState? Theme</code>. It knows nothing about the bus.</li>
+        <li>On the left, <code>options.CascadeRootState&lt;ThemeState&gt;()</code> (see <code>SampleBus.Configure</code>) exposes the <em>root</em> theme as a <code>CascadingValueSource&lt;ThemeState&gt;</code>.</li>
+        <li>On the right, <code>&lt;StateScope TState="ThemeState" CascadeValue="true"&gt;</code> provides a <em>separate</em> instance to its subtree and also cascades it.</li>
+        <li><code>ThemePicker</code> resolves the nearest provider, so the same component writes the root theme on the left and the scoped theme on the right.</li>
+        <li>Trade-off: cascade consumers re-render on <em>every</em> change. Bus-aware consumers can use selectors (<code>ThemePicker</code> only watches <code>Name</code>).</li>
+    </ul>
+</HowItWorks>

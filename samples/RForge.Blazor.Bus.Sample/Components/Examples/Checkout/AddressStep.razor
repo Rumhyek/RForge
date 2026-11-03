@@ -1,0 +1,15 @@
+@inherits BusComponentBase
+
+@if (IsActive)
+{
+    <form class="d-flex flex-column gap-2" @onsubmit="Continue">
+        <input class="form-control" placeholder="Full name" @bind="_name" />
+        <input class="form-control" placeholder="Email (try one containing “crash”)" @bind="_email" />
+        <input class="form-control" placeholder="Address" @bind="_address" />
+        <button class="btn btn-primary align-self-end" type="submit">Continue to payment</button>
+        @if (_error is not null)
+        {
+            <div class="text-danger small">@_error</div>
+        }
+    </form>
+}

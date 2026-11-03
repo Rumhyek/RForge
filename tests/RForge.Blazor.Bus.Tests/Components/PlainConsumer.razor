@@ -1,0 +1,6 @@
+<span class="plain">@(State?.Count.ToString() ?? "none")</span>
+
+@code {
+    [CascadingParameter]
+    public CounterState? State { get; set; }
+}

@@ -1,0 +1,19 @@
+@inherits BusComponentBase
+
+@switch (Status.Status)
+{
+    case CheckoutStatus.Processing:
+        <div class="d-flex align-items-center gap-2">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <span>Processing payment…</span>
+        </div>
+        break;
+
+    case CheckoutStatus.Confirmed:
+        <div class="alert alert-success mb-0">
+            <div class="fw-semibold">Order confirmed 🎉</div>
+            <div class="small">Order id: <code>@Status.OrderId</code></div>
+            <button class="btn btn-sm btn-outline-success mt-2" @onclick="StartOver">Start a new order</button>
+        </div>
+        break;
+}

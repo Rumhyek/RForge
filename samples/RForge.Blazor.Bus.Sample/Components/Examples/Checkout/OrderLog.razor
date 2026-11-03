@@ -1,0 +1,21 @@
+@inherits BusComponentBase
+
+<section class="card">
+    <div class="card-header d-flex">
+        <span class="me-auto">Order log <small class="text-body-secondary">(outside the checkout scope)</small></span>
+        <span class="badge text-bg-light" title="OrderSubmitted is broadcast inside the checkout only">OrderSubmitted seen here: @_submittedSeen</span>
+    </div>
+    <ul class="list-group list-group-flush">
+        @if (_orders.Count == 0)
+        {
+            <li class="list-group-item small text-body-secondary">No orders yet.</li>
+        }
+        @foreach (var order in _orders)
+        {
+            <li class="list-group-item small d-flex" @key="order.OrderId">
+                <span class="me-auto">@order.At.ToString("HH:mm:ss") · @order.Items item(s)</span>
+                <strong>@order.Total.ToString("C")</strong>
+            </li>
+        }
+    </ul>
+</section>

@@ -1,0 +1,57 @@
+@page "/"
+
+<PageTitle>RForge.Blazor.Bus samples</PageTitle>
+
+<h1>RForge.Blazor.Bus samples</h1>
+<p class="lead">
+    Typed events and reactive state for Blazor components, wherever they sit in the tree.
+    Each example names the features it uses and has a short "How it works" section.
+</p>
+
+<div class="row row-cols-1 row-cols-md-2 g-3">
+    @foreach (var example in Examples)
+    {
+        <div class="col">
+            <a class="card h-100 text-decoration-none example-card" href="@example.Href">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge @(example.Level == "Complex" ? "text-bg-danger" : "text-bg-success")">@example.Level</span>
+                        <span class="badge text-bg-secondary">@example.Mode</span>
+                    </div>
+                    <h2 class="h5 card-title">@example.Title</h2>
+                    <p class="card-text text-body">@example.Summary</p>
+                    <p class="card-text small text-body-secondary mb-0">@example.Features</p>
+                </div>
+            </a>
+        </div>
+    }
+</div>
+
+@code {
+    private sealed record Example(string Title, string Href, string Level, string Mode, string Summary, string Features);
+
+    private static readonly Example[] Examples =
+    [
+        new("Shared state", "examples/shared-counter", "Simple", "Auto",
+            "Three unrelated components read and write one counter.",
+            "IState · [UseState] · selectors · record equality"),
+        new("Notifications", "examples/notifications", "Simple", "Server",
+            "Deeply nested buttons raise toasts in a host elsewhere on the page.",
+            "IEvent · [Subscribe] · ScopeKind.Root · events vs. state"),
+        new("Plain components", "examples/plain-components", "Simple", "WebAssembly",
+            "Components that don't derive from BusComponentBase read state through cascades.",
+            "CascadeRootState · StateScope CascadeValue · nearest provider"),
+        new("Scoped widgets", "examples/scoped-widgets", "Complex", "Auto",
+            "Independent todo lists, each with its own state and event scope.",
+            "StateScope · Route.Local / Bubble / Global · tuple selectors · scope disposal"),
+        new("Checkout", "examples/checkout", "Complex", "Server (prerendered)",
+            "Storefront with a root cart and a self-contained checkout flow.",
+            "PersistState · EventScope · Route.Named · async handlers · ErrorBoundary"),
+        new("Live dashboard", "examples/live-dashboard", "Complex", "Server",
+            "A background service publishes ticks from a timer thread.",
+            "Off-thread publishing · manual registration · Render = false"),
+        new("Render modes", "examples/render-modes", "Complex", "Static + Server + WASM",
+            "The same component in five islands. Which ones share a bus?",
+            "DI containers · static SSR · cascade boundaries"),
+    ];
+}

@@ -1,0 +1,8 @@
+<StateScope TState="CounterState" CascadeValue="true">
+    <PlainConsumer />
+    <Publisher @ref="Pub" />
+</StateScope>
+
+@code {
+    public Publisher Pub = default!;
+}

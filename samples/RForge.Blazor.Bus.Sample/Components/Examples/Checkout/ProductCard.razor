@@ -1,0 +1,10 @@
+@inherits BusComponentBase
+
+<div class="card product-card h-100">
+    <div class="card-body text-center">
+        <div class="product-emoji">@Product.Emoji</div>
+        <div class="fw-semibold">@Product.Name</div>
+        <div class="text-body-secondary small mb-2">@Product.Price.ToString("C")</div>
+        <button class="btn btn-sm btn-primary" @onclick="AddAsync">Add to cart</button>
+    </div>
+</div>

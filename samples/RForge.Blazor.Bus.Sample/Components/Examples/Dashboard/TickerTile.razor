@@ -1,0 +1,10 @@
+@inherits BusComponentBase
+
+<div class="ticker-tile card text-center @(_lastChange > 0 ? "up" : _lastChange < 0 ? "down" : "")">
+    <div class="card-body py-2">
+        <div class="fw-semibold">@Symbol</div>
+        <div class="fs-4">@_price.Value.ToString("N2")</div>
+        <div class="small">@(_lastChange >= 0 ? "▲" : "▼") @Math.Abs(_lastChange).ToString("N2")</div>
+        <RenderBadge Count="@(++_renders)" />
+    </div>
+</div>

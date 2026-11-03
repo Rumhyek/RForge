@@ -1,0 +1,16 @@
+@* A plain component: no BusComponentBase, no generator. It reads state through an ordinary cascade. *@
+<div class="themed-card p-3 rounded" style="background:@Theme?.Background; color:@Theme?.Foreground">
+    <div class="fw-semibold">@Caption</div>
+    <div>Theme: <strong>@(Theme?.Name ?? "(none)")</strong></div>
+    <RenderBadge Count="@(++_renders)" />
+</div>
+
+@code {
+    private int _renders;
+
+    [CascadingParameter]
+    public ThemeState? Theme { get; set; }
+
+    [Parameter]
+    public string Caption { get; set; } = "Plain component";
+}

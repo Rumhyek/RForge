@@ -1,0 +1,9 @@
+@inherits BusComponentBase
+
+<div class="d-flex flex-wrap gap-2 mb-2">
+    <button class="btn btn-primary" @onclick="() => Add(1)">+1</button>
+    <button class="btn btn-primary" @onclick="() => Add(2)">+2</button>
+    <button class="btn btn-outline-secondary" @onclick="Reset">Reset</button>
+    <button class="btn btn-outline-secondary" @onclick="SetSame" title="Sets a value equal to the current one">Set same value</button>
+</div>
+<RenderBadge Count="@(++_renders)" />

@@ -1,0 +1,38 @@
+@page "/examples/shared-counter"
+@rendermode InteractiveAuto
+
+<ExampleHeader Title="Shared state" Level="Simple" Mode="Interactive Auto">
+    Three components with no shared parent and no parameters between them read and write one piece of state.
+</ExampleHeader>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <section class="card h-100">
+            <div class="card-header">Writer <code>ClickButtons</code></div>
+            <div class="card-body"><ClickButtons /></div>
+        </section>
+    </div>
+    <div class="col-md-4">
+        <section class="card h-100">
+            <div class="card-header">Whole value <code>[UseState]</code></div>
+            <div class="card-body"><ClickDisplay /></div>
+        </section>
+    </div>
+    <div class="col-md-4">
+        <section class="card h-100">
+            <div class="card-header">Selector <code>[UseState(Select = …)]</code></div>
+            <div class="card-body"><ParityBadge /></div>
+        </section>
+    </div>
+</div>
+
+<HowItWorks>
+    <p><strong>Try it:</strong> click <em>+1</em> and <em>+2</em> and watch the render counters.</p>
+    <ul>
+        <li><code>ClickState</code> is a record implementing <code>IState&lt;ClickState&gt;</code>. The root bus creates it on first use from <code>ClickState.Initial</code>.</li>
+        <li><code>ClickButtons</code> writes with <code>State&lt;ClickState&gt;().Update(...)</code>. It never reads the state reactively, so it only re-renders after its own clicks (normal Blazor behavior for event handlers).</li>
+        <li><code>ClickDisplay</code> declares <code>[UseState] private partial ClickState Clicks { get; }</code> and re-renders on every change.</li>
+        <li><code>ParityBadge</code> uses a selector, <code>SelectIsEven</code>. <em>+2</em> doesn't change parity, so it doesn't re-render.</li>
+        <li><em>Set same value</em> writes an equal record. Record equality turns that into a no-op, so nothing re-renders.</li>
+    </ul>
+</HowItWorks>

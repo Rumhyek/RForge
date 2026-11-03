@@ -1,0 +1,247 @@
+# 10 · Manual registration
+
+**Goal:** subscribe without `[Subscribe]` and `[UseState]`, for the cases attributes can't express: selectors that depend on parameters, custom comparers, conditional or dynamic subscriptions.
+
+*See it running:* `TickerTile` on the **Live dashboard** sample page (`/examples/live-dashboard`).
+
+## What the attributes generate
+
+The source generator turns attributes into an override of `RegisterSubscriptions`. You can write that override yourself, using the same `SubscriptionBuilder`:
+
+| Attribute | Manual equivalent |
+|---|---|
+| `[UseState] partial T X { get; }` | `_x = builder.State<T>();` then read `_x.Value` |
+| `[UseState(Select = nameof(S))] partial V X { get; }` | `_x = builder.State<T, V>(S);` |
+| `[Subscribe] void On(E e)` | `builder.On<E>(On);` |
+| `Scope = ScopeKind.Root` / `ScopeName = "n"` | `at: ScopeTarget.Root` / `ScopeTarget.Named("n")` |
+| `Render = false` | `render: false` |
+
+`RegisterSubscriptions` runs **after parameters are set** and **before `OnInitialized`**, which is what makes parameter-dependent selectors possible.
+
+## 1. A selector that depends on a parameter
+
+Attribute selectors must be `static`, so they can't see `[Parameter]` values. A lambda can:
+
+```csharp
+// MyApp.Client/Features/Stocks/PriceState.cs
+using System.Collections.Immutable;
+
+namespace MyApp.Client.Features.Stocks;
+
+public sealed record PriceState(ImmutableDictionary<string, decimal> Prices) : IState<PriceState>
+{
+    public static PriceState Initial => new(ImmutableDictionary<string, decimal>.Empty);
+}
+
+public sealed record PriceChanged(string Symbol, decimal Change) : IEvent;
+```
+
+```razor
+@* MyApp.Client/Features/Stocks/Components/PriceTile.razor *@
+@inherits BusComponentBase
+
+<div class="card text-center">
+    <div class="card-body">
+        <div class="fw-semibold">@Symbol</div>
+        <div class="fs-4">@_price.Value.ToString("N2")</div>
+        <small>@(_lastChange >= 0 ? "▲" : "▼")</small>
+    </div>
+</div>
+```
+
+```csharp
+// MyApp.Client/Features/Stocks/Components/PriceTile.razor.cs
+using Microsoft.AspNetCore.Components;
+
+namespace MyApp.Client.Features.Stocks.Components;
+
+public partial class PriceTile
+{
+    private SelectorHandle<PriceState, decimal> _price = default!;
+    private decimal _lastChange;
+
+    [Parameter, EditorRequired]
+    public string Symbol { get; set; } = "";
+
+    protected override void RegisterSubscriptions(SubscriptionBuilder builder)
+    {
+        base.RegisterSubscriptions(builder);
+
+        // Symbol is already set here. Re-render only when THIS symbol's price changes.
+        _price = builder.State<PriceState, decimal>(p => p.Prices.GetValueOrDefault(Symbol));
+
+        // Track the direction without a render of its own; the price selector triggers the render.
+        builder.On<PriceChanged>(e =>
+        {
+            if (e.Symbol == Symbol)
+            {
+                _lastChange = e.Change;
+            }
+        }, render: false);
+    }
+}
+```
+
+> Parameters are read **once**, when registering. If `Symbol` can change for the same component instance, put `@key="symbol"` on the component where it's used so Blazor re-creates it instead.
+
+## 2. A custom comparer
+
+Selectors compare with default equality. Pass a comparer to change that, for example to ignore case:
+
+```csharp
+// MyApp.Client/Features/Stocks/Components/WatchlistLabel.razor.cs
+namespace MyApp.Client.Features.Stocks.Components;
+
+public partial class WatchlistLabel
+{
+    private SelectorHandle<WatchlistState, string> _name = default!;
+
+    protected override void RegisterSubscriptions(SubscriptionBuilder builder)
+    {
+        base.RegisterSubscriptions(builder);
+        _name = builder.State<WatchlistState, string>(w => w.Name, comparer: StringComparer.OrdinalIgnoreCase);
+    }
+}
+```
+
+```razor
+@* MyApp.Client/Features/Stocks/Components/WatchlistLabel.razor *@
+@inherits BusComponentBase
+
+<h3>@_name.Value</h3>
+```
+
+```csharp
+// MyApp.Client/Features/Stocks/WatchlistState.cs
+namespace MyApp.Client.Features.Stocks;
+
+public sealed record WatchlistState(string Name) : IState<WatchlistState>
+{
+    public static WatchlistState Initial => new("My watchlist");
+}
+```
+
+## 3. Mix attributes and manual code
+
+A component with attributes already has a generated `RegisterSubscriptions`, so **don't override it** (that's error `RFBUS009`). Implement the generated hook instead, which runs after the generated registrations:
+
+```csharp
+// MyApp.Client/Features/Stocks/Components/PriceAlerts.razor.cs
+using Microsoft.AspNetCore.Components;
+
+namespace MyApp.Client.Features.Stocks.Components;
+
+public partial class PriceAlerts
+{
+    private readonly List<string> _alerts = [];
+
+    [Parameter]
+    public bool IncludeSmallMoves { get; set; }
+
+    [UseState(Select = nameof(SelectCount))]
+    private partial int Tracked { get; }
+
+    private static int SelectCount(PriceState prices) => prices.Prices.Count;
+
+    // Generated by the source generator; runs after the attribute-based registrations.
+    partial void OnRegisterSubscriptions(SubscriptionBuilder builder)
+    {
+        // Conditional subscription: decided once, from a parameter.
+        if (IncludeSmallMoves)
+        {
+            builder.On<PriceChanged>(e => _alerts.Insert(0, $"{e.Symbol} {e.Change:+0.00;-0.00}"));
+        }
+        else
+        {
+            builder.On<PriceChanged>(e =>
+            {
+                if (Math.Abs(e.Change) >= 1)
+                {
+                    _alerts.Insert(0, $"{e.Symbol} moved {e.Change:+0.00;-0.00}");
+                }
+            });
+        }
+    }
+}
+```
+
+```razor
+@* MyApp.Client/Features/Stocks/Components/PriceAlerts.razor *@
+@inherits BusComponentBase
+
+<p>Tracking @Tracked symbols</p>
+<ul>@foreach (var alert in _alerts.Take(5)) { <li>@alert</li> }</ul>
+```
+
+## 4. Subscribe later, or to something decided at runtime
+
+`SubscriptionBuilder` only works during registration. To subscribe later (after a button click, say), use the scope directly, **marshal to the renderer yourself**, and dispose in `DisposeAsyncCore`:
+
+```csharp
+// MyApp.Client/Features/Stocks/Components/LiveFeedToggle.razor.cs
+namespace MyApp.Client.Features.Stocks.Components;
+
+public partial class LiveFeedToggle
+{
+    private IDisposable? _subscription;
+    private int _received;
+
+    private void Toggle()
+    {
+        if (_subscription is not null)
+        {
+            _subscription.Dispose();
+            _subscription = null;
+            return;
+        }
+
+        // Scope.Subscribe is the raw API: no InvokeAsync, no automatic render, no automatic disposal.
+        _subscription = Scope.Subscribe<PriceChanged>(async (e, cancellationToken) =>
+            await InvokeAsync(() =>
+            {
+                _received++;
+                StateHasChanged();
+            }));
+    }
+
+    protected override ValueTask DisposeAsyncCore()
+    {
+        _subscription?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}
+```
+
+```razor
+@* MyApp.Client/Features/Stocks/Components/LiveFeedToggle.razor *@
+@inherits BusComponentBase
+
+<button class="btn btn-sm btn-outline-secondary" @onclick="Toggle">@(_subscription is null ? "Listen" : "Stop") (@_received)</button>
+```
+
+Prefer step 3 (decide at registration) when you can. Late subscriptions are the escape hatch.
+
+## How it works
+
+- `SubscriptionBuilder.On` and `.State` wrap your delegate so it runs through `InvokeAsync`, re-renders (unless `render: false`), routes exceptions to the `ErrorBoundary`, and is released when the component is disposed: exactly what the attributes do.
+- `Scope.Subscribe` and `IStateStore.Subscribe` are the lower-level APIs that services use ([tutorial 07](07-services-and-background-work.md)). They do none of that for you.
+
+## ✅ Best practices
+
+- **Default to attributes.** Use manual registration only for what attributes can't express, and say why in a comment.
+- **Call `base.RegisterSubscriptions(builder)` first** in a manual override, so registrations from a base component aren't lost.
+- **Mixing? Use the `OnRegisterSubscriptions` hook**, never a second override.
+- **Store handles in fields** (`_price`) and read `.Value` in markup. Handles are released automatically.
+- **Pair every `Scope.Subscribe` with a dispose** in `DisposeAsyncCore`, and wrap UI work in `InvokeAsync`.
+- **Use `@key` when a parameter that a selector captured can change.**
+
+## Common mistakes
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `InvalidOperationException: SubscriptionBuilder can only be used inside RegisterSubscriptions` | Builder stored and used later | Use `Scope.Subscribe` for late subscriptions |
+| `RFBUS009` | Override of `RegisterSubscriptions` in a component that also has attributes | Move the code into `partial void OnRegisterSubscriptions` |
+| Tile shows the old symbol after its parameter changes | Selector captured the parameter at registration | Add `@key` |
+| `Dispatcher` exceptions from a late subscription | Handler touches UI without `InvokeAsync` | Wrap the body in `InvokeAsync` |
+
+**Next:** [11 · Testing with bUnit](11-testing-with-bunit.md)

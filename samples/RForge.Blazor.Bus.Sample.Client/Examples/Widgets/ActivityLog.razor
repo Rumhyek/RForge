@@ -1,0 +1,18 @@
+@inherits BusComponentBase
+
+<section class="card">
+    <div class="card-header d-flex align-items-center">
+        <span class="me-auto">Activity log <small class="text-body-secondary">(root subscriber)</small></span>
+        <span class="badge text-bg-light">Clear-done events seen: @_clearSeen</span>
+    </div>
+    <ul class="list-group list-group-flush activity-log">
+        @if (_entries.Count == 0)
+        {
+            <li class="list-group-item text-body-secondary small">Add or tick items in any list…</li>
+        }
+        @foreach (var entry in _entries)
+        {
+            <li class="list-group-item small">@entry</li>
+        }
+    </ul>
+</section>

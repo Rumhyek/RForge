@@ -1,0 +1,8 @@
+@inherits BusComponentBase
+
+<ol class="checkout-steps">
+    @foreach (var (number, name) in Steps)
+    {
+        <li class="@(number == Step ? "active" : number < Step ? "done" : "")">@name</li>
+    }
+</ol>

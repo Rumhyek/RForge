@@ -1,0 +1,9 @@
+@inherits BusComponentBase
+
+<div class="alert alert-secondary mb-0">
+    <div><strong>Static component</strong> (no render mode): renderer <code>@RendererInfo.Name</code>, interactive: <code>@RendererInfo.IsInteractive</code>.</div>
+    <div class="small">
+        It read <code>IslandState.Count = @Island.Count</code> from this request's own bus while the HTML was generated.
+        It never subscribed and never re-renders. Static output is a snapshot.
+    </div>
+</div>
