@@ -5,23 +5,33 @@ nuget.org and the live docs site when someone **publishes the draft GitHub relea
 
 | What you do | Workflow | What happens |
 |---|---|---|
+| Open or update a PR | `pr_build` | Builds the solution and runs the tests on every target framework |
 | Merge a PR that touches `src/**` | `deploy_main` | Packs `X.Y.Z-rc.N`, pushes it to the GitHub package feed, and creates or refreshes the `vX.Y.Z` draft release |
 | Merge a PR that doesn't touch `src/**` | None | Nothing is built or deployed |
 | Publish the draft release | `deploy_release` | Packs `X.Y.Z` and pushes it to the GitHub feed and nuget.org |
-| Publish the draft release | `deploy_rforge_docs` | Builds `docs/RForgeDocs` and deploys it to https://rforge.azurewebsites.net |
+| Publish the draft release | `deploy_rforge_docs` | Builds `docs/RForgeDocs` and deploys it to https://rforge.azurewebsites.net, unless the release is marked as a prerelease |
 
-All three workflows can also be started by hand from the Actions tab.
+All four workflows can also be started by hand from the Actions tab.
 `deploy_release` then asks which tag to package, and `deploy_rforge_docs` deploys
 whichever branch you pick straight to production.
 
-No workflow runs the tests, so run them yourself before releasing.
+Only `pr_build` runs the tests, and only on PRs. Merging doesn't run them again, and
+neither does publishing, so check the last PR's result before you release.
+
+## Prereleases
+
+Publish a draft marked **Set as a pre-release** (tag `vX.Y.Z-rc.N`) to put a test
+build on nuget.org without touching the live site. `deploy_release` still runs and
+pushes the packages; `deploy_rforge_docs` skips itself. nuget.org shows the build only
+to people who ask for prereleases.
 
 ## Cutting a release
 
-1. Run the tests on an up-to-date `main`:
+1. Check that `pr_build` passed on the last merged PR. To run the tests yourself on an
+   up-to-date `main`:
 
    ```powershell
-   dotnet test src/RForge/RForge.Blazor.UnitTest
+   dotnet test src/RForge/RForge.sln
    ```
 
 2. In a PR, rename `## Unreleased` to `## Version X.Y.Z` in both changelogs, then merge it:
@@ -60,8 +70,10 @@ a bad release has to be fixed with a new version number.
 `GitVersion.yml`. The csproj files don't hold a version number; workflows pass it
 in with `-p:Version`. Both packages always get the same version.
 
-- **Starting point:** the newest `vX.Y.Z` tag.
-- **Default bump:** patch, so after `v0.15.0` the next builds are `0.15.1-rc.N`.
+- **Starting point:** the newest `vX.Y.Z` tag, unless `next-version` in
+  `GitVersion.yml` is higher. It's set to `1.0.0` for the v1 release and should be
+  removed once `v1.0.0` is tagged.
+- **Default bump:** patch, so after `v0.15.0` the next builds would be `0.15.1-rc.N`.
 - **Bigger bump:** put one of these in a commit message on `main`. It stays in
   effect until the next tag.
   - `+semver: minor` or `+semver: feature`

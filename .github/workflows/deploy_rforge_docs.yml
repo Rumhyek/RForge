@@ -24,6 +24,9 @@ defaults:
 
 jobs:
   build:
+    # Prereleases ship packages to nuget.org but leave the live site alone.
+    # `deploy` needs `build`, so it is skipped too. Manual runs still deploy.
+    if: github.event_name != 'release' || !github.event.release.prerelease
     runs-on: ubuntu-latest
 
     steps:
