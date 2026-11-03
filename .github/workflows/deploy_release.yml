@@ -23,6 +23,7 @@ jobs:
       contents: write
       actions: write
       attestations: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -68,6 +69,13 @@ jobs:
       - name: Publish Packages to GitHub
         run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source github --skip-duplicate
       
+      # Get a temporary nuget.org API key through trusted publishing
+      - name: NuGet login (OIDC)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       # Publish the packages to nuget under RForge
       - name: Publish Packages (Nuget)
-        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate
+        run: dotnet nuget push ${{env.DOTNET_ROOT}}/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --skip-duplicate
