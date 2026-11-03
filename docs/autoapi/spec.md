@@ -140,7 +140,7 @@ app.MapRForgeAutoApi();                                     // returns RouteGrou
 1. Resolves the interface from `HttpContext.RequestServices`. That's your registration, wrapped by the decorator if you added it.
 2. Binds the arguments (section 7).
 3. Calls the method, passing `HttpContext.RequestAborted` for any `CancellationToken` parameter.
-4. Writes the result: `Task` or `ValueTask` â†’ **204**; `Task<T>` or `ValueTask<T>` â†’ **200** with a JSON body (a `null` result is written as JSON `null`).
+4. Writes the result: `Task` or `ValueTask` → **204**; `Task<T>` or `ValueTask<T>` → **200** with a JSON body (a `null` result is written as JSON `null`).
 5. Turns exceptions into ProblemDetails (section 8).
 
 Illustrative generated code:
@@ -184,9 +184,9 @@ Every attribute on an interface method, and on the interface itself, is added to
 | Anything in `RForgeAutoApiDefaults.ExcludedAttributes` | User-defined |
 
 Translations:
-- `[RfAuthorize(...)]` â†’ `.RequireAuthorization(new AuthorizeAttribute { ... })`
-- `[RfAllowAnonymous]` â†’ `.AllowAnonymous()`
-- Any other attribute â†’ `.WithMetadata(new global::Ns.SomeAttribute(ctorArgs) { Named = ... })`
+- `[RfAuthorize(...)]` → `.RequireAuthorization(new AuthorizeAttribute { ... })`
+- `[RfAllowAnonymous]` → `.AllowAnonymous()`
+- Any other attribute → `.WithMetadata(new global::Ns.SomeAttribute(ctorArgs) { Named = ... })`
 
 If an attribute can't be rebuilt from its compile-time arguments, it is skipped and RFAA010 is reported.
 
@@ -198,7 +198,7 @@ In Interactive Server mode, and during prerendering, components call the **real 
 - Services with authorization rules must be **Scoped or Transient**. A Singleton can't see the current user, so registering one throws at startup.
 - Before each call, the decorator checks the method's `[RfAuthorize]`/`[RfAllowAnonymous]` rules with `IAuthorizationService`:
   - The current user comes from `AuthenticationStateProvider` inside a Blazor circuit or prerender, and from `IHttpContextAccessor.HttpContext.User` otherwise.
-  - Not authenticated â†’ throws `RfUnauthorizedException`. Authenticated but not authorized â†’ throws `RfForbiddenException`.
+  - Not authenticated → throws `RfUnauthorizedException`. Authenticated but not authorized → throws `RfForbiddenException`.
 - These are the same exceptions the WASM client throws for 401/403, so a component's `catch` blocks behave the same in both modes.
 - During an HTTP call, both the endpoint and the decorator check authorization. The second check is cheap and keeps the behavior consistent.
 
@@ -309,9 +309,9 @@ catch (Exception ex)   { logger.LogError(ex, "..."); }    // unexpected (RfApiEx
 
 ### 8.2 On the wire
 
-- `RfException` (and subclasses) â†’ ProblemDetails with `status = StatusCode`, `title = Message`, and extensions `rfType = "RfException"` and `code`. Subclass types other than the two auth exceptions and `RfNotFoundException` **aren't preserved**; the client rethrows a base `RfException`.
-- Any other exception â†’ **500** ProblemDetails with a generic title. In the **Development** environment, `detail` also contains the exception type, message and stack trace.
-- Authorization failures from ASP.NET (401/403, with or without a body) â†’ `RfUnauthorizedException` / `RfForbiddenException` on the client.
+- `RfException` (and subclasses) → ProblemDetails with `status = StatusCode`, `title = Message`, and extensions `rfType = "RfException"` and `code`. Subclass types other than the two auth exceptions and `RfNotFoundException` **aren't preserved**; the client rethrows a base `RfException`.
+- Any other exception → **500** ProblemDetails with a generic title. In the **Development** environment, `detail` also contains the exception type, message and stack trace.
+- Authorization failures from ASP.NET (401/403, with or without a body) → `RfUnauthorizedException` / `RfForbiddenException` on the client.
 - `OperationCanceledException` is never converted. A canceled request stays a cancellation on both sides.
 - Network failures (`HttpRequestException`) on the client are passed through unchanged.
 
