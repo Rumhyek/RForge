@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- References ONLY the RForge.Blazor bundle. It compiles only if the bundle delivers the components, the
+       Events source generator and the AutoApi source generator. Warnings are errors, so an analyzer that
+       fails to load fails the build. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NuGetAudit>false</NuGetAudit>
+    <IsPackable>false</IsPackable>
+    <EventsVersion Condition="'$(EventsVersion)' == ''">0.0.0-smoke</EventsVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- What a Blazor host has: dependency injection and the components framework. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="RForge.Blazor" Version="$(EventsVersion)" />
+  </ItemGroup>
+
+</Project>
