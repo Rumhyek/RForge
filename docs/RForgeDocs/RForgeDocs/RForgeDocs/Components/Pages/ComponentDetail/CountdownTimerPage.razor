@@ -105,38 +105,22 @@ if (timer.Status == TimerStatus.Completed)
     // The countdown truly finished and the OnElapsed callback already ran.
 }</code></pre>
 
-            <div class="notification is-info">
-                <strong>FIX (#82):</strong> Previously <code>OnElapsed</code> set <code>Status</code> to
-                <code>Completed</code> at subscription, before the timer had ever run, and the real completion path never
-                set <code>Completed</code> at all. <code>Status</code> was wrong in both directions: a consumer watching
-                for <code>Completed</code> after wiring callbacks saw a completion that had not happened, and a countdown
-                that genuinely finished never reported <code>Completed</code>. Subscription now leaves
-                <code>Status</code> untouched and only the 100 percent tick sets <code>Completed</code>, right before
-                <code>OnElapsed</code> fires. No member was added, renamed, or removed. Pinned by the
-                <code>Status_LifecycleContract</code> test in <code>CountdownTimer_BugSweep</code>.
-            </div>
-
             <div class="notification">
                 <strong>NOTE:</strong> The timeout must be positive; a zero or negative value throws an
                 <code>ArgumentOutOfRangeException</code> naming <code>timeout</code>. The timer aims for 100 ticks but
                 never ticks faster than the operating system timer can deliver (about 15.6 ms), so a short timeout gets
                 fewer ticks: <code>OnTick</code> percent values advance in larger steps, still ending at exactly 100,
-                and the countdown closes within one tick of the requested time (issue #84).
+                and the countdown closes within one tick of the requested time.
             </div>
 
             <div class="notification">
                 <strong>NOTE:</strong> A cancellation token given to the constructor ends the tick loop and
                 <code>StartAsync</code> returns, but <code>TimerStatus</code> has no <code>Cancelled</code> value: the
                 timer still reports <code>Running</code>. Treat "the awaited <code>StartAsync</code> returned and
-                <code>Status</code> is not <code>Completed</code>" as "the countdown did not finish". 
-            </div>
-
-            <div class="notification is-info">
-                <strong>FIX (#83):</strong> Calling <code>StartAsync</code> while a run is already in flight (for example a
-                double tapped button) is now ignored and returns a completed task, so one countdown runs and
-                <code>OnElapsed</code> fires exactly once. Previously the second call tried to start a second tick loop,
-                which <code>PeriodicTimer</code> rejects: the second task faulted, silently for callers that did not
-                await it. Once a run has finished, <code>StartAsync</code> starts a new countdown as before.
+                <code>Status</code> is not <code>Completed</code>" as "the countdown did not finish".
+                Calling <code>StartAsync</code> while a run is already in flight (for example from a double tapped
+                button) is ignored and returns a completed task, so one countdown runs and <code>OnElapsed</code>
+                fires exactly once. Once a run has finished, <code>StartAsync</code> starts a new countdown.
             </div>
 
         </div>

@@ -53,7 +53,6 @@
         <BasicSetupDetails />
     </Setup>
 
-
     <BasicUsage>
 
         <div class="content">
@@ -89,16 +88,9 @@
                 <code>ClearAllWarning</code> shortcuts) remove a subset. Clearing when no
                 <code>RfNotificationManager</code> is mounted is a harmless no op.
             </p>
-            <div class="notification is-info">
-                <strong>FIX (#78):</strong> Previously the component's <code>ClearAll</code> handler was not implemented
-                and threw a <code>NotImplementedException</code> into the caller, which also stopped any later subscriber
-                from being told. <code>ClearAll()</code> now clears the notifications and re-renders. Pinned by the
-                <code>ClearAll_ClearsAllWithoutThrowing</code> test.
-            </div>
         </div>
 
     </BasicUsage>
-
 
 </ComponentDetail>
 

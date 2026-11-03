@@ -60,14 +60,12 @@
                 <li>Need an edit form.</li>
             </ul>
 
-
         </div>
     </Purpose>
 
     <Setup>
         <BasicSetupDetails />
     </Setup>
-
 
     <BasicUsage>
 
@@ -103,13 +101,6 @@
                 cleanly: the loading state clears and the next queued dialog is shown, so one bad callback never freezes
                 the dialog host. Handle errors inside your callback if the user should see a message.
             </p>
-            <div class="notification is-info">
-                <strong>FIX (#87):</strong> Previously the confirm, cancel, and multi action handlers wrapped your callback
-                in an empty <code>catch</code>, which swallowed every failure, including the guaranteed
-                <code>NullReferenceException</code> when a callback was never supplied. The dialog then closed as if the
-                action had succeeded and the failure was lost with no diagnostics. Pinned by the
-                <code>FailingCallback_IsNotSilentlyEaten</code> test.
-            </div>
 
             <h4>Dialog Host Lifetime</h4>
             <p>
@@ -132,19 +123,10 @@
                 unregisters with its own instance identity, and the swap safety above applies whenever the injected service is
                 the library's own <code>DialogManager</code>.
             </p>
-            <div class="notification is-info">
-                <strong>FIX (#86):</strong> Previously <code>Unregister</code> had no registrant identity check, so disposing a
-                replaced host cleared the live host's registration with it. Every later <code>Alert</code>, <code>Confirm</code>,
-                or <code>Prompt</code> then queued forever and no dialog rendered again. Unregistration now only takes effect
-                when the requesting instance is the one currently registered, and a stale dispose is a no-op. No API was
-                removed, renamed, or changed in signature, so there is no consumer compile break. Pinned by the
-                <code>OlderInstanceDisposed_DialogsStillShow</code> test.
-            </div>
 
         </div>
 
     </BasicUsage>
-
 
 </ComponentDetail>
 

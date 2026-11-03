@@ -101,12 +101,6 @@
                 number as opaque: it is a per-process counter, not something to hard code in CSS or JavaScript. Target a
                 menu through your own <code>CssClass</code> instead.
             </p>
-            <div class="notification is-info">
-                <strong>FIX (#77):</strong> Previously the number came from a random value drawn per instance, so two menus
-                could draw the same one and render duplicate ids, which silently broke the <code>aria-controls</code>
-                link. The suffix is now a sequential number, not a random six digit one; the <code>context-menu-</code>
-                prefix is unchanged. Pinned by the <code>MenuIds_AcrossManyInstances_AreUnique</code> test.
-            </div>
 
             <h3>Dynamic / Lazy Loading</h3>
             <p>

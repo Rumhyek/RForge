@@ -107,7 +107,6 @@
         <BasicSetupDetails />
     </Setup>
 
-
     <BasicUsage>
 
         <div class="content">
@@ -343,23 +342,6 @@
                 exist in the filtered results. <code>CurrentPageIndexChanged(0)</code> fires, and the pager label and the
                 next Next or Last click use page 1 straight away, the same as when the sort changes.
             </p>
-            <div class="notification is-info">
-                <strong>FIX (#92):</strong> Previously a filter change emitted <code>CurrentPageIndexChanged(0)</code> but
-                left the grid's own page index at its old value. A page that does not echo the new index back kept showing
-                the old page in the pager, and the next Next or Last click emitted a stale number (page 3 instead of page 1
-                after filtering from page 3). The grid now resets its index before emitting. Pages that bind
-                <code>CurrentPageIndex</code> two ways are unaffected. Pinned by the
-                <code>FilterChange_ResetsLocalPageIndex</code> test.
-            </div>
-            <div class="notification is-info">
-                <strong>FIX (#91):</strong> Previously the Next and Last buttons stayed enabled on an empty grid
-                (their guard compared with <code>==</code> against a zero <code>TotalPages</code>) and a click
-                emitted <code>CurrentPageIndexChanged(-1)</code>, which commonly surfaced as an
-                <code>ArgumentOutOfRangeException</code> from a negative <code>Skip</code> in the consumer's load
-                callback. The guards now use <code>&gt;=</code> and the target page is clamped to the valid range,
-                so an empty grid emits no page index change. Pinned by the
-                <code>EmptyGrid_PagerNeverEmitsNegative</code> test.
-            </div>
 
             <h1>Async Context Events</h1>
 
@@ -385,15 +367,6 @@
                 every subscriber exception. A subscriber that throws before its first <code>await</code>
                 does not stop the others from running.
             </p>
-            <div class="notification is-warning">
-                <strong>BEHAVIOR CHANGE (#90):</strong> Previously, raising a multicast async event awaited
-                only the LAST registered subscriber. Earlier subscribers ran fire and forget: their
-                exceptions were never observed and the raiser could return while their work was still in
-                flight (for example, <code>SortChanged</code> could return while a data load was still
-                running). All subscribers are now awaited before the event returns, so a handler that used
-                to overlap with the grid's reload now completes before it, and handler faults surface at the
-                raiser instead of going unobserved.
-            </div>
 
             <h2>Example</h2>
             <p>
@@ -441,7 +414,6 @@
         </div>
 
     </BasicUsage>
-
 
 </ComponentDetail>
 

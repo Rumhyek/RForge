@@ -47,13 +47,6 @@
                 <code>Element</code> must name a valid element. A null, empty, or whitespace value no longer fails the
                 render; the component renders its default <code>button</code> instead.
             </p>
-            <div class="notification is-info">
-                <strong>FIX (#76):</strong> Previously the delayed single click kept running after disposal and still
-                invoked <code>OnSingleClick</code>, and an <code>Element</code> of null made every render throw an
-                <code>ArgumentNullException</code>. The click delay now ends when the component is disposed, and a blank
-                <code>Element</code> falls back to <code>button</code>. Pinned by the
-                <code>SingleClick_FiresOnlyWhileAlive</code> and <code>EmptyElement_HandledPredictably</code> tests.
-            </div>
 
             <h3>Example</h3>
 
