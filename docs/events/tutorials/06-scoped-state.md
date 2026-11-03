@@ -63,7 +63,7 @@ public sealed record PollState(string Question, ImmutableDictionary<string, int>
 
 ```razor
 @* MyApp.Client/Features/Polls/Components/PollQuestion.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <strong>@Question</strong>
 ```
@@ -83,7 +83,7 @@ public partial class PollQuestion
 
 ```razor
 @* MyApp.Client/Features/Polls/Components/PollOptions.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 @foreach (var (option, votes) in Poll.Votes.OrderBy(v => v.Key))
 {
@@ -107,7 +107,7 @@ public partial class PollOptions
 
 ```razor
 @* MyApp.Client/Features/Polls/Components/PollTotal.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <small>@Total vote(s)</small>
 ```
@@ -163,7 +163,7 @@ public partial class FeaturedPollBadge
 
 ```razor
 @* MyApp.Client/Features/Polls/Components/FeaturedPollBadge.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 @if (FeaturedQuestion == ThisQuestion)
 {

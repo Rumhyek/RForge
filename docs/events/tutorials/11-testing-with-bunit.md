@@ -1,6 +1,6 @@
 # 11 · Testing with bUnit
 
-**Goal:** unit-test bus-aware components: render them, change state, publish events, and assert on the result.
+**Goal:** unit-test event-aware components: render them, change state, publish events, and assert on the result.
 
 The examples test components from the [State](02-state.md), [Events](04-events.md), [Scoped state](06-scoped-state.md) and [Persistence](08-prerendering-and-persistence.md) tutorials. The patterns apply to any component.
 
@@ -35,33 +35,33 @@ The examples test components from the [State](02-state.md), [Events](04-events.m
 </Project>
 ```
 
-The components are already compiled (with generated code) in `MyApp.Client`, and the `RForge.Blazor.Bus` runtime reaches the tests through that project reference. Add a `RForge.Blazor.Bus` package reference to the test project only if it defines bus-aware test components of its own that use `[Subscribe]` or `[UseState]`.
+The components are already compiled (with generated code) in `MyApp.Client`, and the `RForge.Blazor.Events` runtime reaches the tests through that project reference. Add a `RForge.Blazor.Events` package reference to the test project only if it defines event-aware test components of its own that use `[Subscribe]` or `[UseState]`.
 
-## 2. A base class for bus tests
+## 2. A base class for hub tests
 
-Every test needs the same three things: a bus, a render mode, and a way to reach the bus:
+Every test needs the same three things: a hub, a render mode, and a way to reach the hub:
 
 ```csharp
-// MyApp.Tests/BusTestContext.cs
+// MyApp.Tests/EventTestContext.cs
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-using RForge.Blazor.Bus;
+using RForge.Blazor.Events;
 
 namespace MyApp.Tests;
 
-public abstract class BusTestContext : BunitContext
+public abstract class EventTestContext : BunitContext
 {
-    protected BusTestContext()
+    protected EventTestContext()
     {
-        Services.AddBlazorBus();
+        Services.AddRForgeEvents();
 
-        // BusComponentBase reads RendererInfo; bUnit requires it to be set explicitly.
+        // RfEventComponent reads RendererInfo; bUnit requires it to be set explicitly.
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
-    /// <summary>The root bus the rendered components use.</summary>
-    protected IBus Bus => Services.GetRequiredService<IBus>();
+    /// <summary>The root hub the rendered components use.</summary>
+    protected IRfEventHub Hub => Services.GetRequiredService<IRfEventHub>();
 }
 ```
 
@@ -72,11 +72,11 @@ public abstract class BusTestContext : BunitContext
 using Bunit;
 using MyApp.Client.Features.Counter;
 using MyApp.Client.Features.Counter.Components;
-using RForge.Blazor.Bus;
+using RForge.Blazor.Events;
 
 namespace MyApp.Tests;
 
-public sealed class CounterTests : BusTestContext
+public sealed class CounterTests : EventTestContext
 {
     [Fact]
     public void Display_shows_the_initial_state()
@@ -89,7 +89,7 @@ public sealed class CounterTests : BusTestContext
     [Fact]
     public void Seeded_state_is_shown_on_first_render()
     {
-        Bus.State<CounterState>().Set(new CounterState(Count: 41, Step: 1)); // arrange before rendering
+        Hub.State<CounterState>().Set(new CounterState(Count: 41, Step: 1)); // arrange before rendering
 
         var cut = Render<CounterDisplay>();
 
@@ -102,7 +102,7 @@ public sealed class CounterTests : BusTestContext
         var cut = Render<CounterDisplay>();
 
         // Write through the renderer's dispatcher, as the app would.
-        await cut.InvokeAsync(() => Bus.State<CounterState>().Update(s => s with { Count = 5 }));
+        await cut.InvokeAsync(() => Hub.State<CounterState>().Update(s => s with { Count = 5 }));
 
         Assert.Contains("Count: 5", cut.Markup);
     }
@@ -115,7 +115,7 @@ public sealed class CounterTests : BusTestContext
         cut.Find("button.btn-primary").Click();
         cut.Find("button.btn-primary").Click();
 
-        Assert.Equal(2, Bus.State<CounterState>().Value.Count);
+        Assert.Equal(2, Hub.State<CounterState>().Value.Count);
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public sealed class CounterTests : BusTestContext
     {
         var cut = Render<CounterDisplay>();
 
-        await Task.Run(() => Bus.State<CounterState>().Set(new CounterState(7, 1)));
+        await Task.Run(() => Hub.State<CounterState>().Set(new CounterState(7, 1)));
 
         // The component re-renders asynchronously via InvokeAsync, so wait for it.
         cut.WaitForAssertion(() => Assert.Contains("Count: 7", cut.Markup));
@@ -138,18 +138,18 @@ public sealed class CounterTests : BusTestContext
 using Bunit;
 using MyApp.Client.Features.Toasts;
 using MyApp.Client.Features.Toasts.Components;
-using RForge.Blazor.Bus;
+using RForge.Blazor.Events;
 
 namespace MyApp.Tests;
 
-public sealed class ToastTests : BusTestContext
+public sealed class ToastTests : EventTestContext
 {
     [Fact]
     public async Task Host_shows_published_toasts()
     {
         var cut = Render<ToastHost>();
 
-        await cut.InvokeAsync(() => Bus.PublishAsync(new ToastRequested("Hello", ToastLevel.Success)).AsTask());
+        await cut.InvokeAsync(() => Hub.PublishAsync(new ToastRequested("Hello", ToastLevel.Success)).AsTask());
 
         Assert.Contains("Hello", cut.Find(".alert-success").TextContent);
     }
@@ -158,13 +158,13 @@ public sealed class ToastTests : BusTestContext
     public async Task Dismissing_publishes_an_event()
     {
         var dismissed = new List<ToastDismissed>();
-        using var spy = Bus.Subscribe<ToastDismissed>((e, _) =>
+        using var spy = Hub.Subscribe<ToastDismissed>((e, _) =>
         {
             dismissed.Add(e);
             return ValueTask.CompletedTask;
         });
         var cut = Render<ToastHost>();
-        await cut.InvokeAsync(() => Bus.PublishAsync(new ToastRequested("Bye")).AsTask());
+        await cut.InvokeAsync(() => Hub.PublishAsync(new ToastRequested("Bye")).AsTask());
 
         cut.Find(".btn-close").Click();
 
@@ -174,7 +174,7 @@ public sealed class ToastTests : BusTestContext
 }
 ```
 
-A **spy subscription** (`Bus.Subscribe` in the test) is the easiest way to assert that a component *published* something.
+A **spy subscription** (`Hub.Subscribe` in the test) is the easiest way to assert that a component *published* something.
 
 ## 5. Test scoped state
 
@@ -183,11 +183,11 @@ A **spy subscription** (`Bus.Subscribe` in the test) is the easiest way to asser
 using Bunit;
 using MyApp.Client.Features.Polls;
 using MyApp.Client.Features.Polls.Components;
-using RForge.Blazor.Bus;
+using RForge.Blazor.Events;
 
 namespace MyApp.Tests;
 
-public sealed class PollTests : BusTestContext
+public sealed class PollTests : EventTestContext
 {
     [Fact]
     public void Votes_stay_inside_their_card()
@@ -197,7 +197,7 @@ public sealed class PollTests : BusTestContext
         cut.FindAll("button").First(b => b.TextContent.StartsWith("Pizza")).Click();
 
         Assert.Contains("1 vote(s)", cut.Markup);                 // the card's own instance changed
-        Assert.Equal(0, Bus.State<PollState>().Value.TotalVotes); // the root instance didn't
+        Assert.Equal(0, Hub.State<PollState>().Value.TotalVotes); // the root instance didn't
     }
 }
 ```
@@ -213,7 +213,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using MyApp.Client.Features.Profile;
 using MyApp.Client.Features.Profile.Components;
-using RForge.Blazor.Bus;
+using RForge.Blazor.Events;
 
 namespace MyApp.Tests;
 
@@ -223,7 +223,7 @@ public sealed class ProfileTests
     public void Card_shows_profile_loaded_later_in_the_same_prerender()
     {
         using var ctx = new BunitContext();
-        ctx.Services.AddBlazorBus();
+        ctx.Services.AddRForgeEvents();
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false)); // like a prerender
 
         var cut = ctx.Render<ProfileLoaderAndCard>();
@@ -235,10 +235,10 @@ public sealed class ProfileTests
     public void Restored_profile_is_not_loaded_again()
     {
         using var ctx = new BunitContext();
-        ctx.Services.AddBlazorBus(o => o.PersistState<ProfileState>()); // reflection JSON is fine in tests
+        ctx.Services.AddRForgeEvents(o => o.PersistState<ProfileState>()); // reflection JSON is fine in tests
         var persisted = ctx.AddBunitPersistentComponentState();
         persisted.Persist(
-            "RForge.Blazor.Bus:MyApp.Client.Features.Profile.ProfileState", // key: RForge.Blazor.Bus:{FullName}
+            "RForge.Blazor.Events:MyApp.Client.Features.Profile.ProfileState", // key: RForge.Blazor.Events:{FullName}
             """{"DisplayName":"Restored","Email":"r@example.com","LoadedAt":"2026-01-01T00:00:00"}""");
         ctx.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
 
@@ -263,8 +263,8 @@ public sealed class ProfileLoaderAndCard : ComponentBase
 
 ## ✅ Best practices
 
-- **One `BunitContext` per test** (xUnit creates a new test-class instance per test, so inheriting from `BusTestContext` gives you that for free). Each context has its own bus, so tests can't leak state into each other.
-- **Arrange state through `Bus.State<T>()` before rendering** rather than clicking through the UI to get there.
+- **One `BunitContext` per test** (xUnit creates a new test-class instance per test, so inheriting from `EventTestContext` gives you that for free). Each context has its own hub, so tests can't leak state into each other.
+- **Arrange state through `Hub.State<T>()` before rendering** rather than clicking through the UI to get there.
 - **Change state and publish inside `cut.InvokeAsync`**, which is how the app's renderer would run it.
 - **Use `WaitForAssertion` for off-thread or delayed work.** Don't use `Thread.Sleep`.
 - **Assert on markup for readers, and on spies or stores for writers.**
@@ -275,8 +275,8 @@ public sealed class ProfileLoaderAndCard : ComponentBase
 | Symptom | Cause | Fix |
 |---|---|---|
 | `MissingRendererInfoException` | `SetRendererInfo` not called | Call it in the test base constructor |
-| `No registered service of type 'IBus'` | `Services.AddBlazorBus()` missing | Add it before the first `Render` |
-| `InvalidOperationException` when calling `AddBlazorBus` after `Persist` | bUnit locked the services | Register services first, then `Persist` |
+| `No registered service of type 'IRfEventHub'` | `Services.AddRForgeEvents()` missing | Add it before the first `Render` |
+| `InvalidOperationException` when calling `AddRForgeEvents` after `Persist` | bUnit locked the services | Register services first, then `Persist` |
 | Assertion runs before the re-render | Write happened off the renderer | Use `cut.InvokeAsync(...)` or `WaitForAssertion` |
 
 **Next:** [12 · Troubleshooting](12-troubleshooting.md)

@@ -37,17 +37,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoApiSample.Client", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoApiSample.Shared", "..\..\samples\AutoApiSample\AutoApiSample.Shared\AutoApiSample.Shared.csproj", "{8FD2AEE2-1036-4A81-87F6-B67269DFEE28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Bus", "RForge.Blazor.Bus\RForge.Blazor.Bus.csproj", "{2724C773-327E-41F7-9856-F2755D2C7088}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events", "RForge.Blazor.Events\RForge.Blazor.Events.csproj", "{2724C773-327E-41F7-9856-F2755D2C7088}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Bus.Generators", "RForge.Blazor.Bus.Generators\RForge.Blazor.Bus.Generators.csproj", "{09298DD1-6C03-43FC-9445-7363AD112A5F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events.Generators", "RForge.Blazor.Events.Generators\RForge.Blazor.Events.Generators.csproj", "{09298DD1-6C03-43FC-9445-7363AD112A5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Bus.Tests", "..\..\tests\RForge.Blazor.Bus.Tests\RForge.Blazor.Bus.Tests.csproj", "{D07E749B-1D8B-44DA-A219-81A29AAC265D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events.Tests", "..\..\tests\RForge.Blazor.Events.Tests\RForge.Blazor.Events.Tests.csproj", "{D07E749B-1D8B-44DA-A219-81A29AAC265D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Bus.Generators.Tests", "..\..\tests\RForge.Blazor.Bus.Generators.Tests\RForge.Blazor.Bus.Generators.Tests.csproj", "{6DFF0F07-065D-4165-98B6-B330B757271C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events.Generators.Tests", "..\..\tests\RForge.Blazor.Events.Generators.Tests\RForge.Blazor.Events.Generators.Tests.csproj", "{6DFF0F07-065D-4165-98B6-B330B757271C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Bus.Sample", "..\..\samples\RForge.Blazor.Bus.Sample\RForge.Blazor.Bus.Sample.csproj", "{C2C4FF3B-FFCE-40B5-AC68-B65EDC6E6A12}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events.Sample", "..\..\samples\RForge.Blazor.Events.Sample\RForge.Blazor.Events.Sample.csproj", "{C2C4FF3B-FFCE-40B5-AC68-B65EDC6E6A12}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Bus.Sample.Client", "..\..\samples\RForge.Blazor.Bus.Sample.Client\RForge.Blazor.Bus.Sample.Client.csproj", "{6734D025-1B28-4DB9-B884-EA2B30CEB609}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RForge.Blazor.Events.Sample.Client", "..\..\samples\RForge.Blazor.Events.Sample.Client\RForge.Blazor.Events.Sample.Client.csproj", "{6734D025-1B28-4DB9-B884-EA2B30CEB609}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

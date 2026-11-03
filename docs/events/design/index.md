@@ -1,4 +1,4 @@
-# RForge.Blazor.Bus: Design Specification
+# RForge.Blazor.Events: Design Specification
 
 > **Status:** Draft · 2026-10-06
 > **Target:** .NET 10+ / C# 14
@@ -8,13 +8,13 @@
 
 Blazor components communicate easily along the parent/child chain (`[Parameter]`, `EventCallback`, `@bind`). Communication **across** the tree, between components that don't share a parent or are far apart, falls back to hand-rolled DI services with C# events. Those require every component to manage subscriptions, threading, re-rendering and cleanup by hand.
 
-RForge.Blazor.Bus provides **typed events and reactive state that any component can use, regardless of its position in the tree**, with the lifecycle chores handled automatically. The design adapts Svelte's stores and context to Blazor's DI and rendering model.
+RForge.Blazor.Events provides **typed events and reactive state that any component can use, regardless of its position in the tree**, with the lifecycle chores handled automatically. The design adapts Svelte's stores and context to Blazor's DI and rendering model.
 
 ## Goals
 
 1. **Tree-independent communication.** Any component can publish or react, whoever its parent is.
 2. **Events and state.** Fire-and-forget messages and current-value state as separate, first-class primitives.
-3. **Zero lifecycle boilerplate.** Subscribing, re-rendering, thread marshaling, error routing and disposal are automatic for components deriving from `BusComponentBase`.
+3. **Zero lifecycle boilerplate.** Subscribing, re-rendering, thread marshaling, error routing and disposal are automatic for components deriving from `RfEventComponent`.
 4. **Opt-in scoping.** Subtrees can isolate events and own independent state instances, using Svelte's context + store pattern.
 5. **Selective re-rendering.** Components re-render only when the state (or the projection of it) they use changes.
 6. **Every render mode.** Static SSR, Interactive Server, WebAssembly and Auto, with or without prerendering, each working correctly within its own DI container.
@@ -23,7 +23,7 @@ RForge.Blazor.Bus provides **typed events and reactive state that any component 
 
 ## Non-goals
 
-- **No JavaScript** and **no cross-container communication**. Interactive Server and WebAssembly islands on one page don't share a bus ([ADR-007](decisions.md#adr-007-no-js-and-no-cross-island-bridge)).
+- **No JavaScript** and **no cross-container communication**. Interactive Server and WebAssembly islands on one page don't share a hub ([ADR-007](decisions.md#adr-007-no-js-and-no-cross-island-bridge)).
 - **No cross-tab or cross-user messaging.**
 - **No Redux model.** No reducers, actions-as-state-transitions or single state tree. Use Fluxor for that, alongside this library if needed.
 - **No DevTools in v1.**
@@ -41,8 +41,8 @@ RForge.Blazor.Bus provides **typed events and reactive state that any component 
 
 | Term | Meaning |
 |---|---|
-| **Bus** | The root `IBus` of a DI container. Also used loosely for the whole system. |
-| **Scope** | A node in the scope tree (`IBusScope`). The root is the bus. Children come from `<EventScope>`/`<StateScope>`. |
+| **Hub** | The root `IRfEventHub` of a DI container. Also used loosely for the whole system. |
+| **Scope** | A node in the scope tree (`IRfEventHubScope`). The root is the hub. Children come from `<EventScope>`/`<StateScope>`. |
 | **Nearest scope** | The closest enclosing scope of a component (root if none). |
 | **Event** | An `IEvent` message: fire-and-forget, routed, no current value. |
 | **State** | An `IState<TSelf>` value held in a store: current value, change-notified. |
@@ -57,29 +57,29 @@ RForge.Blazor.Bus provides **typed events and reactive state that any component 
 ## Architecture overview
 
 ```
-RForge.Blazor.Bus (NuGet package)
-├── lib/net10.0/RForge.Blazor.Bus.dll
+RForge.Blazor.Events (NuGet package)
+├── lib/net10.0/RForge.Blazor.Events.dll
 │   ├── Contracts   IEvent, IState<T>, Route, ScopeTarget
-│   ├── Runtime     IBus / IBusScope, IStateStore<T>, delivery engine
-│   ├── Blazor      BusComponentBase, SubscriptionBuilder, handles, EventScope, StateScope
-│   └── DI          AddBlazorBus, BusOptions
-└── analyzers/dotnet/cs/RForge.Blazor.Bus.Generators.dll   (netstandard2.0)
+│   ├── Runtime     IRfEventHub / IRfEventHubScope, IStateStore<T>, delivery engine
+│   ├── Blazor      RfEventComponent, SubscriptionBuilder, handles, EventScope, StateScope
+│   └── DI          AddRForgeEvents, RfEventOptions
+└── analyzers/dotnet/cs/RForge.Blazor.Events.Generators.dll   (netstandard2.0)
     ├── Incremental source generator   [Subscribe], [UseState] → RegisterSubscriptions
-    └── Analyzers RFBUS001–014
+    └── Analyzers RFEVT001–014
 ```
 
 Repository layout:
 
 ```
 src/
-  RForge.Blazor.Bus/                 runtime library (packs the generator)
-  RForge.Blazor.Bus.Generators/      generator + analyzers
+  RForge.Blazor.Events/                 runtime library (packs the generator)
+  RForge.Blazor.Events.Generators/      generator + analyzers
 tests/
-  RForge.Blazor.Bus.Tests/           runtime unit tests (bUnit for components)
-  RForge.Blazor.Bus.Generators.Tests/ generator snapshot + analyzer tests
+  RForge.Blazor.Events.Tests/           runtime unit tests (bUnit for components)
+  RForge.Blazor.Events.Generators.Tests/ generator snapshot + analyzer tests
 samples/
-  RForge.Blazor.Bus.Sample/          Blazor Web App host (Server pages, static page, MarketFeed service)
-  RForge.Blazor.Bus.Sample.Client/   WebAssembly/Auto pages and shared message types
+  RForge.Blazor.Events.Sample/          Blazor Web App host (Server pages, static page, MarketFeed service)
+  RForge.Blazor.Events.Sample.Client/   WebAssembly/Auto pages and shared message types
 docs/
   design/                            this spec
 ```
@@ -118,7 +118,7 @@ for each handle:
 2. [events.md](events.md): publishing, routing, delivery semantics
 3. [state.md](state.md): stores, selectors, providers, compatibility mode, persistence
 4. [scoping.md](scoping.md): `EventScope`, `StateScope`, fixed cascades, resolution
-5. [components.md](components.md): `BusComponentBase` lifecycle and manual registration
+5. [components.md](components.md): `RfEventComponent` lifecycle and manual registration
 6. [source-generator.md](source-generator.md): attributes, generated code, diagnostics
 7. [render-modes.md](render-modes.md): behavior per render mode, limitations
 8. [decisions.md](decisions.md): ADR log
@@ -140,7 +140,7 @@ Each has a proposed default that the spec currently assumes. Resolve them, and r
 | 8 | Subscribing after initialization (runtime `SubscriptionBuilder` use)? | Not in v1. Use `Scope.Subscribe` manually. |
 | 9 | Default `HandlerErrorMode`: `Log`, or `Throw` in Development? | `Log` everywhere. |
 | 10 | Is `Route.Global` worth keeping as a preset, or should it be spelled out as `new Route(ScopeTarget.Root, RouteDirection.Broadcast)`? | Keep it. "Everyone" is a common need. |
-| 11 | Missing named scope: throw, or log and skip? | Throw `BusScopeNotFoundException`. |
+| 11 | Missing named scope: throw, or log and skip? | Throw `RfEventScopeNotFoundException`. |
 | 12 | Derived state across stores (Svelte `derived` of several stores)? | Not in v1. Selectors project a single store. |
 
 ## Framework behaviors verified during implementation
@@ -149,11 +149,11 @@ The design depended on several framework behaviors. Results from implementing ag
 
 | Behavior | Result |
 |---|---|
-| Generators can't see Razor's generated output; analyzers can identify Razor-originated members | ✅ Confirmed. `RFBUS001` fires on `@code` members and points at the `.razor` line ([source-generator.md](source-generator.md#code-behind-is-required)). |
-| Base class can be declared in code-behind only | ❌ Wrong. Razor emits `: ComponentBase` without `@inherits`, so use `@inherits BusComponentBase` ([ADR-017](decisions.md#adr-017-base-class-goes-in-inherits)). |
+| Generators can't see Razor's generated output; analyzers can identify Razor-originated members | ✅ Confirmed. `RFEVT001` fires on `@code` members and points at the `.razor` line ([source-generator.md](source-generator.md#code-behind-is-required)). |
+| Base class can be declared in code-behind only | ❌ Wrong. Razor emits `: ComponentBase` without `@inherits`, so use `@inherits RfEventComponent` ([ADR-017](decisions.md#adr-017-base-class-goes-in-inherits)). |
 | Skipping subscriptions during prerendering is safe | ❌ Wrong. It left stale prerendered HTML, so components now subscribe in every mode ([ADR-016](decisions.md#adr-016-subscribe-in-every-render-mode-supersedes-adr-014)). |
 | `SetParametersAsync` + `ParameterView.Empty` with a private `[CascadingParameter]` on the base class | ✅ Works (all component tests and samples). |
 | `RegisterOnPersisting` from a non-component service | ⚠️ Requires an explicit render mode in .NET 10. Uses `InteractiveAuto` ([state.md](state.md#persistence-across-prerendering)). |
 | `CascadingValueSource<T>.NotifyChangedAsync` off the renderer thread | ✅ Works from store callbacks (tests and the plain-components sample). |
 | The C# compiler skips analyzers when compilation errors exist | ⚠️ Confirmed. The generator stubs invalid `[UseState]` properties so analyzer errors stay visible ([source-generator.md](source-generator.md#invalid-usestate-properties-are-stubbed)). |
-| Renderer disposal when a component implements both `IDisposable` and `IAsyncDisposable` | ❓ Not yet verified. `RFBUS014` stays a warning ([components.md](components.md#disposal)). |
+| Renderer disposal when a component implements both `IDisposable` and `IAsyncDisposable` | ❓ Not yet verified. `RFEVT014` stays a warning ([components.md](components.md#disposal)). |

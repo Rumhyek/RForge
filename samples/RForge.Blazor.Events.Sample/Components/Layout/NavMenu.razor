@@ -1,0 +1,56 @@
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">RForge.Blazor.Events</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <div class="nav-section px-3">Simple</div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="examples/shared-counter">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Shared state
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="examples/notifications">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Notifications
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="examples/plain-components">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Plain components
+            </NavLink>
+        </div>
+
+        <div class="nav-section px-3">Complex</div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="examples/scoped-widgets">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Scoped widgets
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="examples/checkout">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Checkout
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="examples/live-dashboard">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Live dashboard
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="examples/render-modes">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Render modes
+            </NavLink>
+        </div>
+    </nav>
+</div>

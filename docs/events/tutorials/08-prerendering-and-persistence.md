@@ -8,8 +8,8 @@
 
 A prerendered interactive page is rendered **twice**:
 
-1. **Prerender:** on the server, in a throwaway request scope with its **own** bus. The HTML is sent to the browser.
-2. **Interactive:** a new circuit (or the WebAssembly runtime) starts with a **new** bus, starting from `Initial`.
+1. **Prerender:** on the server, in a throwaway request scope with its **own** hub. The HTML is sent to the browser.
+2. **Interactive:** a new circuit (or the WebAssembly runtime) starts with a **new** hub, starting from `Initial`.
 
 So state loaded in step 1 is gone in step 2. The component loads again, and the UI may flash back to the initial value in between. Persistence carries chosen root state across.
 
@@ -50,8 +50,8 @@ internal sealed partial class AppJsonContext : JsonSerializerContext;
 ## 3. Opt the state into persistence
 
 ```csharp
-// MyApp.Client/BusSetup.cs (excerpt)
-public static void Configure(BusOptions options)
+// MyApp.Client/EventHubSetup.cs (excerpt)
+public static void Configure(RfEventOptions options)
 {
     options.PersistState(AppJsonContext.Default.ProfileState);
 }
@@ -68,7 +68,7 @@ The loader must not overwrite restored data. Check first:
 namespace MyApp.Client.Features.Profile.Components;
 
 /// <summary>Invisible component that loads the profile once, during prerendering if the page prerenders.</summary>
-public sealed class ProfileLoader : BusComponentBase
+public sealed class ProfileLoader : RfEventComponent
 {
     protected override async Task OnInitializedAsync()
     {
@@ -86,7 +86,7 @@ public sealed class ProfileLoader : BusComponentBase
 
 ```razor
 @* MyApp.Client/Features/Profile/Components/ProfileCard.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 @if (Profile.IsLoaded)
 {
@@ -122,12 +122,12 @@ public partial class ProfileCard
 
 Open `/profile`, then view the page source. The prerendered HTML already contains *"Signed in as Ada Lovelace"*. When the page becomes interactive, the time shown doesn't change: the data came from the prerender, not from a second load.
 
-> `ProfileCard` renders **before** `ProfileLoader` finishes its `await`, yet the prerendered HTML is still correct. During prerendering, Blazor keeps rendering until async initialization settles, and bus subscriptions are active during that time, so `ProfileCard` re-renders when the profile arrives.
+> `ProfileCard` renders **before** `ProfileLoader` finishes its `await`, yet the prerendered HTML is still correct. During prerendering, Blazor keeps rendering until async initialization settles, and hub subscriptions are active during that time, so `ProfileCard` re-renders when the profile arrives.
 
 ## How it works
 
-- During prerendering, the bus registers a callback with `PersistentComponentState`. When the prerender ends, it serializes the current **root** value of each opted-in state into the page.
-- When the interactive bus first creates that store, it takes the persisted value instead of `Initial`.
+- During prerendering, the hub registers a callback with `PersistentComponentState`. When the prerender ends, it serializes the current **root** value of each opted-in state into the page.
+- When the interactive hub first creates that store, it takes the persisted value instead of `Initial`.
 - The data is written for both the Server and the WebAssembly runtime, so it works with Server, WebAssembly and Auto pages.
 
 ## Limits
@@ -138,7 +138,7 @@ Open `/profile`, then view the page source. The prerendered HTML already contain
 
 ## ✅ Best practices
 
-- **Keep one `AppJsonContext` in the Client project** listing every persisted state type, next to `BusSetup.cs`.
+- **Keep one `AppJsonContext` in the Client project** listing every persisted state type, next to `EventHubSetup.cs`.
 - **Persist only what's expensive to load** (API/database results). Cheap UI state can just start from `Initial`.
 - **Always "load if not loaded".** Give the state a way to tell (`IsLoaded`, a timestamp, a non-null field).
 - **Mark derived properties `[JsonIgnore]`** so only source data is serialized.
@@ -149,10 +149,10 @@ Open `/profile`, then view the page source. The prerendered HTML already contain
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Data flashes to empty, then reappears | State not opted in | Add `options.PersistState(…)` in `BusSetup.Configure` |
+| Data flashes to empty, then reappears | State not opted in | Add `options.PersistState(…)` in `EventHubSetup.Configure` |
 | Data loads twice | Loader doesn't check for restored data | "Load if not loaded" (step 4) |
-| Works on Server, not on WebAssembly | `PersistState` configured only in the server `Program.cs` | Configure in the shared `BusSetup` |
+| Works on Server, not on WebAssembly | `PersistState` configured only in the server `Program.cs` | Configure in the shared `EventHubSetup` |
 | Trimming warnings (IL2026) in the Client project | Using `PersistState<T>()` without metadata | Use `PersistState(AppJsonContext.Default.T)` |
-| Deserialization fails after a deploy | Persisted shape changed between prerender and interactive | The bus logs the error and falls back to `Initial`. Keep persisted records backward compatible |
+| Deserialization fails after a deploy | Persisted shape changed between prerender and interactive | The hub logs the error and falls back to `Initial`. Keep persisted records backward compatible |
 
 **Next:** [09 · Render modes](09-render-modes.md)

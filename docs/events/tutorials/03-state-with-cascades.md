@@ -1,6 +1,6 @@
 # 03 · State with cascades
 
-**Goal:** let components that **don't** derive from `BusComponentBase` (third-party components, components from another library, or ones you'd rather not change) read bus state through an ordinary `[CascadingParameter]`.
+**Goal:** let components that **don't** derive from `RfEventComponent` (third-party components, components from another library, or ones you'd rather not change) read hub state through an ordinary `[CascadingParameter]`.
 
 *See it running:* the **Plain components** sample page (`/examples/plain-components`).
 
@@ -31,7 +31,7 @@ public sealed record ThemeState(string Name, string Background, string Foregroun
 
 ## 2. A plain consumer
 
-This component knows nothing about the bus. It's the kind of component you'd get from a UI library:
+This component knows nothing about the hub. It's the kind of component you'd get from a UI library:
 
 ```razor
 @* MyApp.Client/Features/Theme/Components/ThemedPanel.razor *@
@@ -53,22 +53,22 @@ This component knows nothing about the bus. It's the kind of component you'd get
 Turn on `CascadeRootState<T>()` in the shared configuration:
 
 ```csharp
-// MyApp.Client/BusSetup.cs (excerpt)
-public static void Configure(BusOptions options)
+// MyApp.Client/EventHubSetup.cs (excerpt)
+public static void Configure(RfEventOptions options)
 {
     options.CascadeRootState<ThemeState>();
 }
 ```
 
-The root `ThemeState` is now also a cascading value available everywhere, through a `CascadingValueSource<ThemeState>` that the bus updates on every change. Because `BusSetup` is shared, both the server and the WebAssembly host get it.
+The root `ThemeState` is now also a cascading value available everywhere, through a `CascadingValueSource<ThemeState>` that the hub updates on every change. Because `EventHubSetup` is shared, both the server and the WebAssembly host get it.
 
 ## 4. Write the state
 
-Writers are ordinary bus-aware components:
+Writers are ordinary event-aware components:
 
 ```razor
 @* MyApp.Client/Features/Theme/Components/ThemeSwitcher.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <div class="btn-group btn-group-sm">
     @foreach (var theme in Themes)
@@ -98,11 +98,11 @@ public partial class ThemeSwitcher
 
 ## 5. Writing from a plain component
 
-A plain component can't call `State<T>()`, but it can inject the bus:
+A plain component can't call `State<T>()`, but it can inject the hub:
 
 ```razor
 @* MyApp.Client/Features/Theme/Components/DarkModeToggle.razor *@
-@inject IBus Bus
+@inject IRfEventHub Hub
 
 <label class="form-check form-switch">
     <input class="form-check-input" type="checkbox" checked="@(Theme?.Name == "Dark")" @onchange="Toggle" />
@@ -115,17 +115,17 @@ A plain component can't call `State<T>()`, but it can inject the bus:
 
     // The cascaded value is read-only; writes go through the store.
     private void Toggle() =>
-        Bus.State<ThemeState>().Update(t => t.Name == "Dark" ? ThemeState.Light : ThemeState.Dark);
+        Hub.State<ThemeState>().Update(t => t.Name == "Dark" ? ThemeState.Light : ThemeState.Dark);
 }
 ```
 
-`IBus` is the **root** bus. Inside a `StateScope` (next step), a plain component that needs to write to the *scoped* instance should take the cascaded scope instead:
+`IRfEventHub` is the **root** hub. Inside a `StateScope` (next step), a plain component that needs to write to the *scoped* instance should take the cascaded scope instead:
 
 ```csharp
 [CascadingParameter]
-public IBusScope? Scope { get; set; }
+public IRfEventHubScope? Scope { get; set; }
 
-private void Toggle() => (Scope ?? Bus).State<ThemeState>().Update(/* … */);
+private void Toggle() => (Scope ?? Hub).State<ThemeState>().Update(/* … */);
 ```
 
 ## 6. Cascade a subtree's own copy
@@ -151,7 +151,7 @@ private void Toggle() => (Scope ?? Bus).State<ThemeState>().Update(/* … */);
 </StateScope>
 ```
 
-Inside the `StateScope`, both the bus-aware `ThemeSwitcher` and the plain `ThemedPanel` see the scope's instance. Outside it, they see the root.
+Inside the `StateScope`, both the event-aware `ThemeSwitcher` and the plain `ThemedPanel` see the scope's instance. Outside it, they see the root.
 
 ## How it works
 
@@ -161,8 +161,8 @@ Inside the `StateScope`, both the bus-aware `ThemeSwitcher` and the plain `Theme
 
 ## ✅ Best practices
 
-- **Use cascades only for components you can't put on `BusComponentBase`.** Your own components should use `[UseState]` with selectors.
-- **Configure `CascadeRootState` in `BusSetup.Configure`**, never in only one `Program.cs`. Otherwise the cascade disappears when the page switches runtime.
+- **Use cascades only for components you can't put on `RfEventComponent`.** Your own components should use `[UseState]` with selectors.
+- **Configure `CascadeRootState` in `EventHubSetup.Configure`**, never in only one `Program.cs`. Otherwise the cascade disappears when the page switches runtime.
 - **Keep cascaded state small and slow-changing** (theme, culture, current user). A frequently changing state cascaded to many consumers re-renders all of them.
 - **Write through the store**, never by trying to change the cascaded object. The cascade is read-only.
 
@@ -170,9 +170,9 @@ Inside the `StateScope`, both the bus-aware `ThemeSwitcher` and the plain `Theme
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `[CascadingParameter]` is always `null` | `CascadeRootState<T>()` not configured, or `CascadeValue="true"` missing on the `StateScope` | Add it in `BusSetup.Configure`, or set the flag |
-| Works on Server, `null` on WebAssembly | Configured in the server `Program.cs` only | Use the shared `BusSetup.Configure` |
-| Plain component's toggle changes the wrong instance | It injected `IBus` (root) while inside a `StateScope` | Use the cascaded `IBusScope` |
+| `[CascadingParameter]` is always `null` | `CascadeRootState<T>()` not configured, or `CascadeValue="true"` missing on the `StateScope` | Add it in `EventHubSetup.Configure`, or set the flag |
+| Works on Server, `null` on WebAssembly | Configured in the server `Program.cs` only | Use the shared `EventHubSetup.Configure` |
+| Plain component's toggle changes the wrong instance | It injected `IRfEventHub` (root) while inside a `StateScope` | Use the cascaded `IRfEventHubScope` |
 | Many components re-render on every change | They read via cascade | Move them to `[UseState]` with a selector |
 
 **Next:** [04 · Events](04-events.md)

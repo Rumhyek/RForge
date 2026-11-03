@@ -2,7 +2,7 @@
 
 **Goal:** share a value between components anywhere in the tree, so it updates everywhere when it changes, and keep re-renders to the components that actually use the changed part.
 
-State is the bus's version of a Svelte store: it **always has a current value**, so a component that appears later still sees it. If you only need to say "something happened", use an [event](04-events.md) instead.
+State is the hub's version of a Svelte store: it **always has a current value**, so a component that appears later still sees it. If you only need to say "something happened", use an [event](04-events.md) instead.
 
 *See it running:* the **Shared state** sample page (`/examples/shared-counter`).
 
@@ -20,16 +20,16 @@ public sealed record CounterState(int Count, int Step) : IState<CounterState>
 
 Three rules:
 - **Implement `IState<TSelf>`** and provide `static Initial`. The compiler requires it. It's the value the store starts with, so no DI registration is needed.
-- **Use a `record`.** The store compares old and new values with record equality and skips notifications when nothing changed. A `class` would notify on every write (analyzer `RFBUS013` warns about this).
+- **Use a `record`.** The store compares old and new values with record equality and skips notifications when nothing changed. A `class` would notify on every write (analyzer `RFEVT013` warns about this).
 - **Keep it immutable.** You change state by replacing the value, never by mutating it.
 
 ## 2. Write to it
 
-Any `BusComponentBase` can write through `State<T>()`, which returns the store:
+Any `RfEventComponent` can write through `State<T>()`, which returns the store:
 
 ```razor
 @* MyApp.Client/Features/Counter/Components/CounterButtons.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <div class="btn-group">
     <button class="btn btn-primary" @onclick="Increment">+ step</button>
@@ -57,7 +57,7 @@ public partial class CounterButtons
 
 ```razor
 @* MyApp.Client/Features/Counter/Components/CounterDisplay.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <p class="display-6">Count: @Counter.Count (step @Counter.Step)</p>
 ```
@@ -81,7 +81,7 @@ A component that only uses part of the state shouldn't re-render when another pa
 
 ```razor
 @* MyApp.Client/Features/Counter/Components/StepPicker.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <label>
     Step
@@ -116,7 +116,7 @@ To select several values, return a **tuple**. Tuples compare by value, so the co
 
 ```razor
 @* MyApp.Client/Features/Counter/Components/MilestoneBadge.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 @if (Milestone.Reached)
 {
@@ -138,7 +138,7 @@ public partial class MilestoneBadge
 }
 ```
 
-Selector rules (checked by analyzer `RFBUS008`): the selector must be `static`, take the state type as its only parameter, and return the property's type. Tuple element names don't have to match.
+Selector rules (checked by analyzer `RFEVT008`): the selector must be `static`, take the state type as its only parameter, and return the property's type. Tuple element names don't have to match.
 
 ## 5. Put it on a page
 
@@ -180,7 +180,7 @@ public partial class CounterSince
 
 ```razor
 @* MyApp.Client/Features/Counter/Components/CounterSince.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <small>+@(Counter.Count - _startedAt) since this component appeared</small>
 ```
@@ -228,7 +228,7 @@ public partial class FavoriteButton
 
 ```razor
 @* MyApp.Client/Features/Favorites/Components/FavoriteButton.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <button class="btn btn-sm btn-link" @onclick="Toggle">@(Favorites.Contains(Item) ? "★" : "☆")</button>
 ```
@@ -237,7 +237,7 @@ Records compare collection members **by reference**. A new `ImmutableList` insta
 
 ## 8. Read state from a service
 
-Services use the same stores through `IBus`:
+Services use the same stores through `IRfEventHub`:
 
 ```csharp
 // MyApp.Client/Features/Counter/CounterLogger.cs
@@ -250,8 +250,8 @@ public sealed class CounterLogger : IDisposable
 {
     private readonly IDisposable _subscription;
 
-    public CounterLogger(IBus bus, ILogger<CounterLogger> logger) =>
-        _subscription = bus.State<CounterState>().Subscribe(s => logger.LogInformation("Counter is now {Count}", s.Count));
+    public CounterLogger(IRfEventHub hub, ILogger<CounterLogger> logger) =>
+        _subscription = hub.State<CounterState>().Subscribe(s => logger.LogInformation("Counter is now {Count}", s.Count));
 
     public void Dispose() => _subscription.Dispose();
 }
@@ -261,7 +261,7 @@ Store callbacks run **synchronously on the writer's thread**. Keep them short an
 
 ## How it works
 
-- The **root bus** creates a store for each state type the first time it's requested, using `Initial`.
+- The **root hub** creates a store for each state type the first time it's requested, using `Initial`.
 - `Set`/`Update` compare the new value to the old one. If they're equal, nothing happens. Otherwise subscribers are notified.
 - Components are notified through their own `InvokeAsync`, so writing from any thread is safe, and several quick writes collapse into one render with the latest value.
 
@@ -280,7 +280,7 @@ Store callbacks run **synchronously on the writer's thread**. Keep them short an
 |---|---|---|
 | Component doesn't update | It reads `State<T>().Value` in markup | Use `[UseState]` for anything rendered |
 | Updates are ignored | State mutated in place (e.g. `list.Add`) | Replace the value: `Update(s => s with { … })` |
-| Every write re-renders even when nothing changed | State is a `class` (`RFBUS013`) | Make it a `record` |
-| `RFBUS008` | Selector isn't static, has the wrong parameter, or returns the wrong type | Match `static TProperty Select(TState state)` |
+| Every write re-renders even when nothing changed | State is a `class` (`RFEVT013`) | Make it a `record` |
+| `RFEVT008` | Selector isn't static, has the wrong parameter, or returns the wrong type | Match `static TProperty Select(TState state)` |
 
 **Next:** [03 · State with cascades](03-state-with-cascades.md)

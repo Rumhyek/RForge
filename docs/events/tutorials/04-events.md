@@ -40,14 +40,14 @@ public sealed record ToastsCleared : IEvent;
 
 Rules:
 - **Implement `IEvent`.**
-- **Use an immutable `sealed record`.** The same instance goes to every handler (analyzer `RFBUS012` flags mutable events).
+- **Use an immutable `sealed record`.** The same instance goes to every handler (analyzer `RFEVT012` flags mutable events).
 - **Name facts in the past tense** (`ItemAdded`, `ToastDismissed`) and **commands with `…Requested`** (`ToastRequested`, `SaveRequested`). That makes it obvious whether a handler is reacting or being asked to act.
 
 ## 2. Publish
 
 ```razor
 @* MyApp.Client/Features/Toasts/Components/SaveButton.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <button class="btn btn-primary" @onclick="SaveAsync">Save</button>
 ```
@@ -72,7 +72,7 @@ public partial class SaveButton
 
 ```razor
 @* MyApp.Client/Features/Toasts/Components/ToastHost.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <div class="toast-stack">
     @foreach (var toast in _toasts)
@@ -162,7 +162,7 @@ public partial class ToastAudit
 
 ```razor
 @* MyApp.Client/Features/Toasts/Components/ToastAudit.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <small>Dismissed: @_dismissed · @string.Join(" | ", _log.TakeLast(3))</small>
 ```
@@ -173,7 +173,7 @@ public partial class ToastAudit
 | `Task M(TEvent e)` / `ValueTask M(TEvent e)` | Async |
 | `Task M(TEvent e, CancellationToken ct)` / `ValueTask …` | Async + cancellation |
 
-Anything else (static, generic, extra parameters, other return types) gets analyzer error `RFBUS004`.
+Anything else (static, generic, extra parameters, other return types) gets analyzer error `RFEVT004`.
 
 | `[Subscribe]` option | Default | Meaning |
 |---|---|---|
@@ -262,7 +262,7 @@ public partial class ToastBell
 
 ```razor
 @* MyApp.Client/Features/Toasts/Components/ToastBell.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <span class="@(_ringing ? "text-warning" : "")">🔔</span>
 ```
@@ -278,7 +278,7 @@ public partial class ToastBell
 - **Keep event types next to the feature that owns them** (`Features/Toasts/ToastEvents.cs`). Several small related events can share one `…Events.cs` file. Large ones get their own file.
 - **Use past tense for facts and `…Requested` for commands.**
 - **Carry only what handlers need** (ids, small values). Handlers can read anything else from state.
-- **Don't use events for parent → direct child.** A `[Parameter]` or `EventCallback` is clearer there. The bus is for components that don't share a direct line.
+- **Don't use events for parent → direct child.** A `[Parameter]` or `EventCallback` is clearer there. The hub is for components that don't share a direct line.
 - **Never `await` long work in a handler.** Fire and forget, using `DisposalToken`.
 - **Wrap optional or fragile listeners in an `ErrorBoundary`.**
 
@@ -290,6 +290,6 @@ public partial class ToastBell
 | Handler runs but UI doesn't update | `Render = false` without `StateHasChanged()` | Remove `Render = false`, or call `StateHasChanged()` |
 | Clicking feels slow | A handler awaits long work | Fire and forget (step 7) |
 | Handler in an `EventScope` doesn't hear a publish from outside | The publish doesn't travel *into* scopes by default | See [tutorial 05](05-scopes-and-routing.md) (`Route.Global`, `ScopeKind.Root`) |
-| `RFBUS011` warning | Two handlers for the same event in one component | Merge them, unless you really want both |
+| `RFEVT011` warning | Two handlers for the same event in one component | Merge them, unless you really want both |
 
 **Next:** [05 · Scopes and routing](05-scopes-and-routing.md)

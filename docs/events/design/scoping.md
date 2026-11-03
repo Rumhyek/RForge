@@ -1,22 +1,22 @@
 # Scoping
 
-> **Status:** Draft · 2026-10-06 · Part of the [RForge.Blazor.Bus design spec](index.md)
+> **Status:** Draft · 2026-10-06 · Part of the [RForge.Blazor.Events design spec](index.md)
 
-Without scopes, the bus is one global channel per DI container, and that's enough for many apps. Scopes cover the cases where "global" is too broad:
+Without scopes, the hub is one global channel per DI container, and that's enough for many apps. Scopes cover the cases where "global" is too broad:
 
 - **Isolation:** two instances of the same widget on a page must not hear each other's events.
 - **Independent state:** each instance needs its own copy of a state type.
 - **Targeting:** "notify everything inside this dialog" or "tell the checkout section, wherever I am inside it."
 
-This is the same split Svelte makes: **context** decides *which* instance a subtree sees, and the **store** inside it supplies reactivity. Here, a cascaded scope object plays the role of context, and the bus/stores provide the reactivity.
+This is the same split Svelte makes: **context** decides *which* instance a subtree sees, and the **store** inside it supplies reactivity. Here, a cascaded scope object plays the role of context, and the hub/stores provide the reactivity.
 
 ## The scope tree
 
 Scopes form a tree that mirrors (a subset of) the component tree:
 
-- The **root** is the `IBus` from DI. It always exists and is never disposed by components.
+- The **root** is the `IRfEventHub` from DI. It always exists and is never disposed by components.
 - `<EventScope>` and `<StateScope>` each create a **child scope** of their nearest enclosing scope, and cascade it to their subtree.
-- `BusComponentBase` receives the nearest scope as a cascading parameter and falls back to root when there's none.
+- `RfEventComponent` receives the nearest scope as a cascading parameter and falls back to root when there's none.
 
 ```razor
 @* MainLayout.razor (inside an interactive island) *@
@@ -33,7 +33,7 @@ Scopes form a tree that mirrors (a subset of) the component tree:
 ```
 
 ```
-Root (IBus)
+Root (IRfEventHub)
 └── "app"
     └── "checkout"
         └── (unnamed, provides CheckoutForm)
@@ -47,11 +47,11 @@ Root (IBus)
 | `ChildContent` | `RenderFragment` | The subtree that sees this scope. |
 
 Lifecycle:
-1. On initialization it creates a child `IBusScope` whose `Parent` is the cascaded scope (or root).
-2. It renders `<CascadingValue TValue="IBusScope" Value="_scope" IsFixed="true">`.
+1. On initialization it creates a child `IRfEventHubScope` whose `Parent` is the cascaded scope (or root).
+2. It renders `<CascadingValue TValue="IRfEventHubScope" Value="_scope" IsFixed="true">`.
 3. On disposal it disposes the scope (see [Disposal](#disposal)).
 
-`EventScope` doesn't derive from `BusComponentBase` and never re-renders because of bus activity.
+`EventScope` doesn't derive from `RfEventComponent` and never re-renders because of hub activity.
 
 ## `<StateScope>`
 
@@ -87,7 +87,7 @@ Whether a single scope should be able to provide several state types (`<StateSco
 
 A non-fixed `CascadingValue` makes Blazor track every consumer and re-render them when the value changes. That's exactly the cost that makes broad cascades expensive.
 
-The **scope object's identity never changes** for the lifetime of the `EventScope`/`StateScope` that created it. All change notification flows through bus subscriptions, not through the cascade. So the scope can be cascaded with `IsFixed="true"`:
+The **scope object's identity never changes** for the lifetime of the `EventScope`/`StateScope` that created it. All change notification flows through hub subscriptions, not through the cascade. So the scope can be cascaded with `IsFixed="true"`:
 
 - Blazor doesn't track consumers of a fixed cascade, so adding a scope costs nothing per descendant.
 - Re-rendering an `EventScope` (for example, because its parent re-rendered) never forces descendants to re-render.
@@ -101,10 +101,10 @@ See [ADR-011](decisions.md#adr-011-scope-objects-are-cascaded-with-isfixed).
 
 | Operation | Rule |
 |---|---|
-| Component's `Scope` | Nearest cascaded `IBusScope`, else root |
+| Component's `Scope` | Nearest cascaded `IRfEventHubScope`, else root |
 | `ScopeTarget.Nearest` | `Scope` |
 | `ScopeTarget.Root` | Root |
-| `ScopeTarget.Named(n)` | Walk from `Scope` upward (including `Scope` itself). First scope with `Name == n` (ordinal comparison). None → `BusScopeNotFoundException` |
+| `ScopeTarget.Named(n)` | Walk from `Scope` upward (including `Scope` itself). First scope with `Name == n` (ordinal comparison). None → `RfEventScopeNotFoundException` |
 | State provider | From the target scope, walk upward to the first scope that provides `TState`. Root implicitly provides every state type. |
 | Event routing | See [events.md](events.md#routing) |
 
@@ -128,9 +128,9 @@ Blazor disposes children before parents, so descendant components clean up befor
 Practical rules:
 - Declare `EventScope` and `StateScope` **inside** the interactive island (inside the component that has `@rendermode`, or in a layout that is itself interactive).
 - If the whole app is interactive (render mode set on `Routes`), you can put scopes anywhere, including layouts.
-- The root bus *is* available everywhere, because each DI container registers its own. But Server and WebAssembly containers are **separate buses**. See [render-modes.md](render-modes.md#no-cross-island-communication).
+- The root hub *is* available everywhere, because each DI container registers its own. But Server and WebAssembly containers are **separate hubs**. See [render-modes.md](render-modes.md#no-cross-island-communication).
 
 ## When not to use scopes
 
 - **Truly global concerns** (current user, theme, cart): use root state and root/global events. No scope is needed.
-- **Parent ↔ direct child:** use `[Parameter]` and `EventCallback`. The bus is for communication that doesn't follow the parent chain. Using it where a parameter would do makes the data flow harder to follow.
+- **Parent ↔ direct child:** use `[Parameter]` and `EventCallback`. The hub is for communication that doesn't follow the parent chain. Using it where a parameter would do makes the data flow harder to follow.

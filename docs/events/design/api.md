@@ -1,10 +1,10 @@
 # Public API Sketch
 
-> **Status:** Draft · 2026-10-06 · Part of the [RForge.Blazor.Bus design spec](index.md)
+> **Status:** Draft · 2026-10-06 · Part of the [RForge.Blazor.Events design spec](index.md)
 
 This file is the **single source of truth for public names**. The other spec files describe behavior and refer back here. Signatures are illustrative: XML docs, nullability annotations and some overloads are left out. Exact shapes may still change during implementation, but any rename should be made here first.
 
-All types live in the `RForge.Blazor.Bus` namespace unless noted.
+All types live in the `RForge.Blazor.Events` namespace unless noted.
 
 ---
 
@@ -47,7 +47,7 @@ public sealed record CheckoutForm(string? Email, bool AddressValid) : IState<Che
 public enum ScopeKind
 {
     Nearest = 0,   // the closest enclosing scope (default)
-    Root    = 1,   // the root bus for this DI container
+    Root    = 1,   // the root hub for this DI container
     Named   = 2,   // the nearest ancestor-or-self scope with a given Name
 }
 
@@ -82,14 +82,14 @@ public readonly record struct Route(ScopeTarget Origin, RouteDirection Direction
 
 ---
 
-## Bus and scopes
+## Hub and scopes
 
 ```csharp
-/// A node in the scope tree. The root node is exposed as IBus.
-public interface IBusScope
+/// A node in the scope tree. The root node is exposed as IRfEventHub.
+public interface IRfEventHubScope
 {
     string? Name { get; }
-    IBusScope? Parent { get; }
+    IRfEventHubScope? Parent { get; }
     bool IsRoot { get; }
 
     ValueTask PublishAsync<TEvent>(
@@ -111,7 +111,7 @@ public interface IBusScope
 
 /// The root scope. Registered Scoped in DI: one per circuit (Server),
 /// one per app (WebAssembly), one per request (static SSR).
-public interface IBus : IBusScope { }
+public interface IRfEventHub : IRfEventHubScope { }
 ```
 
 ```csharp
@@ -119,7 +119,7 @@ public interface IStateStore<TState> where TState : IState<TState>
 {
     TState Value { get; }
     long Version { get; }          // increments on every effective change
-    IBusScope Owner { get; }       // the scope that provides this state
+    IRfEventHubScope Owner { get; }       // the scope that provides this state
 
     void Set(TState value);                      // no-op if equal to Value
     void Update(Func<TState, TState> update);    // atomic read-modify-write
@@ -133,17 +133,17 @@ public interface IStateStore<TState> where TState : IState<TState>
 
 ## Components
 
-### `BusComponentBase`
+### `RfEventComponent`
 
 ```csharp
-public abstract class BusComponentBase : ComponentBase, IAsyncDisposable
+public abstract class RfEventComponent : ComponentBase, IAsyncDisposable
 {
     // Infrastructure (non-public)
-    [CascadingParameter] private IBusScope? CascadedScope { get; set; }
-    [Inject] private IBus RootBus { get; set; } = default!;
+    [CascadingParameter] private IRfEventHubScope? CascadedScope { get; set; }
+    [Inject] private IRfEventHub RootEventHub { get; set; } = default!;
 
-    /// Nearest enclosing scope, or the root bus if none.
-    protected IBusScope Scope { get; }
+    /// Nearest enclosing scope, or the root hub if none.
+    protected IRfEventHubScope Scope { get; }
 
     /// Cancelled when the component is disposed.
     protected CancellationToken DisposalToken { get; }
@@ -268,14 +268,14 @@ See [source-generator.md](source-generator.md) for the accepted signatures and t
 Namespace: `Microsoft.Extensions.DependencyInjection`.
 
 ```csharp
-public static class BusServiceCollectionExtensions
+public static class RfEventServiceCollectionExtensions
 {
-    public static IServiceCollection AddBlazorBus(
+    public static IServiceCollection AddRForgeEvents(
         this IServiceCollection services,
-        Action<BusOptions>? configure = null);
+        Action<RfEventOptions>? configure = null);
 }
 
-public sealed class BusOptions
+public sealed class RfEventOptions
 {
     public int MaxPublishDepth { get; set; } = 16;
     public HandlerErrorMode HandlerErrorMode { get; set; } = HandlerErrorMode.Log;
@@ -283,16 +283,16 @@ public sealed class BusOptions
     /// Persist root-level TState from prerender into the interactive session.
     /// Reflection-based JSON: not trim/AOT safe.
     [RequiresUnreferencedCode("…"), RequiresDynamicCode("…")]
-    public BusOptions PersistState<TState>()
+    public RfEventOptions PersistState<TState>()
         where TState : IState<TState>;
 
     /// Same, with source-generated JSON metadata (trim/AOT safe).
-    public BusOptions PersistState<TState>(JsonTypeInfo<TState> typeInfo)
+    public RfEventOptions PersistState<TState>(JsonTypeInfo<TState> typeInfo)
         where TState : IState<TState>;
 
     /// Also expose root-level TState as a cascading value (CascadingValueSource<TState>)
     /// so plain components can use [CascadingParameter] TState.
-    public BusOptions CascadeRootState<TState>()
+    public RfEventOptions CascadeRootState<TState>()
         where TState : IState<TState>;
 }
 
@@ -303,7 +303,7 @@ public enum HandlerErrorMode
 }
 ```
 
-`AddBlazorBus` must be called in **every** host that runs interactive components: the server `Program.cs` and, for WebAssembly or Auto, the client `Program.cs`.
+`AddRForgeEvents` must be called in **every** host that runs interactive components: the server `Program.cs` and, for WebAssembly or Auto, the client `Program.cs`.
 
 ---
 
@@ -311,6 +311,6 @@ public enum HandlerErrorMode
 
 | Type | Thrown when |
 |---|---|
-| `BusScopeNotFoundException` | A `Named` route or subscription can't find a matching ancestor-or-self scope |
-| `BusReentrancyException` | Nested publishes exceed `BusOptions.MaxPublishDepth` (probable event loop) |
+| `RfEventScopeNotFoundException` | A `Named` route or subscription can't find a matching ancestor-or-self scope |
+| `RfEventReentrancyException` | Nested publishes exceed `RfEventOptions.MaxPublishDepth` (probable event loop) |
 | `ObjectDisposedException` | Publishing to, subscribing to, or reading state from a disposed scope |

@@ -1,0 +1,19 @@
+@inherits RfEventComponent
+
+<section class="card h-100">
+    <div class="card-header d-flex align-items-center gap-2">
+        <span class="me-auto">Big moves <small class="text-body-secondary">(≥ @Threshold.ToString("P1"))</small></span>
+        <RenderBadge Count="@(++_renders)" />
+    </div>
+    <ul class="list-group list-group-flush">
+        @if (_moves.Count == 0)
+        {
+            <li class="list-group-item small text-body-secondary">Waiting for a big move…</li>
+        }
+        @foreach (var move in _moves)
+        {
+            <li class="list-group-item small">@move</li>
+        }
+    </ul>
+    <div class="card-footer small text-body-secondary">Ticks inspected: @_inspected (rendered only on big moves)</div>
+</section>

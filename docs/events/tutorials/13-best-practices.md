@@ -6,15 +6,15 @@ A one-page checklist of the recommendations from the tutorials. Each item links 
 
 ```
 MyApp/                                  server project
-├── Program.cs                          AddBlazorBus(BusSetup.Configure)
+├── Program.cs                          AddRForgeEvents(EventHubSetup.Configure)
 ├── Services/                           server-only Scoped services that publish/subscribe
 └── Components/Pages/                   pages that need server-only services (InteractiveServer)
 MyApp.Client/                           anything that may run in WebAssembly
-├── Program.cs                          AddBlazorBus(BusSetup.Configure)
-├── BusSetup.cs                         the single bus configuration
+├── Program.cs                          AddRForgeEvents(EventHubSetup.Configure)
+├── EventHubSetup.cs                         the single hub configuration
 ├── AppJsonContext.cs                   JSON metadata for persisted state
-├── GlobalUsings.cs                     global using RForge.Blazor.Bus;
-├── _Imports.razor                      @using RForge.Blazor.Bus
+├── GlobalUsings.cs                     global using RForge.Blazor.Events;
+├── _Imports.razor                      @using RForge.Blazor.Events
 ├── Features/<Feature>/
 │   ├── <Feature>State.cs
 │   ├── <Feature>Events.cs
@@ -29,14 +29,14 @@ MyApp.Tests/                            bUnit tests, one class per feature
 |---|---|---|---|
 | `IState` records | `MyApp.Client/Features/<Feature>/<Feature>State.cs` | WebAssembly needs them, and the server references the client | [02](02-state.md) |
 | `IEvent` records | `MyApp.Client/Features/<Feature>/<Feature>Events.cs` | Same, and they sit next to the state they relate to | [04](04-events.md) |
-| Bus-aware components | `MyApp.Client/Features/<Feature>/Components/` | Run in every render mode, and stay next to their state | [01](01-setup.md) |
+| Event-aware components | `MyApp.Client/Features/<Feature>/Components/` | Run in every render mode, and stay next to their state | [01](01-setup.md) |
 | Component attributes (`[Subscribe]`, `[UseState]`) | The `.razor.cs` code-behind | The generator can't see `@code` blocks | [01](01-setup.md) |
-| `@inherits BusComponentBase` | The `.razor` file | Otherwise Razor declares `: ComponentBase` (CS0263) | [01](01-setup.md) |
-| `BusSetup.Configure` | `MyApp.Client/BusSetup.cs` | Server and WebAssembly buses must be configured identically | [01](01-setup.md) |
+| `@inherits RfEventComponent` | The `.razor` file | Otherwise Razor declares `: ComponentBase` (CS0263) | [01](01-setup.md) |
+| `EventHubSetup.Configure` | `MyApp.Client/EventHubSetup.cs` | Server and WebAssembly hubs must be configured identically | [01](01-setup.md) |
 | `JsonSerializerContext` | `MyApp.Client/AppJsonContext.cs` | One place listing every persisted state | [08](08-prerendering-and-persistence.md) |
 | Services using databases/secrets | `MyApp/Services/` | Must not ship to the browser | [07](07-services-and-background-work.md) |
 | `EventScope`/`StateScope` | The feature's root component | Works wherever the feature is placed, including inside islands | [05](05-scopes-and-routing.md), [06](06-scoped-state.md) |
-| Bus tests | `MyApp.Tests/<Feature>Tests.cs` | One test class per feature mirrors the source layout | [11](11-testing-with-bunit.md) |
+| Event tests | `MyApp.Tests/<Feature>Tests.cs` | One test class per feature mirrors the source layout | [11](11-testing-with-bunit.md) |
 
 ## Naming
 
@@ -64,7 +64,7 @@ MyApp.Tests/                            bUnit tests, one class per feature
 - [ ] Use an event for "it happened" and state for "what it is now". Often you'll do both. ([04](04-events.md#events-or-state))
 - [ ] Handlers are fast: fire-and-forget long work with `DisposalToken`. ([04](04-events.md#7-keep-handlers-fast))
 - [ ] App-wide listeners (toasts, logging) use `ScopeKind.Root`. ([04](04-events.md), [05](05-scopes-and-routing.md))
-- [ ] Don't use the bus for direct parent → child. Use `[Parameter]`/`EventCallback`. ([04](04-events.md))
+- [ ] Don't use the hub for direct parent → child. Use `[Parameter]`/`EventCallback`. ([04](04-events.md))
 
 ## Scopes
 
@@ -75,14 +75,14 @@ MyApp.Tests/                            bUnit tests, one class per feature
 
 ## Services and threads
 
-- [ ] Services that use `IBus` are **Scoped**, never Singleton. ([07](07-services-and-background-work.md))
-- [ ] Every `bus.Subscribe(…)` / `store.Subscribe(…)` in a service is disposed. ([07](07-services-and-background-work.md#5-subscribe-from-a-service))
+- [ ] Services that use `IRfEventHub` are **Scoped**, never Singleton. ([07](07-services-and-background-work.md))
+- [ ] Every `hub.Subscribe(…)` / `store.Subscribe(…)` in a service is disposed. ([07](07-services-and-background-work.md#5-subscribe-from-a-service))
 - [ ] Background work stops when its page or circuit goes away, and timers catch `ObjectDisposedException`. ([07](07-services-and-background-work.md))
-- [ ] Components never call `InvokeAsync` for bus updates. The base class does. ([07](07-services-and-background-work.md#3-components-just-read))
+- [ ] Components never call `InvokeAsync` for hub updates. The base class does. ([07](07-services-and-background-work.md#3-components-just-read))
 
 ## Render modes
 
-- [ ] `AddBlazorBus(BusSetup.Configure)` in **both** `Program.cs` files. ([01](01-setup.md#4-register-the-bus-in-both-hosts))
+- [ ] `AddRForgeEvents(EventHubSetup.Configure)` in **both** `Program.cs` files. ([01](01-setup.md#4-register-the-hub-in-both-hosts))
 - [ ] One interactive render mode per area that must communicate. ([09](09-render-modes.md#2-mixed-islands-dont-talk-to-each-other))
 - [ ] Scopes are declared inside the interactive component. ([09](09-render-modes.md#3-declare-scopes-inside-the-island))
 - [ ] `prerender: false` for pages that start background work. ([07](07-services-and-background-work.md#4-start-and-stop-from-a-server-page))
@@ -95,5 +95,5 @@ MyApp.Tests/                            bUnit tests, one class per feature
 
 ## Testing
 
-- [ ] A shared `BusTestContext` that adds the bus and sets `RendererInfo`. ([11](11-testing-with-bunit.md#2-a-base-class-for-bus-tests))
-- [ ] Arrange through `Bus.State<T>()`, act inside `cut.InvokeAsync`, and use spies for published events. ([11](11-testing-with-bunit.md))
+- [ ] A shared `EventTestContext` that adds the hub and sets `RendererInfo`. ([11](11-testing-with-bunit.md#2-a-base-class-for-hub-tests))
+- [ ] Arrange through `Hub.State<T>()`, act inside `cut.InvokeAsync`, and use spies for published events. ([11](11-testing-with-bunit.md))

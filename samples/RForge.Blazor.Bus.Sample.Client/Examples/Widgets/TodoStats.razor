@@ -1,9 +1,0 @@
-@inherits BusComponentBase
-
-<div class="d-flex align-items-center gap-2 small">
-    <div class="progress flex-grow-1" role="progressbar" aria-valuenow="@Progress.Done" aria-valuemax="@Progress.Total">
-        <div class="progress-bar" style="width:@(Progress.Total == 0 ? 0 : Progress.Done * 100 / Progress.Total)%"></div>
-    </div>
-    <span>@Progress.Done / @Progress.Total done</span>
-    <RenderBadge Count="@(++_renders)" />
-</div>

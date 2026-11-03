@@ -6,10 +6,10 @@
 
 ## What's different outside components
 
-| | In a `BusComponentBase` | In a service |
+| | In a `RfEventComponent` | In a service |
 |---|---|---|
-| Get the bus | `PublishAsync`, `State<T>()` helpers | Inject `IBus` (the root) |
-| Subscribe | `[Subscribe]`, `[UseState]` | `bus.Subscribe<T>(…)`, `store.Subscribe(…)`, and **dispose the result** |
+| Get the hub | `PublishAsync`, `State<T>()` helpers | Inject `IRfEventHub` (the root) |
+| Subscribe | `[Subscribe]`, `[UseState]` | `hub.Subscribe<T>(…)`, `store.Subscribe(…)`, and **dispose the result** |
 | Thread | The renderer's | Whatever thread you're on. **Publishing from any thread is safe**: components marshal through their own `InvokeAsync` |
 
 ## 1. Define what the service produces
@@ -34,12 +34,12 @@ These live in the **Client** project, so components in any render mode can use t
 ```csharp
 // MyApp/Services/ClockService.cs
 using MyApp.Client.Features.Clock;
-using RForge.Blazor.Bus;
+using RForge.Blazor.Events;
 
 namespace MyApp.Services;
 
 /// <summary>Server-only, Scoped (one per circuit). Ticks on a thread-pool thread, never the renderer's.</summary>
-public sealed class ClockService(IBus bus) : IDisposable
+public sealed class ClockService(IRfEventHub hub) : IDisposable
 {
     private readonly Lock _gate = new();
     private Timer? _timer;
@@ -61,7 +61,7 @@ public sealed class ClockService(IBus bus) : IDisposable
             _timer = null;
         }
 
-        bus.State<ClockState>().Update(s => s with { Running = false });
+        hub.State<ClockState>().Update(s => s with { Running = false });
     }
 
     private async Task TickAsync()
@@ -69,17 +69,17 @@ public sealed class ClockService(IBus bus) : IDisposable
         try
         {
             var now = DateTime.Now;
-            bus.State<ClockState>().Set(new ClockState(now, Running: true));
+            hub.State<ClockState>().Set(new ClockState(now, Running: true));
 
             if (now.Minute != _lastMinute)
             {
                 _lastMinute = now.Minute;
-                await bus.PublishAsync(new MinutePassed(now));
+                await hub.PublishAsync(new MinutePassed(now));
             }
         }
         catch (ObjectDisposedException)
         {
-            // The circuit (and its bus) ended between ticks.
+            // The circuit (and its hub) ended between ticks.
         }
     }
 
@@ -101,13 +101,13 @@ Register it as **Scoped**:
 builder.Services.AddScoped<ClockService>();
 ```
 
-> **Never register a service that holds `IBus` as Singleton.** On Blazor Server, the bus is per circuit, so a singleton would capture one user's bus and share it with everyone. In Development, DI scope validation reports this as an error at startup.
+> **Never register a service that holds `IRfEventHub` as Singleton.** On Blazor Server, the hub is per circuit, so a singleton would capture one user's hub and share it with everyone. In Development, DI scope validation reports this as an error at startup.
 
 ## 3. Components just read
 
 ```razor
 @* MyApp.Client/Features/Clock/Components/ClockFace.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <span class="font-monospace fs-3">@(Clock.Running ? Clock.Now.ToString("HH:mm:ss") : "--:--:--")</span>
 ```
@@ -126,7 +126,7 @@ public partial class ClockFace
 
 ```razor
 @* MyApp.Client/Features/Clock/Components/MinuteLog.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <ul class="small">@foreach (var at in _minutes) { <li>@at.ToString("HH:mm")</li> }</ul>
 ```
@@ -170,12 +170,12 @@ The page injects the server-only service, so it lives in the server project and 
 
 ## 5. Subscribe from a service
 
-Services subscribe through `IBus` and must dispose the subscription:
+Services subscribe through `IRfEventHub` and must dispose the subscription:
 
 ```csharp
 // MyApp/Services/ClockAuditor.cs
 using MyApp.Client.Features.Clock;
-using RForge.Blazor.Bus;
+using RForge.Blazor.Events;
 
 namespace MyApp.Services;
 
@@ -184,8 +184,8 @@ public sealed class ClockAuditor : IDisposable
 {
     private readonly IDisposable _subscription;
 
-    public ClockAuditor(IBus bus, ILogger<ClockAuditor> logger) =>
-        _subscription = bus.Subscribe<MinutePassed>((e, cancellationToken) =>
+    public ClockAuditor(IRfEventHub hub, ILogger<ClockAuditor> logger) =>
+        _subscription = hub.Subscribe<MinutePassed>((e, cancellationToken) =>
         {
             logger.LogInformation("Minute passed at {At}", e.At);
             return ValueTask.CompletedTask;
@@ -204,27 +204,27 @@ Service handlers run **on the publisher's thread** (no marshaling: no renderer i
 A throwing **component** handler always goes to its `ErrorBoundary`. For **service** handlers you choose:
 
 ```csharp
-// MyApp.Client/BusSetup.cs (excerpt)
-public static void Configure(BusOptions options)
+// MyApp.Client/EventHubSetup.cs (excerpt)
+public static void Configure(RfEventOptions options)
 {
     options.HandlerErrorMode = HandlerErrorMode.Log;   // default: log and continue
     // options.HandlerErrorMode = HandlerErrorMode.Throw; // run all, then throw AggregateException to the publisher
-    options.MaxPublishDepth = 16;                      // nested publishes allowed before BusReentrancyException
+    options.MaxPublishDepth = 16;                      // nested publishes allowed before RfEventReentrancyException
 }
 ```
 
-`MaxPublishDepth` catches event loops (A's handler publishes B, B's handler publishes A, …) and stops them with `BusReentrancyException` instead of hanging.
+`MaxPublishDepth` catches event loops (A's handler publishes B, B's handler publishes A, …) and stops them with `RfEventReentrancyException` instead of hanging.
 
 ## How it works
 
-- `IBus` is the root scope of the current DI scope: per circuit on Server, per app instance in WebAssembly, per request when rendering statically.
+- `IRfEventHub` is the root scope of the current DI scope: per circuit on Server, per app instance in WebAssembly, per request when rendering statically.
 - Store writes are serialized per store (`Update` is atomic). Component notifications are queued through each component's renderer.
 - `PublishAsync` awaits every handler, including component handlers running on the renderer, so a service can rely on "all reactions ran" after the `await`.
 
 ## ✅ Best practices
 
 - **Put server-only services in the server project** (`MyApp/Services/`), and keep the state and events they produce in the Client project.
-- **Register bus-using services as Scoped.** Never Singleton.
+- **Register hub-using services as Scoped.** Never Singleton.
 - **Prefer state for continuous data** (prices, clocks, progress) and events for discrete moments (minute passed, job finished). State means a component that appears later still sees the current value.
 - **Catch `ObjectDisposedException` in timers.** The circuit can end between ticks.
 - **Stop background work when its page goes away** (`Dispose`/`DisposeAsyncCore`), and also in the service's own `Dispose`.
@@ -235,8 +235,8 @@ public static void Configure(BusOptions options)
 | Symptom | Cause | Fix |
 |---|---|---|
 | One user sees another user's updates | Service registered as Singleton | Register as Scoped |
-| `InvalidOperationException: … not associated with the Dispatcher` | Calling `StateHasChanged` from a service callback yourself | Let the bus do it: write state or publish, and let components react |
+| `InvalidOperationException: … not associated with the Dispatcher` | Calling `StateHasChanged` from a service callback yourself | Let the hub do it: write state or publish, and let components react |
 | Timer keeps running after leaving the page | Not stopped on dispose | Stop it in the page's `Dispose` and in the service's `Dispose` |
-| `BusReentrancyException` | Handlers publish events that trigger each other | Break the loop, or check whether the change is needed before publishing |
+| `RfEventReentrancyException` | Handlers publish events that trigger each other | Break the loop, or check whether the change is needed before publishing |
 
 **Next:** [08 · Prerendering and persistence](08-prerendering-and-persistence.md)

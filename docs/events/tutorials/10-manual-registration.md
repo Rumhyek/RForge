@@ -38,7 +38,7 @@ public sealed record PriceChanged(string Symbol, decimal Change) : IEvent;
 
 ```razor
 @* MyApp.Client/Features/Stocks/Components/PriceTile.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <div class="card text-center">
     <div class="card-body">
@@ -106,7 +106,7 @@ public partial class WatchlistLabel
 
 ```razor
 @* MyApp.Client/Features/Stocks/Components/WatchlistLabel.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <h3>@_name.Value</h3>
 ```
@@ -123,7 +123,7 @@ public sealed record WatchlistState(string Name) : IState<WatchlistState>
 
 ## 3. Mix attributes and manual code
 
-A component with attributes already has a generated `RegisterSubscriptions`, so **don't override it** (that's error `RFBUS009`). Implement the generated hook instead, which runs after the generated registrations:
+A component with attributes already has a generated `RegisterSubscriptions`, so **don't override it** (that's error `RFEVT009`). Implement the generated hook instead, which runs after the generated registrations:
 
 ```csharp
 // MyApp.Client/Features/Stocks/Components/PriceAlerts.razor.cs
@@ -167,7 +167,7 @@ public partial class PriceAlerts
 
 ```razor
 @* MyApp.Client/Features/Stocks/Components/PriceAlerts.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <p>Tracking @Tracked symbols</p>
 <ul>@foreach (var alert in _alerts.Take(5)) { <li>@alert</li> }</ul>
@@ -214,7 +214,7 @@ public partial class LiveFeedToggle
 
 ```razor
 @* MyApp.Client/Features/Stocks/Components/LiveFeedToggle.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <button class="btn btn-sm btn-outline-secondary" @onclick="Toggle">@(_subscription is null ? "Listen" : "Stop") (@_received)</button>
 ```
@@ -240,7 +240,7 @@ Prefer step 3 (decide at registration) when you can. Late subscriptions are the 
 | Symptom | Cause | Fix |
 |---|---|---|
 | `InvalidOperationException: SubscriptionBuilder can only be used inside RegisterSubscriptions` | Builder stored and used later | Use `Scope.Subscribe` for late subscriptions |
-| `RFBUS009` | Override of `RegisterSubscriptions` in a component that also has attributes | Move the code into `partial void OnRegisterSubscriptions` |
+| `RFEVT009` | Override of `RegisterSubscriptions` in a component that also has attributes | Move the code into `partial void OnRegisterSubscriptions` |
 | Tile shows the old symbol after its parameter changes | Selector captured the parameter at registration | Add `@key` |
 | `Dispatcher` exceptions from a late subscription | Handler touches UI without `InvokeAsync` | Wrap the body in `InvokeAsync` |
 

@@ -9,7 +9,7 @@
 Without scopes there's one channel: every subscriber hears every publish of its event type. `<EventScope>` adds a node to a **scope tree**, and each component belongs to its **nearest** scope:
 
 ```
-Root (the bus)
+Root (the hub)
 ├── ActivityLog                ← listens at Root
 └── EventScope "settings"
     ├── SettingsToolbar        ← publishes from "settings"
@@ -72,7 +72,7 @@ The component that owns the region declares the scope. The scope only affects th
 
 ```razor
 @* MyApp.Client/Features/Settings/Components/SettingsToolbar.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <button class="btn btn-primary btn-sm" @onclick="SaveAllAsync">Save all</button>
 ```
@@ -96,7 +96,7 @@ public partial class SettingsToolbar
 
 ```razor
 @* MyApp.Client/Features/Settings/Components/ProfileSection.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <p>Profile settings… @(_saving ? "(saving)" : "")</p>
 ```
@@ -125,7 +125,7 @@ public partial class ProfileSection
 
 ```razor
 @* MyApp.Client/Features/Settings/Components/NotificationSection.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <p>Notification settings…</p>
 ```
@@ -143,7 +143,7 @@ public partial class NotificationSection
 
 ```razor
 @* MyApp.Client/Features/Settings/Components/SettingsStatus.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <small>Saved: @string.Join(", ", _saved)</small>
 ```
@@ -166,7 +166,7 @@ public partial class SettingsStatus
 
 ```razor
 @* MyApp.Client/Features/Settings/Components/ActivityLog.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <ul class="small">
     @foreach (var entry in _entries)
@@ -234,12 +234,12 @@ public partial class SettingsHelp
 
 ```razor
 @* MyApp.Client/Features/Settings/Components/SettingsHelp.razor *@
-@inherits BusComponentBase
+@inherits RfEventComponent
 
 <small>Saves everywhere: @_globalSaves · Save-all in this panel: @_panelSaves</small>
 ```
 
-`ScopeName` lookups throw `BusScopeNotFoundException` if no enclosing scope has that name. That's deliberate, so a typo fails loudly instead of silently hearing nothing.
+`ScopeName` lookups throw `RfEventScopeNotFoundException` if no enclosing scope has that name. That's deliberate, so a typo fails loudly instead of silently hearing nothing.
 
 ## How it works
 
@@ -262,6 +262,6 @@ public partial class SettingsHelp
 | The component that renders `<EventScope>` doesn't hear events inside it | A scope only applies to its children | Move the handler into a child component |
 | Root listener never hears a broadcast | `Broadcast` goes *down*, not up | Bubble a separate fact up, or listen inside the scope |
 | Listener inside a scope misses events from elsewhere | Publishes bubble *up* to the root and don't enter other scopes | Publish with `Route.Global`, or listen with `ScopeKind.Root` |
-| `BusScopeNotFoundException` | `Route.Named`/`ScopeName` used where no enclosing scope has that name | Check the name, and that the component is inside that scope |
+| `RfEventScopeNotFoundException` | `Route.Named`/`ScopeName` used where no enclosing scope has that name | Check the name, and that the component is inside that scope |
 
 **Next:** [06 · Scoped state](06-scoped-state.md)

@@ -1,14 +1,14 @@
 # Component Integration
 
-> **Status:** Draft · 2026-10-06 · Part of the [RForge.Blazor.Bus design spec](index.md)
+> **Status:** Draft · 2026-10-06 · Part of the [RForge.Blazor.Events design spec](index.md)
 
-`BusComponentBase` is what makes the bus feel like Svelte's `$store`: subscribe, re-render, marshal threads, route errors and clean up, all without code from the component author. The [source generator](source-generator.md) only writes the subscription list. The base class handles everything else.
+`RfEventComponent` is what makes the hub feel like Svelte's `$store`: subscribe, re-render, marshal threads, route errors and clean up, all without code from the component author. The [source generator](source-generator.md) only writes the subscription list. The base class handles everything else.
 
 ## Responsibilities
 
-| Concern | Handled by `BusComponentBase` |
+| Concern | Handled by `RfEventComponent` |
 |---|---|
-| Finding the nearest scope | Private `[CascadingParameter] IBusScope?`, falling back to injected `IBus` |
+| Finding the nearest scope | Private `[CascadingParameter] IRfEventHubScope?`, falling back to injected `IRfEventHub` |
 | Registering subscriptions | Calls `RegisterSubscriptions(builder)` once, at the right lifecycle point |
 | Thread marshaling | Every component handler and state notification runs inside `InvokeAsync` |
 | Re-rendering | `StateHasChanged()` after each handler/notification (unless `render: false`) |
@@ -27,7 +27,7 @@ Registration must happen:
 
 It also **must not depend on the user calling `base.OnInitialized()`**. Forgetting that call is common and would silently break every subscription.
 
-So `BusComponentBase` overrides `SetParametersAsync`:
+So `RfEventComponent` overrides `SetParametersAsync`:
 
 ```csharp
 public override Task SetParametersAsync(ParameterView parameters)
@@ -59,7 +59,7 @@ Passing `ParameterView.Empty` to the base on the first call is a known Blazor pa
 
 Components register their subscriptions in **every** render mode, including static SSR and prerendering:
 - **Prerendered HTML stays correct.** The static renderer keeps rendering until async initialization settles. If one component loads data after an `await` in `OnInitializedAsync` and writes it to a store, components that rendered *earlier* are notified and re-render before the HTML is sent. (An earlier draft skipped subscriptions when `RendererInfo.IsInteractive` was `false`. The checkout sample showed that this left an empty cart in the prerendered HTML. See [ADR-016](decisions.md#adr-016-subscribe-in-every-render-mode-supersedes-adr-014).)
-- **No leaks or double delivery.** A prerender runs in its own request scope with its own root bus. Its components, subscriptions and bus are all disposed when the request ends, and the interactive instance subscribes to a different bus.
+- **No leaks or double delivery.** A prerender runs in its own request scope with its own root hub. Its components, subscriptions and hub are all disposed when the request ends, and the interactive instance subscribes to a different hub.
 - Once a static response has been sent, nothing re-renders. Changes after that point have no visible effect, which is inherent to static rendering.
 
 See [render-modes.md](render-modes.md).
@@ -106,7 +106,7 @@ The publisher is **never** affected by a component handler's failure. See [event
 
 ## Disposal
 
-`BusComponentBase` implements `IAsyncDisposable`:
+`RfEventComponent` implements `IAsyncDisposable`:
 
 ```csharp
 public async ValueTask DisposeAsync()
@@ -121,16 +121,16 @@ public async ValueTask DisposeAsync()
 }
 ```
 
-Derived components **override `DisposeAsyncCore`** for their own cleanup instead of implementing `IDisposable`/`IAsyncDisposable` again. Analyzer `RFBUS014` warns when a derived component implements either interface directly, because Blazor calls only one of them and the base class's cleanup could be skipped.
+Derived components **override `DisposeAsyncCore`** for their own cleanup instead of implementing `IDisposable`/`IAsyncDisposable` again. Analyzer `RFEVT014` warns when a derived component implements either interface directly, because Blazor calls only one of them and the base class's cleanup could be skipped.
 
-> **Still to verify:** which disposal interface the .NET 10 renderer calls when a component implements both, and whether a re-implemented interface in a derived type can bypass the base implementation. `RFBUS014` ships as a warning until that's confirmed.
+> **Still to verify:** which disposal interface the .NET 10 renderer calls when a component implements both, and whether a re-implemented interface in a derived type can bypass the base implementation. `RFEVT014` ships as a warning until that's confirmed.
 
 ## Manual registration
 
 The generator is a convenience. Everything it does can be written by hand, which also suits dynamic cases (subscribing to an event type chosen at runtime, conditional subscriptions):
 
 ```csharp
-public class CartBadge : BusComponentBase
+public class CartBadge : RfEventComponent
 {
     private StateHandle<CartState> _cart = default!;
     private SelectorHandle<CartState, int> _count = default!;
@@ -158,20 +158,20 @@ Manual and generated registration can coexist through the generator's `partial v
 ```csharp
 protected ValueTask PublishAsync<TEvent>(TEvent evt, Route route = default, CancellationToken ct = default);
 protected IStateStore<TState> State<TState>(ScopeTarget at = default);
-protected IBusScope Scope { get; }
+protected IRfEventHubScope Scope { get; }
 protected CancellationToken DisposalToken { get; }
 ```
 
 `PublishAsync` and `State` are relative to `Scope`, the component's nearest scope. These helpers don't subscribe or re-render. `State<T>()` is for **writing** (or a one-off read). For reactive reads, use `[UseState]` or a `StateHandle`.
 
-## Using the bus without the base class
+## Using the hub without the base class
 
 Supported, with fewer guarantees:
 
 | Approach | What you get | What you handle yourself |
 |---|---|---|
-| `[Inject] IBus` + `Subscribe` | Global pub/sub | `InvokeAsync`, `StateHasChanged`, disposal, error routing; no scope awareness |
-| `[CascadingParameter] IBusScope?` + `Subscribe` | Scope-aware pub/sub | Same as above |
-| `[CascadingParameter] TState` with `CascadeValue="true"` / `CascadeRootState<T>()` | Reactive state reads, no code | Writes via `IBus`; re-renders on every change |
+| `[Inject] IRfEventHub` + `Subscribe` | Global pub/sub | `InvokeAsync`, `StateHasChanged`, disposal, error routing; no scope awareness |
+| `[CascadingParameter] IRfEventHubScope?` + `Subscribe` | Scope-aware pub/sub | Same as above |
+| `[CascadingParameter] TState` with `CascadeValue="true"` / `CascadeRootState<T>()` | Reactive state reads, no code | Writes via `IRfEventHub`; re-renders on every change |
 
 This is the escape hatch for third-party components and for teams that can't use a shared base class.
