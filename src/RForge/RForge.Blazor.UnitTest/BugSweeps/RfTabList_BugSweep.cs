@@ -105,7 +105,6 @@ public class RfTabList_BugSweep
     // assigns ActiveTab only AFTER await TabListOnHide — a second click during a slow OnHide
     // re-enters: the old tab is hidden twice and two tabs load/show interleaved. race, med.
     [TestMethod]
-    [Ignore("pending #96 — #68 bug-sweep repro, red-by-construction")]
     public void DoubleClickTab_LoadsOnce()
     {
         var hideGate = new TaskCompletionSource<bool>();

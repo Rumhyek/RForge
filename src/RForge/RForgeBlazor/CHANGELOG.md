@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed `RfDataGrid`: rendering rows with no `Cells` template no longer throws a `NullReferenceException` (the populated-data branch invoked `Cells` unguarded; the skeleton branch already guarded it), and `RfTabList`: clicking tabs again while a tab switch is still awaiting a slow `OnHide` / `OnLoad` / `OnShow` is now ignored instead of re-entering, which hid the old tab twice and loaded two tabs interleaved (#94, #96).
 - Fixed `NotificationManager`: `ClearAllByPostion` / `ClearAllBySeverity` (and the
   `ClearAllError` / `ClearAllInfo` / `ClearAllSuccess` / `ClearAllWarning` shortcuts built on
   them) no longer throw a `NullReferenceException` when no `RfNotificationManager` is

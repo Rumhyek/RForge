@@ -169,7 +169,6 @@ public class DataGrid_BugSweep
     // branch although Cells is an optional RenderFragment<TRowData> (the skeleton branch guards it)
     // → mid-render NRE whenever a page of rows arrives without a Cells template. crash, med.
     [TestMethod]
-    [Ignore("pending #94 — #68 bug-sweep repro, red-by-construction")]
     public void PopulatedRows_NoCells_DoesNotThrow()
     {
         var cut = ctx.RenderComponent<RfDataGrid<string>>(
