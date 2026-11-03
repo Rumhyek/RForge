@@ -18,7 +18,9 @@ public sealed class PersistenceTests
         using var ctx = new BunitContext();
         var persisted = ctx.AddBunitPersistentComponentState();
         ctx.Services.AddRForgeEvents(o => o.PersistState(TestJsonContext.Default.CounterState));
+#if NET9_0_OR_GREATER
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+#endif
 
         ctx.Render<CounterView>();
         ctx.Services.GetRequiredService<IRfEventHub>().State<CounterState>().Set(new CounterState(7, "loaded"));
@@ -35,7 +37,9 @@ public sealed class PersistenceTests
         ctx.Services.AddRForgeEvents(o => o.PersistState(TestJsonContext.Default.CounterState));
         var persisted = ctx.AddBunitPersistentComponentState();
         persisted.Persist(Key, """{"Count":12,"Label":"from-prerender"}""");
+#if NET9_0_OR_GREATER
         ctx.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+#endif
 
         var cut = ctx.Render<CounterView>();
 
@@ -50,7 +54,9 @@ public sealed class PersistenceTests
         ctx.Services.AddRForgeEvents();
         var persisted = ctx.AddBunitPersistentComponentState();
         persisted.Persist(Key, """{"Count":12,"Label":"ignored"}""");
+#if NET9_0_OR_GREATER
         ctx.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+#endif
 
         var cut = ctx.Render<CounterView>();
 

@@ -36,7 +36,9 @@ public sealed class RegistrationTests
     {
         using var ctx = new BunitContext();
         ctx.Services.AddRForgeEvents(o => o.CascadeRootState<CounterState>());
+#if NET9_0_OR_GREATER
         ctx.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+#endif
 
         var cut = ctx.Render<PlainConsumer>();
         Assert.Equal("0", cut.Find(".plain").TextContent);

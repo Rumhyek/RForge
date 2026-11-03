@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <Authors>RForge</Authors>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <RootNamespace>RForge.Blazor.Events</RootNamespace>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
@@ -13,7 +13,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <PackageId>RForge.Blazor.Events</PackageId>
-    <Version>0.1.0</Version>
     <Description>Typed events and reactive state for Blazor components, wherever they sit in the component tree.</Description>
     <PackageTags>blazor;events;state;pubsub;components</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -21,7 +20,9 @@
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.3" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" Condition="'$(TargetFramework)' == 'net10.0'" />
   </ItemGroup>
 
   <ItemGroup>

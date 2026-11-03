@@ -164,12 +164,31 @@ internal sealed class EventSymbols
 
     // ── [UseState] ───────────────────────────────────────────────────────
 
+    // IPropertySymbol.IsPartialDefinition needs Roslyn 4.10. Reading the syntax instead keeps this generator
+    // loadable by the older compilers that ship with the .NET 8 SDK, where [Subscribe] still works.
+    private static bool IsPartialDefinition(IPropertySymbol property)
+    {
+        foreach (var reference in property.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is PropertyDeclarationSyntax declaration
+                && declaration.Modifiers.Any(SyntaxKind.PartialKeyword)
+                && declaration.ExpressionBody is null
+                && declaration.AccessorList is { } accessors
+                && accessors.Accessors.All(static a => a.Body is null && a.ExpressionBody is null))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public UseStateProblem CheckUseState(IPropertySymbol property, string? selectorName, out ITypeSymbol? stateType, out IMethodSymbol? selector)
     {
         stateType = null;
         selector = null;
 
-        if (property.IsStatic || property.IsIndexer || !property.IsPartialDefinition
+        if (property.IsStatic || property.IsIndexer || !IsPartialDefinition(property)
             || property.GetMethod is null || property.SetMethod is not null)
         {
             return UseStateProblem.BadProperty;

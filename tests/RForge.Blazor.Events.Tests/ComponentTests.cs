@@ -12,7 +12,9 @@ public sealed class ComponentTests : BunitContext
     {
         Services.AddSingleton(_log);
         Services.AddRForgeEvents();
+#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+#endif
     }
 
     private IRfEventHub Hub => Services.GetRequiredService<IRfEventHub>();
@@ -164,7 +166,9 @@ public sealed class ComponentTests : BunitContext
     {
         // During prerendering the renderer keeps rendering until async initialization settles, so a component
         // rendered *before* the state was loaded must still update (the bug the checkout sample exposed).
+#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+#endif
 
         var cut = Render<LateLoaderHost>();
 
