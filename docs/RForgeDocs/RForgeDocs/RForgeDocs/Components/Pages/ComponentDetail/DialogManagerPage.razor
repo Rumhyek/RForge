@@ -60,14 +60,12 @@
                 <li>Need an edit form.</li>
             </ul>
 
-
         </div>
     </Purpose>
 
     <Setup>
         <BasicSetupDetails />
     </Setup>
-
 
     <BasicUsage>
 
@@ -95,6 +93,15 @@
                 The <code>RfDialogManager</code> works off calling <code>RForgeBlazor.Services.IDialogManager.cs</code> and providing the method a callback function when completed.
             </p>
 
+            <h4>Failing Callbacks</h4>
+            <p>
+                The callback you pass to <code>Alert</code>, <code>Confirm</code>, <code>Prompt</code>, or
+                <code>MultiAction</code> runs when the user answers. If it throws, or if you supplied none for an action
+                the user takes, the exception reaches your code instead of disappearing, and the dialog still closes
+                cleanly: the loading state clears and the next queued dialog is shown, so one bad callback never freezes
+                the dialog host. Handle errors inside your callback if the user should see a message.
+            </p>
+
             <h4>Dialog Host Lifetime</h4>
             <p>
                 Each <code>RfDialogManager</code> registers itself as the live dialog host when it starts, and the injected
@@ -116,19 +123,10 @@
                 unregisters with its own instance identity, and the swap safety above applies whenever the injected service is
                 the library's own <code>DialogManager</code>.
             </p>
-            <div class="notification is-info">
-                <strong>FIX (#86):</strong> Previously <code>Unregister</code> had no registrant identity check, so disposing a
-                replaced host cleared the live host's registration with it. Every later <code>Alert</code>, <code>Confirm</code>,
-                or <code>Prompt</code> then queued forever and no dialog rendered again. Unregistration now only takes effect
-                when the requesting instance is the one currently registered, and a stale dispose is a no-op. No API was
-                removed, renamed, or changed in signature, so there is no consumer compile break. Pinned by the
-                <code>OlderInstanceDisposed_DialogsStillShow</code> test.
-            </div>
 
         </div>
 
     </BasicUsage>
-
 
 </ComponentDetail>
 

@@ -92,6 +92,16 @@
                 The <code>RfContextMenuLink</code> component supports the <code>OnClick</code> event as well as all the parameters of the <code>&lt;a&gt;</code> tag.
             </p>
 
+            <h3>Menu Ids</h3>
+            <p>
+                Each <code>RfContextMenu</code> renders its menu with an <code>id</code> of the form
+                <code>context-menu-N</code> and points the trigger's <code>aria-controls</code> at it. The number is unique
+                for every instance in the app and stays the same for the life of the instance, so
+                <code>aria-controls</code> always resolves to exactly one menu, even with many menus on one page. Treat the
+                number as opaque: it is a per-process counter, not something to hard code in CSS or JavaScript. Target a
+                menu through your own <code>CssClass</code> instead.
+            </p>
+
             <h3>Dynamic / Lazy Loading</h3>
             <p>
                 You can make the menu dynamically load items by binding to <code>@@bind-IsActive:after</code>.

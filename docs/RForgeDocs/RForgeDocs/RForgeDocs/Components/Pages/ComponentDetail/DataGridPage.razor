@@ -107,7 +107,6 @@
         <BasicSetupDetails />
     </Setup>
 
-
     <BasicUsage>
 
         <div class="content">
@@ -338,15 +337,11 @@
                 consumer that feeds the index into a <code>Skip</code> can never receive a negative index from the
                 pager. Paging on non-empty grids is unchanged.
             </p>
-            <div class="notification is-info">
-                <strong>FIX (#91):</strong> Previously the Next and Last buttons stayed enabled on an empty grid
-                (their guard compared with <code>==</code> against a zero <code>TotalPages</code>) and a click
-                emitted <code>CurrentPageIndexChanged(-1)</code>, which commonly surfaced as an
-                <code>ArgumentOutOfRangeException</code> from a negative <code>Skip</code> in the consumer's load
-                callback. The guards now use <code>&gt;=</code> and the target page is clamped to the valid range,
-                so an empty grid emits no page index change. Pinned by the
-                <code>EmptyGrid_PagerNeverEmitsNegative</code> test.
-            </div>
+            <p>
+                Changing a filter always returns the grid to the first page, because the old page number may no longer
+                exist in the filtered results. <code>CurrentPageIndexChanged(0)</code> fires, and the pager label and the
+                next Next or Last click use page 1 straight away, the same as when the sort changes.
+            </p>
 
             <h1>Async Context Events</h1>
 
@@ -372,15 +367,6 @@
                 every subscriber exception. A subscriber that throws before its first <code>await</code>
                 does not stop the others from running.
             </p>
-            <div class="notification is-warning">
-                <strong>BEHAVIOR CHANGE (#90):</strong> Previously, raising a multicast async event awaited
-                only the LAST registered subscriber. Earlier subscribers ran fire and forget: their
-                exceptions were never observed and the raiser could return while their work was still in
-                flight (for example, <code>SortChanged</code> could return while a data load was still
-                running). All subscribers are now awaited before the event returns, so a handler that used
-                to overlap with the grid's reload now completes before it, and handler faults surface at the
-                raiser instead of going unobserved.
-            </div>
 
             <h2>Example</h2>
             <p>
@@ -428,7 +414,6 @@
         </div>
 
     </BasicUsage>
-
 
 </ComponentDetail>
 

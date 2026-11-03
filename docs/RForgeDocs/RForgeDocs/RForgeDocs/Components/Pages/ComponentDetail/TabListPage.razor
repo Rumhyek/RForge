@@ -231,6 +231,13 @@
                 Tabs can display loading content using the <code>LoadingPanel</code> render fragment.
                 During loading, the tab will show a loading indicator and call the <code>OnLoad</code> callback.
             </p>
+            <h2>When OnLoad Fails</h2>
+            <p>
+                If your <code>OnLoad</code> callback throws, the exception still reaches the caller, but the tab does not
+                stay stuck: the loading indicator is cleared and the tab is not marked as loaded, so activating it again
+                runs <code>OnLoad</code> again. Use this to retry a failed load rather than leaving the user on a spinner.
+            </p>
+
             <h2>Disposal-Safe Loading</h2>
             <p>
                 An <code>OnLoad</code> callback is an async task owned by your page, not by <code>RfTabList</code>.
@@ -292,18 +299,6 @@
     }
 }</code></pre>
 
-            <div class="notification is-info">
-                <strong>FIX (#104):</strong> The loader example previously awaited a fixed <code>Task.Delay</code>
-                inside its <code>OnLoad</code> callbacks and called <code>StateHasChanged</code> when the delay
-                finished, with no disposal guard. Opening Slow Load and navigating away within the 3 second delay
-                resumed the continuation onto the disposed page and threw <code>ObjectDisposedException</code> on
-                the circuit. The Loader Example and the Tab List playground now follow the cancellation pattern
-                above, so navigating away mid-load throws nothing. No change to <code>RfTabList</code> or
-                <code>RfTab</code>, so there is no consumer compile break. Repro: open
-                <code>/tab-list/example/loader-example</code>, select Slow Load, and navigate away within
-                3 seconds.
-            </div>
-
             <h2>Async Context Events</h2>
             <p>
                 Tabs and the tab list communicate through <code>RfTabListContext</code>, whose
@@ -319,11 +314,6 @@
                 single <code>AggregateException</code>. A subscriber that throws before its first
                 <code>await</code> does not stop the others from running.
             </p>
-            <div class="notification is-warning">
-                <strong>BEHAVIOR CHANGE (#90):</strong> Previously only the LAST registered subscriber's task
-                was awaited; earlier handlers ran fire and forget and their exceptions went unobserved.
-                Every subscriber is now awaited before <code>RaiseOnTabRegister</code> returns.
-            </div>
 
             <h2>Styling with Bulma</h2>
             <p>
