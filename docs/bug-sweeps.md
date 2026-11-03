@@ -228,3 +228,104 @@ of writing: the `IsSelected` `Any`, the `OnItemClick` toggle, the
 `RemoveAt` trims under `MaxSelectableItems`, which match no item. A printed
 line without `ItemComparer` is this bug class: re-test it with a comparer
 stricter than reference equality.
+
+## Sample data needs a null row too (#99)
+
+The docs app's `MockUserRepository` is shared test data for every example page
+and for the paged user API, and its last eleven users (Ids 90 to 100) have no
+`Bio`, so `Bio` is null. Those rows exposed two crashes that the other 89
+hid (the sweep repro used Id 90, "Ariel Gonzales"): the DataGrid double-click
+example's detail modal evaluated `ShownUser.Bio.Length` unguarded, so
+double-clicking such a row threw during the modal render and killed the
+interactive circuit; and the paged user processor's Bio filter ran
+`u.Bio.Contains(...)` over every row, so any Bio filter whose scan reached
+one of them returned a 500 from `POST /api/users/page`.
+
+Issue #99 (PR #146) guards both sites: the modal checks `Bio != null` before it
+measures the length (a null Bio renders as an empty paragraph), and the filter
+skips null rows with `u.Bio != null && u.Bio.Contains(...)`. The library surface
+and rendered output are unchanged; only the docs app's crash paths changed, and
+`Docs_BugSweep` pins both (`DoubleClick_NullBio_DoesNotThrow`,
+`BioFilter_NullBio_DoesNotThrow`).
+
+The pattern is the point. An example page is read as the recommended way to use
+the library, so a crash path in one teaches the crash. Keep at least one row of
+every optional field null or empty in sample data, and when you add an example
+or a filter over that data, run it against that row. To find the other
+dereferences of optional model members in the docs app:
+
+```bash
+cd docs/RForgeDocs
+grep -rnE '\.(Bio|Email|FirstName|LastName)\.(Length|Contains|StartsWith|Trim|ToLower)\(' \
+  RForgeDocs/RForgeDocs.Client RForgeDocsLibrary --include=*.razor --include=*.cs
+```
+
+Every hit should sit behind a null test. (`Username`, `FirstName`, `LastName`
+and `Email` are set on every mock user; `Bio` is the optional member.)
+
+## Test the observable behavior, not a private field (#112)
+
+`RfDropDown_ItemComparer` used to read the private `_defaultItemComparer` field
+and call `OnParametersSet` through reflection. That pinned the implementation:
+a behavior-preserving refactor (renaming the field, moving the assignment, or
+using a lazy getter fallback) turned all five tests red while the shipped
+behavior was identical, so the suite would have blocked a correct fix (finding
+F43 of the #68 sweep).
+
+Issue #112 (PR #148) rewrote the class against the public seam. It renders the
+component through bUnit's normal lifecycle and asserts only two things a
+consumer can see: the public `ItemComparer` property, and the `is-selected`
+class on the rendered rows, which is where selection flows through the
+comparer. There is no reflection left in the file.
+
+The rule for new tests: if the assertion needs `BindingFlags.NonPublic`, the
+test is coupled to a name, not to a behavior. Drive the component with
+parameters and read markup, a public property, or an event callback instead.
+The check is mechanical:
+
+```bash
+grep -rn "BindingFlags\|GetField(\|GetProperty(\|GetMethod(" src/RForge/RForge.Blazor.UnitTest
+```
+
+A hit is not automatically wrong (`RfDropDown_Id` and `RfDropDown_CssWiring`
+still read protected members, for example), but each one should have a comment
+saying why no public seam exists.
+
+## Benchmarks must consume what they measure (#113, #114)
+
+`src/RForge/RForgeBlazor.Benchmark` compares the library helpers
+(`Rf.Class`, `Rf.ClassWhen`, `Rf.StyleWhen`) against hand written foreach
+versions. Four defects made its numbers unreliable, found by the #68 sweep
+(findings F44 and F45) and fixed in two PRs.
+
+- **Discarded results (#113, PR #147).** All twelve `[Benchmark]` methods were
+  `public void` and dropped the string they built. BenchmarkDotNet only consumes
+  *returned* values, so the JIT was free to eliminate the pure static call being
+  timed, which made every timing suspect (worst for the single-element
+  benchmarks). Each method now returns the computed string.
+- **Server GC (#114, PR #153).** A console exe defaults to Server GC, but real
+  Blazor workloads run Workstation GC, so allocation baselines were
+  under-penalized. The project sets `ServerGarbageCollection` to false and the
+  benchmark classes pin `[GcServer(false)]`.
+- **No `[Params]` (#114).** Each benchmark measured one hardcoded input, so the
+  hidden-element and dedup paths never ran. `Rf_StyleWhen_*` and
+  `Rf_ClassWhen_One` now take `[Params]` for entry count and hidden count, with
+  the default shape reproducing the old measurement.
+- **Silent no-op and mislabels (#114).** `PrintValues` printed the wrong class
+  name (a copy-paste slip), and the entry point was five independent `if`s, so
+  a typo'd or missing argument matched nothing and exited 0 having measured
+  nothing. `Program.cs` now has a dispatch table: exactly one known command is
+  required, anything else prints the usage and exits 1, and arguments after the
+  command are forwarded to BenchmarkDotNet (`--filter`, `--job`, ...).
+
+Run one benchmark with the command name as the first argument, for example:
+
+```bash
+dotnet run -c Release --project src/RForge/RForgeBlazor.Benchmark -- rf-style-when-one
+```
+
+The commands are `rf-class-when-many`, `rf-class-when-one`,
+`rf-style-when-many`, `rf-style-when-one` and `rf-class-many`. Always use the
+Release configuration; Debug numbers are meaningless. When you add a benchmark
+method, make it return its result, and when you add a command, add it to the
+dispatch table so the usage text lists it.
