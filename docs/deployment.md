@@ -86,13 +86,34 @@ when each was last updated.
 
 | Secret | Used by | Notes |
 |---|---|---|
-| `NUGET_TOKEN` | `deploy_release` | nuget.org API key with push rights to `RForge.Blazor*`. nuget.org keys expire after at most a year, so a publish fails once it lapses. |
+| `NUGET_USER` | `deploy_release` | Your nuget.org profile name, not your email address |
 | `AZUREAPPSERVICE_PUBLISHPROFILE_...` | `deploy_rforge_docs` | Publish profile for the `rforge` Azure web app |
 | `GITHUB_TOKEN` | `deploy_main`, `deploy_release` | Provided automatically for each run |
 
+## nuget.org trusted publishing
+
+`deploy_release` doesn't store a nuget.org API key. Its `NuGet/login` step exchanges
+a GitHub identity token for a temporary key that lasts one hour. nuget.org only
+allows this if a policy matches the workflow. To see or change the policy, click
+your username on nuget.org and choose **Trusted Publishing**.
+
+| Policy setting | Value |
+|---|---|
+| Repository Owner | `Rumhyek` |
+| Repository | `RForge` |
+| Workflow File | `deploy_release.yml` |
+| Environment | Blank |
+| Scope | Push only new package versions |
+| Glob pattern | `RForge.Blazor*` |
+
+Update the policy if you rename the workflow file or add an environment to its job.
+A brand-new package ID needs the "Push new packages and package versions" scope for
+its first push.
+
 ## Releasing without workflows
 
-Use this only if Actions is unavailable. You need a nuget.org API key in
+Use this only if Actions is unavailable. Trusted publishing only works inside
+Actions, so you need a regular nuget.org API key in
 `NUGET_API_KEY` and a `gh` token with the packages scope
 (`gh auth refresh -s write:packages`). Finish steps 1 and 2 of
 [Cutting a release](#cutting-a-release) first.
