@@ -5,8 +5,16 @@ using RForgeDocs.Abstractions.Services;
 using RForgeDocs.Client.Implementation;
 using RForgeDocs.Client.Pages.Examples.DataGrid;
 using RForgeDocsLibrary.Implementation;
+using RForgeBlazor.Services;
+using RForgeDocs.Client.Implementation;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -186,6 +194,145 @@ public class Docs_BugSweep
             + "not be swallowed into null.");
         StringAssert.Contains(thrown.Message, "api/users/page",
             "the surfaced error must name the failing endpoint.");
+    }
+
+    private sealed class StubFindUsersProcessor : IFindUsersProcessor
+    {
+        public Func<string, Task<List<UserData>>> OnFind { get; set; }
+
+        public Task<List<UserData>> Find(string searchText, int returnCount = 10) => OnFind(searchText);
+    }
+
+    private static List<UserData> Users(string firstName) =>
+        new() { new UserData { Id = 1, FirstName = firstName, LastName = "User", Username = firstName } };
+
+    // BUG #103 — Pages/Playgrounds/DropDownMultiPage.razor:169-174 (pattern repeated across the
+    // dropdown example pages): OnLoad awaits Find(filter) then unconditionally overwrites Items,
+    // so a slow response for an earlier filter lands after, and clobbers, the result for the
+    // filter the user ended on. race, med. Exercised on the single-dropdown complete example,
+    // which shares the handler shape with the other nine sites.
+    [TestMethod]
+    public async Task DropDownFilter_StaleResponseIgnored()
+    {
+        var slowGate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        ctx.Services.AddSingleton<IFindUsersProcessor>(new StubFindUsersProcessor
+        {
+            OnFind = async filter =>
+            {
+                if (filter == "slow")
+                {
+                    await slowGate.Task;
+                    return Users("Stale");
+                }
+
+                return Users("Fresh");
+            },
+        });
+
+        var cut = ctx.RenderComponent<RForgeDocs.Client.Pages.Examples.SingleDropDown.CompleteExamplePage>();
+        cut.Find(".dropdown-trigger button").Click(); // open: items render
+
+        var slow = cut.InvokeAsync(() => cut.Instance.OnLoad("slow"));  // earlier filter, still in flight
+        await cut.InvokeAsync(() => cut.Instance.OnLoad("fast"));        // newer filter finishes first
+        slowGate.SetResult(true);
+        await slow;                                                      // stale response lands last
+        cut.Render();
+
+        StringAssert.Contains(cut.Markup, "Fresh", "the newest filter's result must be shown.");
+        Assert.IsFalse(cut.Markup.Contains("Stale"),
+            "a slow response for an earlier filter must not overwrite the result of the newer filter.");
+    }
+
+    // BUG #105 — Pages/Examples/ContextMenu/BasicExamplePage.razor:63-76: IsLoading true -> await
+    // -> false with no finally; an exception between leaves the trigger button permanently
+    // "is-loading" - an example teaching the exact library bug class. stuck, low.
+    [TestMethod]
+    public void ExampleLatch_UsesFinally()
+    {
+        var manager = new NotificationManager();
+        manager.OnShow += (content, options, configure) => throw new InvalidOperationException("notification boom");
+        ctx.Services.AddSingleton<INotificationManager>(manager);
+
+        var cut = ctx.RenderComponent<RForgeDocs.Client.Pages.Examples.ContextMenu.BasicExamplePage>();
+        cut.Find(".dropdown-trigger button").Click();
+        var save = cut.FindAll("a").First(a => a.TextContent.Trim() == "Save");
+
+        try { save.Click(); } catch (Exception) { /* the handler's own failure is expected */ }
+        Thread.Sleep(1500); // the example simulates 1 s of work before notifying (and throwing)
+
+        string markup;
+        try { markup = cut.Markup; }
+        catch (Exception) { markup = cut.Markup; } // first access rethrows the handler's unhandled exception
+
+        Assert.IsFalse(cut.Find(".dropdown-trigger button").ClassList.Contains("is-loading"),
+            "a throwing save must not leave the trigger button latched in is-loading.");
+    }
+
+    // BUG #106 — Client/Implementation/ApiFindUsersProcessor.cs:21: searchText was interpolated
+    // into the query string unescaped, so '#' truncates the search and '&' injects parameters
+    // ('a&returnCount=1' rewrites the request). math, low.
+    [TestMethod]
+    public async Task SearchText_UrlEscaped()
+    {
+        Uri requested = null;
+        var handler = new CapturingHandler(request => requested = request.RequestUri);
+        var processor = new ApiFindUsersProcessor(new StubHttpClientFactory(handler));
+
+        const string hostile = "a&returnCount=1#frag";
+        await processor.Find(hostile, 10);
+
+        var query = HttpUtility.ParseQueryString(requested.Query);
+        Assert.AreEqual(hostile, query["searchText"], "the search text must arrive intact.");
+        Assert.AreEqual("10", query["returnCount"], "search text must not be able to rewrite other parameters.");
+        Assert.AreEqual(string.Empty, requested.Fragment, "a '#' in the search text must not start a fragment.");
+    }
+
+    // BUG #109 — Pages/Examples/CardModal/FormExampleCompetePage.razor:184: ran.Next(1, 100)
+    // excludes 100 although the repository has ids 1..100, so user 100 was unreachable via the
+    // random redirect. math, low.
+    [TestMethod]
+    public void RandomId_CoversFullRange()
+    {
+        Assert.AreEqual(100, RForgeDocs.Client.Pages.Examples.CardModal.FormExampleCompetePage.RandomUserId(new HighestRandom()),
+            "the largest random draw must map to user id 100.");
+        Assert.AreEqual(1, RForgeDocs.Client.Pages.Examples.CardModal.FormExampleCompetePage.RandomUserId(new LowestRandom()),
+            "the smallest random draw must map to user id 1.");
+    }
+
+    private sealed class HighestRandom : Random
+    {
+        public override int Next(int minValue, int maxValue) => maxValue - 1;
+    }
+
+    private sealed class LowestRandom : Random
+    {
+        public override int Next(int minValue, int maxValue) => minValue;
+    }
+
+    private sealed class CapturingHandler : HttpMessageHandler
+    {
+        private readonly Action<HttpRequestMessage> _capture;
+
+        public CapturingHandler(Action<HttpRequestMessage> capture) => _capture = capture;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            _capture(request);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[]", System.Text.Encoding.UTF8, "application/json"),
+            });
+        }
+    }
+
+    private sealed class StubHttpClientFactory : IHttpClientFactory
+    {
+        private readonly HttpMessageHandler _handler;
+
+        public StubHttpClientFactory(HttpMessageHandler handler) => _handler = handler;
+
+        public HttpClient CreateClient(string name) =>
+            new(_handler, disposeHandler: false) { BaseAddress = new Uri("http://localhost/") };
     }
 }
 

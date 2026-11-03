@@ -115,28 +115,40 @@
 
     private UserData SelectedItem1 { get; set; }
     private List<UserData> ViewingOptions1 { get; set; }
+    private readonly LatestRequest ViewingOptions1Request = new();
 
     public async Task OnLoad1(string filter)
     {
-        ViewingOptions1 = await findUsersProcessor.Find(filter);
+        var ticket = ViewingOptions1Request.Begin();
+        var found = await findUsersProcessor.Find(filter);
+        if (ViewingOptions1Request.IsLatest(ticket) == false) return; // a newer filter already won
+        ViewingOptions1 = found;
     }
 
 
     private UserData SelectedItem2 { get; set; }
     private List<UserData> ViewingOptions2 { get; set; }
+    private readonly LatestRequest ViewingOptions2Request = new();
 
     public async Task OnLoad2(string filter)
     {
-        ViewingOptions2 = await findUsersProcessor.Find(filter);
+        var ticket = ViewingOptions2Request.Begin();
+        var found = await findUsersProcessor.Find(filter);
+        if (ViewingOptions2Request.IsLatest(ticket) == false) return; // a newer filter already won
+        ViewingOptions2 = found;
     }
 
 
     private UserData SelectedItem3 { get; set; }
     private List<UserData> ViewingOptions3 { get; set; }
+    private readonly LatestRequest ViewingOptions3Request = new();
 
     public async Task OnLoad3(string filter)
     {
-        ViewingOptions3 = await findUsersProcessor.Find(filter);
+        var ticket = ViewingOptions3Request.Begin();
+        var found = await findUsersProcessor.Find(filter);
+        if (ViewingOptions3Request.IsLatest(ticket) == false) return; // a newer filter already won
+        ViewingOptions3 = found;
     }
 
 }

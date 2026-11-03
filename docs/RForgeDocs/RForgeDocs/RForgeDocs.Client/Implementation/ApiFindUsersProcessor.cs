@@ -17,7 +17,7 @@ public class ApiFindUsersProcessor : IFindUsersProcessor
     public async Task<List<UserData>> Find(string searchText, int returnCount = 10)
     {
         var httpClient = _httpClientFactory.CreateClient("api");
-        var response = await httpClient.GetAsync($"api/users/find/?searchText={searchText}&returnCount={returnCount}");
+        var response = await httpClient.GetAsync($"api/users/find/?searchText={Uri.EscapeDataString(searchText ?? string.Empty)}&returnCount={returnCount}");
 
         return await ReadApiResult<List<UserData>>(response, "api/users/find");
     }
