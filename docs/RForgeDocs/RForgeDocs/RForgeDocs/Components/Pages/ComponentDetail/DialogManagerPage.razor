@@ -95,6 +95,22 @@
                 The <code>RfDialogManager</code> works off calling <code>RForgeBlazor.Services.IDialogManager.cs</code> and providing the method a callback function when completed.
             </p>
 
+            <h4>Failing Callbacks</h4>
+            <p>
+                The callback you pass to <code>Alert</code>, <code>Confirm</code>, <code>Prompt</code>, or
+                <code>MultiAction</code> runs when the user answers. If it throws, or if you supplied none for an action
+                the user takes, the exception reaches your code instead of disappearing, and the dialog still closes
+                cleanly: the loading state clears and the next queued dialog is shown, so one bad callback never freezes
+                the dialog host. Handle errors inside your callback if the user should see a message.
+            </p>
+            <div class="notification is-info">
+                <strong>FIX (#87):</strong> Previously the confirm, cancel, and multi action handlers wrapped your callback
+                in an empty <code>catch</code>, which swallowed every failure, including the guaranteed
+                <code>NullReferenceException</code> when a callback was never supplied. The dialog then closed as if the
+                action had succeeded and the failure was lost with no diagnostics. Pinned by the
+                <code>FailingCallback_IsNotSilentlyEaten</code> test.
+            </div>
+
             <h4>Dialog Host Lifetime</h4>
             <p>
                 Each <code>RfDialogManager</code> registers itself as the live dialog host when it starts, and the injected

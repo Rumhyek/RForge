@@ -231,6 +231,19 @@
                 Tabs can display loading content using the <code>LoadingPanel</code> render fragment.
                 During loading, the tab will show a loading indicator and call the <code>OnLoad</code> callback.
             </p>
+            <h2>When OnLoad Fails</h2>
+            <p>
+                If your <code>OnLoad</code> callback throws, the exception still reaches the caller, but the tab does not
+                stay stuck: the loading indicator is cleared and the tab is not marked as loaded, so activating it again
+                runs <code>OnLoad</code> again. Use this to retry a failed load rather than leaving the user on a spinner.
+            </p>
+            <div class="notification is-info">
+                <strong>FIX (#89):</strong> Previously a throwing <code>OnLoad</code> left the tab's loading flag set. The
+                spinner stayed on and the guard that prevents overlapping loads rejected every later activation of that
+                tab, so it could never load. The flag is now cleared in a <code>finally</code>. Pinned by the
+                <code>TabLoad_ThrowingOnLoad_DoesNotLatch</code> test.
+            </div>
+
             <h2>Disposal-Safe Loading</h2>
             <p>
                 An <code>OnLoad</code> callback is an async task owned by your page, not by <code>RfTabList</code>.

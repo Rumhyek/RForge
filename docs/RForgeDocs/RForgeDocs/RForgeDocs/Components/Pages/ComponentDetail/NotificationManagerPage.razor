@@ -80,6 +80,21 @@
                 passing in the options for the notification 
                 or using the default on the <code>RfNotificationManager</code> for the severity type.
             </p>
+
+            <h4>Clearing Notifications</h4>
+            <p>
+                <code>INotificationManager.ClearAll()</code> removes every notification at every position and stops their
+                auto close timers. <code>ClearAllByPostion</code> and <code>ClearAllBySeverity</code> (with the
+                <code>ClearAllError</code>, <code>ClearAllInfo</code>, <code>ClearAllSuccess</code>, and
+                <code>ClearAllWarning</code> shortcuts) remove a subset. Clearing when no
+                <code>RfNotificationManager</code> is mounted is a harmless no op.
+            </p>
+            <div class="notification is-info">
+                <strong>FIX (#78):</strong> Previously the component's <code>ClearAll</code> handler was not implemented
+                and threw a <code>NotImplementedException</code> into the caller, which also stopped any later subscriber
+                from being told. <code>ClearAll()</code> now clears the notifications and re-renders. Pinned by the
+                <code>ClearAll_ClearsAllWithoutThrowing</code> test.
+            </div>
         </div>
 
     </BasicUsage>

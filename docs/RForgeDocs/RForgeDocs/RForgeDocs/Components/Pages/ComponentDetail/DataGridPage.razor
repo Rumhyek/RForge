@@ -338,6 +338,19 @@
                 consumer that feeds the index into a <code>Skip</code> can never receive a negative index from the
                 pager. Paging on non-empty grids is unchanged.
             </p>
+            <p>
+                Changing a filter always returns the grid to the first page, because the old page number may no longer
+                exist in the filtered results. <code>CurrentPageIndexChanged(0)</code> fires, and the pager label and the
+                next Next or Last click use page 1 straight away, the same as when the sort changes.
+            </p>
+            <div class="notification is-info">
+                <strong>FIX (#92):</strong> Previously a filter change emitted <code>CurrentPageIndexChanged(0)</code> but
+                left the grid's own page index at its old value. A page that does not echo the new index back kept showing
+                the old page in the pager, and the next Next or Last click emitted a stale number (page 3 instead of page 1
+                after filtering from page 3). The grid now resets its index before emitting. Pages that bind
+                <code>CurrentPageIndex</code> two ways are unaffected. Pinned by the
+                <code>FilterChange_ResetsLocalPageIndex</code> test.
+            </div>
             <div class="notification is-info">
                 <strong>FIX (#91):</strong> Previously the Next and Last buttons stayed enabled on an empty grid
                 (their guard compared with <code>==</code> against a zero <code>TotalPages</code>) and a click

@@ -25,7 +25,7 @@
             <ul>
                 <li><code>OnDoubleClick</code>: Event callback for double-click events.</li>
                 <li><code>OnSingleClick</code>: Event callback for single-click events.</li>
-                <li><code>Element</code>: The HTML element to render (default is "button").</li>
+                <li><code>Element</code>: The HTML element to render (default is "button"). Null, empty, or whitespace falls back to "button".</li>
                 <li><code>ClickDelay</code>: The delay in milliseconds to distinguish between single and double clicks. (default is 400)</li>
                 <li>Supports additional uncaptured parameters and applies them to the root element.</li>
             </ul>
@@ -34,6 +34,26 @@
                 <code>RfDoubleClick</code> makes uses of onclick event exclusively for double-click detection over the use of ondblclick.
                 This should add better support for touch devices and other platforms that may not support the ondblclick event properly.
             </p>
+
+            <h3>Disposal and the Element Fallback</h3>
+            <p>
+                A single click is only reported after <code>ClickDelay</code> has passed without a second click, so
+                <code>OnSingleClick</code> always runs a moment after the click. If the component is disposed during that
+                wait, for example because the click navigated away from the page, the pending single click is dropped:
+                <code>OnSingleClick</code> is never called on a component that is gone, so the parent callback cannot
+                touch disposed state. A double click is unaffected because it is reported immediately.
+            </p>
+            <p>
+                <code>Element</code> must name a valid element. A null, empty, or whitespace value no longer fails the
+                render; the component renders its default <code>button</code> instead.
+            </p>
+            <div class="notification is-info">
+                <strong>FIX (#76):</strong> Previously the delayed single click kept running after disposal and still
+                invoked <code>OnSingleClick</code>, and an <code>Element</code> of null made every render throw an
+                <code>ArgumentNullException</code>. The click delay now ends when the component is disposed, and a blank
+                <code>Element</code> falls back to <code>button</code>. Pinned by the
+                <code>SingleClick_FiresOnlyWhileAlive</code> and <code>EmptyElement_HandledPredictably</code> tests.
+            </div>
 
             <h3>Example</h3>
 

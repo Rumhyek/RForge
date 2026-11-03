@@ -300,7 +300,11 @@
             <div class="tags mb-2">
                 <span class="tag is-info">RenderFragment {TTreeItemData}</span>
             </div>
-            <p>The render fragment used to render the node text.</p>
+            <p>
+                The render fragment used to render the node text. It is optional: a node without it still renders its node
+                markup (expand icon, link, children) with an empty label instead of failing. Before #97 both the node with
+                children and the leaf node invoked the fragment without checking it was set.
+            </p>
         </div>
 
         <div class="block">
