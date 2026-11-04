@@ -1,0 +1,415 @@
+@page "/events/details"
+
+<ComponentDetail Title="Events"
+                 SubTitle="Typed events and reactive state for components anywhere in the tree">
+
+    <CustomSideLinks>
+
+        <div class="menu">
+            <p class="menu-label is-size-6 mb-2">Repository Links</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("RfEventComponent.cs", TagInfo.Base, EventsSource("Components/RfEventComponent.cs")))
+                @ComponentDetail.SideLink(("Attributes.cs", TagInfo.Library, EventsSource("Components/Attributes.cs")))
+                @ComponentDetail.SideLink(("SubscriptionBuilder.cs", TagInfo.Library, EventsSource("Components/SubscriptionBuilder.cs")))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("EventScope.cs", TagInfo.Backend, EventsSource("Components/EventScope.cs")))
+                @ComponentDetail.SideLink(("StateScope.cs", TagInfo.Backend, EventsSource("Components/StateScope.cs")))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("IEvent.cs", TagInfo.Library, EventsSource("Contracts/IEvent.cs")))
+                @ComponentDetail.SideLink(("IState.cs", TagInfo.Library, EventsSource("Contracts/IState.cs")))
+                @ComponentDetail.SideLink(("Route.cs", TagInfo.Enum, EventsSource("Contracts/Route.cs")))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("RfEventOptions.cs", TagInfo.Library, EventsSource("DependencyInjection/RfEventOptions.cs")))
+                @ComponentDetail.SideLink(("RfEventServiceCollectionExtensions.cs", TagInfo.Library, EventsSource("DependencyInjection/RfEventServiceCollectionExtensions.cs")))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("EventGenerator.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Events.Generators/EventGenerator.cs"))
+                @ComponentDetail.SideLink(("EventAnalyzer.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Events.Generators/EventAnalyzer.cs"))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("Design specification", TagInfo.External, "https://github.com/Rumhyek/RForge/blob/main/docs/events/design/index.md"))
+            </ul>
+        </div>
+
+        <div class="menu mt-6">
+            <p class="menu-label is-size-6 mb-2">Examples</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("Shared State", TagInfo.Empty, "/events/example/shared-counter"))
+                @ComponentDetail.SideLink(("Notifications", TagInfo.Empty, "/events/example/notifications"))
+                @ComponentDetail.SideLink(("Plain Components", TagInfo.Empty, "/events/example/plain-components"))
+                @ComponentDetail.SideLink(("Scoped Widgets", TagInfo.Empty, "/events/example/scoped-widgets"))
+                @ComponentDetail.SideLink(("Checkout", TagInfo.Empty, "/events/example/checkout"))
+                @ComponentDetail.SideLink(("Live Dashboard", TagInfo.Empty, "/events/example/live-dashboard"))
+                @ComponentDetail.SideLink(("Render Modes", TagInfo.Empty, "/events/example/render-modes"))
+            </ul>
+        </div>
+
+        <div class="menu mt-6">
+            <p class="menu-label is-size-6 mb-2">Tutorials</p>
+            <ul class="menu-list">
+                @foreach (var tutorial in Tutorials)
+                {
+                    @ComponentDetail.SideLink((tutorial.Title, TagInfo.Empty, tutorial.Url))
+                }
+            </ul>
+        </div>
+    </CustomSideLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                RForge.Blazor.Events lets components talk to each other from anywhere in the tree, without a shared parent,
+                without parameters passed down through every layer, and without a hand written service full of C# events.
+                Derive from <code>RfEventComponent</code> and it takes care of subscribing, re-rendering on the right thread,
+                error handling and disposal for you.
+            </p>
+
+            <p>
+                It has two parts. <strong>Events</strong> (<code>IEvent</code>) are fire and forget messages that any component or
+                service can publish and any component can handle. <strong>State</strong> (<code>IState&lt;T&gt;</code>) is a
+                store-like value with a current value and change notification. Writing an equal value is a no-op, so record
+                equality keeps components from re-rendering needlessly.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                When two components that are far apart in the tree need to share a value or react to the same thing: a cart badge
+                that updates when a product card adds an item, a theme picker that restyles unrelated components, a toast host
+                that any component can ask for a message.
+            </p>
+
+            <h4>Features</h4>
+            <ul>
+                <li><strong>Selectors:</strong> re-render only when the part of the state you use changes.</li>
+                <li>
+                    <strong>Scopes:</strong> <code>EventScope</code> and <code>StateScope</code> isolate events and give subtrees
+                    their own state. Routes include <code>Bubble</code> (the default), <code>Local</code>, <code>Broadcast</code>,
+                    <code>Root</code>, <code>Global</code> and <code>Named</code>.
+                </li>
+                <li>
+                    <strong>Source generator:</strong> <code>[Subscribe]</code> and <code>[UseState]</code> need no reflection, so
+                    they are trim and AOT safe. Analyzers (<code>RFEVT001</code> to <code>RFEVT014</code>) catch mistakes at build time.
+                </li>
+                <li>
+                    <strong>Every render mode:</strong> static SSR, Interactive Server, WebAssembly and Auto, with or without
+                    prerendering, and opt-in state persistence from prerender to interactive.
+                </li>
+                <li>
+                    <strong>Plain components too:</strong> opt-in cascading values let third party components read state through
+                    <code>[CascadingParameter]</code>.
+                </li>
+            </ul>
+
+        </div>
+    </Purpose>
+
+    <Setup>
+        <div class="content">
+
+            <ol>
+                <li>Install the package</li>
+                <li>Register the event hub</li>
+                <li>Make a component event-aware</li>
+            </ol>
+
+            <h2>Install the Package</h2>
+
+            <p>
+                Install <code>RForge.Blazor.Events</code> for the events alone. The <code>RForge.Blazor</code> package installs the
+                whole family (components, events and the auto API generator) instead.
+            </p>
+
+            <h6>Command Line</h6>
+            <pre><code>dotnet add package RForge.Blazor.Events</code></pre>
+
+            <h6>Package Manager Console</h6>
+            <pre><code>Install-Package RForge.Blazor.Events</code></pre>
+
+            <p>
+                One package contains the runtime, the source generator and the analyzers. Add it to
+                <strong>every project that contains event-aware components</strong>. In a Blazor Web App that is both the
+                server project and the <code>.Client</code> project, because NuGet does not pass analyzers through project
+                references.
+            </p>
+
+            <h2>Register the Event Hub</h2>
+
+            <p>
+                Call <code>AddRForgeEvents</code> in every <code>Program.cs</code> that hosts interactive components, including
+                the <code>.Client</code> project for WebAssembly and Auto. Each runtime has its own container, so each needs its
+                own hub.
+            </p>
+
+            <pre><code>builder.Services.AddRForgeEvents();</code></pre>
+
+            <h2>Make a Component Event-aware</h2>
+
+            <p>
+                Start the <code>.razor</code> file with <code>@@inherits RfEventComponent</code> and put
+                <code>[Subscribe]</code> and <code>[UseState]</code> members in the code-behind (<code>.razor.cs</code>)
+                partial class, never in an <code>@@code</code> block. Source generators cannot see code that the Razor compiler
+                produces, and <code>RFEVT001</code> reports it if you forget.
+            </p>
+
+            <h2>Requirements</h2>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>Requirement</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>.NET</td>
+                        <td>.NET 8, 9 or 10. Events, state, scopes and the analyzers work with the .NET 8 SDK and newer.</td>
+                    </tr>
+                    <tr>
+                        <td>C# 13 for <code>[UseState]</code></td>
+                        <td>
+                            <code>[UseState]</code> is a partial property, which needs C# 13. net9 and net10 projects already
+                            compile at C# 13 or later. A net8 project defaults to C# 12, so it needs the .NET 9 SDK or newer and
+                            <code>&lt;LangVersion&gt;13&lt;/LangVersion&gt;</code> (or <code>latest</code>).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Async lambdas at C# 12</td>
+                        <td>
+                            In a net8 project at C# 12, <code>builder.On&lt;MyEvent&gt;(async e =&gt; ...)</code> is ambiguous
+                            between the <code>Task</code> and <code>ValueTask</code> overloads. Pass a method group, cast the
+                            lambda to <code>Func&lt;MyEvent, Task&gt;</code>, or set <code>LangVersion</code> to 13 or later.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Server and WebAssembly islands</td>
+                        <td>
+                            Islands in different runtimes use different containers, so they never share a hub. See the
+                            <a href="/events/example/render-modes">Render Modes example</a>.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Which Package Do I Install?</h2>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>You want</th>
+                        <th>Install</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>The UI components only</td>
+                        <td><code>RForge.Blazor.Components</code></td>
+                    </tr>
+                    <tr>
+                        <td>Typed events and state only</td>
+                        <td><code>RForge.Blazor.Events</code></td>
+                    </tr>
+                    <tr>
+                        <td>An API generated from a service interface</td>
+                        <td><code>RForge.Blazor.AutoApi.Abstractions</code> and <code>RForge.Blazor.AutoApi.Generator</code></td>
+                    </tr>
+                    <tr>
+                        <td>Everything</td>
+                        <td><code>RForge.Blazor</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </Setup>
+
+    <BasicUsage>
+        <div class="content">
+
+            <p>
+                Define the events and state as records, publish and write from any component, and react anywhere else in the tree.
+                The <a href="/events/tutorials">tutorials</a> walk through each part step by step.
+            </p>
+
+            <h2>Define Events and State</h2>
+
+            <pre><code>public sealed record ItemAdded(int ProductId, int Quantity) : IEvent;
+
+public sealed record CartState(int Count, decimal Total) : IState&lt;CartState&gt;
+{
+    public static CartState Initial =&gt; new(0, 0m);
+}</code></pre>
+
+            <h2>Publish and Write State</h2>
+
+            <pre><code>// ProductCard.razor
+@@inherits RfEventComponent
+
+&lt;button @@onclick="AddToCart"&gt;Add&lt;/button&gt;</code></pre>
+
+            <pre><code>// ProductCard.razor.cs
+public partial class ProductCard
+{
+    [Parameter] public Product Product { get; set; } = default!;
+
+    private async Task AddToCart()
+    {
+        State&lt;CartState&gt;().Update(s =&gt; s with { Count = s.Count + 1, Total = s.Total + Product.Price });
+        await PublishAsync(new ItemAdded(Product.Id, 1));
+    }
+}</code></pre>
+
+            <h2>React Anywhere Else</h2>
+
+            <p>
+                <code>CartBadge</code> needs no shared parent with <code>ProductCard</code> and no parameters. The selector
+                makes it re-render only when the count changes.
+            </p>
+
+            <pre><code>// CartBadge.razor
+@@inherits RfEventComponent
+
+&lt;span class="tag @@(_pulse ? "is-warning" : "")"&gt;@@Count&lt;/span&gt;</code></pre>
+
+            <pre><code>// CartBadge.razor.cs
+public partial class CartBadge
+{
+    [UseState(Select = nameof(SelectCount))]
+    private partial int Count { get; }
+
+    private static int SelectCount(CartState s) =&gt; s.Count;
+
+    [Subscribe]
+    private void OnItemAdded(ItemAdded e) =&gt; _pulse = true;
+
+    private bool _pulse;
+}</code></pre>
+
+            <h2>Scope a Subtree</h2>
+
+            <p>
+                Wrap a subtree in <code>EventScope</code> and <code>StateScope</code> so each instance gets its own event channel
+                and its own copy of the state.
+            </p>
+
+            <pre><code>&lt;EventScope Name="checkout"&gt;
+    &lt;StateScope TState="CheckoutForm"&gt;
+        &lt;AddressForm /&gt;
+        &lt;PaymentForm /&gt;
+    &lt;/StateScope&gt;
+    &lt;OrderSummary /&gt;
+&lt;/EventScope&gt;</code></pre>
+
+            <h2>Render Mode Support</h2>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>Mode</th>
+                        <th>Support</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Static SSR</td>
+                        <td>Full within the request: one hub per request. Nothing updates after the HTML is sent.</td>
+                    </tr>
+                    <tr>
+                        <td>Interactive Server</td>
+                        <td>Full. One hub per circuit (per user).</td>
+                    </tr>
+                    <tr>
+                        <td>Interactive WebAssembly</td>
+                        <td>Full. One hub per browser app instance.</td>
+                    </tr>
+                    <tr>
+                        <td>Interactive Auto</td>
+                        <td>Full, within whichever runtime the component is running in.</td>
+                    </tr>
+                    <tr>
+                        <td>Prerendering</td>
+                        <td>
+                            Prerendered HTML reflects state loaded during the render. Opt-in <code>PersistState(...)</code> carries
+                            root state into the interactive session.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Server and WebAssembly islands on one page</td>
+                        <td>Not supported. Separate containers mean separate hubs.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Diagnostics</h2>
+
+            <p>
+                The analyzer that ships with the package reports these at build time. Errors stop the build; warnings and info
+                point at likely bugs. <a href="/events/tutorials/12-troubleshooting">Troubleshooting</a> explains each fix.
+            </p>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Severity</th>
+                        <th>Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var diagnostic in Diagnostics)
+                    {
+                        <tr>
+                            <td><code>@diagnostic.Id</code></td>
+                            <td>@diagnostic.Severity</td>
+                            <td>@diagnostic.Meaning</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </BasicUsage>
+
+</ComponentDetail>
+
+@code {
+
+    private static string EventsSource(string path) =>
+        $"https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Events/{path}";
+
+    // The tutorials are listed here until the tutorial pages share one list with their layout.
+    private static readonly (string Title, string Url)[] Tutorials =
+    [
+        ("01 Setup", "/events/tutorials/01-setup"),
+        ("02 State", "/events/tutorials/02-state"),
+        ("03 State with Cascades", "/events/tutorials/03-state-with-cascades"),
+        ("04 Events", "/events/tutorials/04-events"),
+        ("05 Scopes and Routing", "/events/tutorials/05-scopes-and-routing"),
+        ("06 Scoped State", "/events/tutorials/06-scoped-state"),
+        ("07 Services and Background Work", "/events/tutorials/07-services-and-background-work"),
+        ("08 Prerendering and Persistence", "/events/tutorials/08-prerendering-and-persistence"),
+        ("09 Render Modes", "/events/tutorials/09-render-modes"),
+        ("10 Manual Registration", "/events/tutorials/10-manual-registration"),
+        ("11 Testing with bUnit", "/events/tutorials/11-testing-with-bunit"),
+        ("12 Troubleshooting", "/events/tutorials/12-troubleshooting"),
+        ("13 Best Practices", "/events/tutorials/13-best-practices"),
+    ];
+
+    private static readonly (string Id, string Severity, string Meaning)[] Diagnostics =
+    [
+        ("RFEVT001", "Error", "Attribute used in a .razor @code block. Move the member to the .razor.cs code-behind."),
+        ("RFEVT002", "Error", "The type, or a type containing it, is not partial."),
+        ("RFEVT003", "Error", "The type does not derive from RfEventComponent. Add @inherits RfEventComponent."),
+        ("RFEVT004", "Error", "Invalid [Subscribe] signature."),
+        ("RFEVT005", "Error", "The handler's first parameter is not an IEvent."),
+        ("RFEVT006", "Error", "A [UseState] property is not a partial get-only declaration."),
+        ("RFEVT007", "Error", "A [UseState] property type is not a state type. Use IState<T> or add Select."),
+        ("RFEVT008", "Error", "Invalid selector."),
+        ("RFEVT009", "Error", "Attributes and a RegisterSubscriptions override in the same component."),
+        ("RFEVT010", "Warning", "Inconsistent Scope and ScopeName."),
+        ("RFEVT011", "Warning", "Two handlers for the same event in one component."),
+        ("RFEVT012", "Info", "The event type is not immutable. Use a record with init-only properties."),
+        ("RFEVT013", "Warning", "The state type is not a record."),
+        ("RFEVT014", "Warning", "The component implements IDisposable or IAsyncDisposable itself. Override DisposeAsyncCore instead."),
+    ];
+
+}
