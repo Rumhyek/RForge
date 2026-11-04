@@ -1,0 +1,279 @@
+@page "/events/tutorials/11-testing-with-bunit"
+
+<TutorialDetail Slug="11-testing-with-bunit">
+<p><strong>Goal:</strong> unit-test event-aware components: render them, change state, publish events, and assert on the result.</p>
+
+<p>The examples test components from the <a href="/events/tutorials/02-state">State</a>, <a href="/events/tutorials/04-events">Events</a>, <a href="/events/tutorials/06-scoped-state">Scoped state</a> and <a href="/events/tutorials/08-prerendering-and-persistence">Persistence</a> tutorials. The patterns apply to any component.</p>
+
+<h2 id="1-create-the-test-project">1. Create the test project</h2>
+
+<pre><code>&lt;!-- MyApp.Tests/MyApp.Tests.csproj --&gt;
+&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net10.0&lt;/TargetFramework&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+    &lt;IsPackable&gt;false&lt;/IsPackable&gt;
+  &lt;/PropertyGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include="bunit" Version="2.11.3" /&gt;
+    &lt;PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" /&gt;
+    &lt;PackageReference Include="xunit" Version="2.9.3" /&gt;
+    &lt;PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" /&gt;
+  &lt;/ItemGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;ProjectReference Include="..\MyApp.Client\MyApp.Client.csproj" /&gt;
+  &lt;/ItemGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;Using Include="Xunit" /&gt;
+  &lt;/ItemGroup&gt;
+
+&lt;/Project&gt;</code></pre>
+
+<p>The components are already compiled (with generated code) in <code>MyApp.Client</code>, and the <code>RForge.Blazor.Events</code> runtime reaches the tests through that project reference. Add a <code>RForge.Blazor.Events</code> package reference to the test project only if it defines event-aware test components of its own that use <code>[Subscribe]</code> or <code>[UseState]</code>.</p>
+
+<h2 id="2-a-base-class-for-hub-tests">2. A base class for hub tests</h2>
+
+<p>Every test needs the same three things: a hub, a render mode, and a way to reach the hub:</p>
+
+<pre><code>// MyApp.Tests/EventTestContext.cs
+using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using RForge.Blazor.Events;
+
+namespace MyApp.Tests;
+
+public abstract class EventTestContext : BunitContext
+{
+    protected EventTestContext()
+    {
+        Services.AddRForgeEvents();
+
+        // RfEventComponent reads RendererInfo; bUnit requires it to be set explicitly.
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+    }
+
+    /// &lt;summary&gt;The root hub the rendered components use.&lt;/summary&gt;
+    protected IRfEventHub Hub =&gt; Services.GetRequiredService&lt;IRfEventHub&gt;();
+}</code></pre>
+
+<h2 id="3-test-state">3. Test state</h2>
+
+<pre><code>// MyApp.Tests/CounterTests.cs
+using Bunit;
+using MyApp.Client.Features.Counter;
+using MyApp.Client.Features.Counter.Components;
+using RForge.Blazor.Events;
+
+namespace MyApp.Tests;
+
+public sealed class CounterTests : EventTestContext
+{
+    [Fact]
+    public void Display_shows_the_initial_state()
+    {
+        var cut = Render&lt;CounterDisplay&gt;();
+
+        Assert.Contains("Count: 0", cut.Markup);
+    }
+
+    [Fact]
+    public void Seeded_state_is_shown_on_first_render()
+    {
+        Hub.State&lt;CounterState&gt;().Set(new CounterState(Count: 41, Step: 1)); // arrange before rendering
+
+        var cut = Render&lt;CounterDisplay&gt;();
+
+        Assert.Contains("Count: 41", cut.Markup);
+    }
+
+    [Fact]
+    public async Task Display_rerenders_when_state_changes()
+    {
+        var cut = Render&lt;CounterDisplay&gt;();
+
+        // Write through the renderer's dispatcher, as the app would.
+        await cut.InvokeAsync(() =&gt; Hub.State&lt;CounterState&gt;().Update(s =&gt; s with { Count = 5 }));
+
+        Assert.Contains("Count: 5", cut.Markup);
+    }
+
+    [Fact]
+    public void Buttons_write_to_state()
+    {
+        var cut = Render&lt;CounterButtons&gt;();
+
+        cut.Find("button.btn-primary").Click();
+        cut.Find("button.btn-primary").Click();
+
+        Assert.Equal(2, Hub.State&lt;CounterState&gt;().Value.Count);
+    }
+
+    [Fact]
+    public async Task Writes_from_another_thread_are_rendered()
+    {
+        var cut = Render&lt;CounterDisplay&gt;();
+
+        await Task.Run(() =&gt; Hub.State&lt;CounterState&gt;().Set(new CounterState(7, 1)));
+
+        // The component re-renders asynchronously via InvokeAsync, so wait for it.
+        cut.WaitForAssertion(() =&gt; Assert.Contains("Count: 7", cut.Markup));
+    }
+}</code></pre>
+
+<h2 id="4-test-events">4. Test events</h2>
+
+<pre><code>// MyApp.Tests/ToastTests.cs
+using Bunit;
+using MyApp.Client.Features.Toasts;
+using MyApp.Client.Features.Toasts.Components;
+using RForge.Blazor.Events;
+
+namespace MyApp.Tests;
+
+public sealed class ToastTests : EventTestContext
+{
+    [Fact]
+    public async Task Host_shows_published_toasts()
+    {
+        var cut = Render&lt;ToastHost&gt;();
+
+        await cut.InvokeAsync(() =&gt; Hub.PublishAsync(new ToastRequested("Hello", ToastLevel.Success)).AsTask());
+
+        Assert.Contains("Hello", cut.Find(".alert-success").TextContent);
+    }
+
+    [Fact]
+    public async Task Dismissing_publishes_an_event()
+    {
+        var dismissed = new List&lt;ToastDismissed&gt;();
+        using var spy = Hub.Subscribe&lt;ToastDismissed&gt;((e, _) =&gt;
+        {
+            dismissed.Add(e);
+            return ValueTask.CompletedTask;
+        });
+        var cut = Render&lt;ToastHost&gt;();
+        await cut.InvokeAsync(() =&gt; Hub.PublishAsync(new ToastRequested("Bye")).AsTask());
+
+        cut.Find(".btn-close").Click();
+
+        Assert.Single(dismissed);
+        Assert.Empty(cut.FindAll(".alert"));
+    }
+}</code></pre>
+
+<p>A <strong>spy subscription</strong> (<code>Hub.Subscribe</code> in the test) is the easiest way to assert that a component <em>published</em> something.</p>
+
+<h2 id="5-test-scoped-state">5. Test scoped state</h2>
+
+<pre><code>// MyApp.Tests/PollTests.cs
+using Bunit;
+using MyApp.Client.Features.Polls;
+using MyApp.Client.Features.Polls.Components;
+using RForge.Blazor.Events;
+
+namespace MyApp.Tests;
+
+public sealed class PollTests : EventTestContext
+{
+    [Fact]
+    public void Votes_stay_inside_their_card()
+    {
+        var cut = Render&lt;PollCard&gt;(p =&gt; p.Add(x =&gt; x.Poll, PollState.Create("Lunch?", "Pizza", "Sushi")));
+
+        cut.FindAll("button").First(b =&gt; b.TextContent.StartsWith("Pizza")).Click();
+
+        Assert.Contains("1 vote(s)", cut.Markup);                 // the card's own instance changed
+        Assert.Equal(0, Hub.State&lt;PollState&gt;().Value.TotalVotes); // the root instance didn't
+    }
+}</code></pre>
+
+<h2 id="6-test-prerendering-and-persistence">6. Test prerendering and persistence</h2>
+
+<p>Simulate a prerendered page by marking the renderer as non-interactive, and fake the persisted data with bUnit's persistent-state double. <strong>Register services before calling <code>Persist</code></strong>: bUnit locks the service collection at that point.</p>
+
+<pre><code>// MyApp.Tests/ProfileTests.cs
+using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using MyApp.Client.Features.Profile;
+using MyApp.Client.Features.Profile.Components;
+using RForge.Blazor.Events;
+
+namespace MyApp.Tests;
+
+public sealed class ProfileTests
+{
+    [Fact]
+    public void Card_shows_profile_loaded_later_in_the_same_prerender()
+    {
+        using var ctx = new BunitContext();
+        ctx.Services.AddRForgeEvents();
+        ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false)); // like a prerender
+
+        var cut = ctx.Render&lt;ProfileLoaderAndCard&gt;();
+
+        cut.WaitForAssertion(() =&gt; Assert.Contains("Ada Lovelace", cut.Markup));
+    }
+
+    [Fact]
+    public void Restored_profile_is_not_loaded_again()
+    {
+        using var ctx = new BunitContext();
+        ctx.Services.AddRForgeEvents(o =&gt; o.PersistState&lt;ProfileState&gt;()); // reflection JSON is fine in tests
+        var persisted = ctx.AddBunitPersistentComponentState();
+        persisted.Persist(
+            "RForge.Blazor.Events:MyApp.Client.Features.Profile.ProfileState", // key: RForge.Blazor.Events:{FullName}
+            """{"DisplayName":"Restored","Email":"r@@example.com","LoadedAt":"2026-01-01T00:00:00"}""");
+        ctx.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+
+        var cut = ctx.Render&lt;ProfileLoaderAndCard&gt;();
+
+        Assert.Contains("Restored", cut.Markup); // the loader saw IsLoaded and skipped its own load
+    }
+}
+
+/// &lt;summary&gt;Test host rendering the loader and the card together, as the page does.&lt;/summary&gt;
+public sealed class ProfileLoaderAndCard : ComponentBase
+{
+    protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+    {
+        builder.OpenComponent&lt;ProfileLoader&gt;(0);
+        builder.CloseComponent();
+        builder.OpenComponent&lt;ProfileCard&gt;(1);
+        builder.CloseComponent();
+    }
+}</code></pre>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>One <code>BunitContext</code> per test</strong> (xUnit creates a new test-class instance per test, so inheriting from <code>EventTestContext</code> gives you that for free). Each context has its own hub, so tests can't leak state into each other.</li>
+<li><strong>Arrange state through <code>Hub.State&lt;T&gt;()</code> before rendering</strong> rather than clicking through the UI to get there.</li>
+<li><strong>Change state and publish inside <code>cut.InvokeAsync</code></strong>, which is how the app's renderer would run it.</li>
+<li><strong>Use <code>WaitForAssertion</code> for off-thread or delayed work.</strong> Don't use <code>Thread.Sleep</code>.</li>
+<li><strong>Assert on markup for readers, and on spies or stores for writers.</strong></li>
+<li><strong>Put the test project next to the app</strong> (<code>MyApp.Tests/</code>) with one test class per feature (<code>CounterTests</code>, <code>ToastTests</code>, …).</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>MissingRendererInfoException</code></td><td><code>SetRendererInfo</code> not called</td><td>Call it in the test base constructor</td></tr>
+<tr><td><code>No registered service of type 'IRfEventHub'</code></td><td><code>Services.AddRForgeEvents()</code> missing</td><td>Add it before the first <code>Render</code></td></tr>
+<tr><td><code>InvalidOperationException</code> when calling <code>AddRForgeEvents</code> after <code>Persist</code></td><td>bUnit locked the services</td><td>Register services first, then <code>Persist</code></td></tr>
+<tr><td>Assertion runs before the re-render</td><td>Write happened off the renderer</td><td>Use <code>cut.InvokeAsync(...)</code> or <code>WaitForAssertion</code></td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/12-troubleshooting">12 · Troubleshooting</a></p>
+</TutorialDetail>

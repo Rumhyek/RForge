@@ -1,0 +1,161 @@
+@page "/events/tutorials/08-prerendering-and-persistence"
+
+<TutorialDetail Slug="08-prerendering-and-persistence">
+<p><strong>Goal:</strong> load state once during prerendering, show it in the prerendered HTML, and keep it when the page becomes interactive, with no second load and no flash of empty content.</p>
+
+<p><em>See it running:</em> the <strong>Checkout</strong> sample page (<a href="/events/example/checkout"><code>/events/example/checkout</code></a>). Reload it and read the note under the cart.</p>
+
+<h2 id="the-problem">The problem</h2>
+
+<p>A prerendered interactive page is rendered <strong>twice</strong>:</p>
+
+<ol>
+<li><strong>Prerender:</strong> on the server, in a throwaway request scope with its <strong>own</strong> hub. The HTML is sent to the browser.</li>
+<li><strong>Interactive:</strong> a new circuit (or the WebAssembly runtime) starts with a <strong>new</strong> hub, starting from <code>Initial</code>.</li>
+</ol>
+
+<p>So state loaded in step 1 is gone in step 2. The component loads again, and the UI may flash back to the initial value in between. Persistence carries chosen root state across.</p>
+
+<h2 id="1-define-the-state">1. Define the state</h2>
+
+<pre><code>// MyApp.Client/Features/Profile/ProfileState.cs
+using System.Text.Json.Serialization;
+
+namespace MyApp.Client.Features.Profile;
+
+public sealed record ProfileState(string? DisplayName, string? Email, DateTime? LoadedAt) : IState&lt;ProfileState&gt;
+{
+    public static ProfileState Initial =&gt; new(null, null, null);
+
+    /// &lt;summary&gt;Derived values aren't persisted; they're recomputed after restore.&lt;/summary&gt;
+    [JsonIgnore]
+    public bool IsLoaded =&gt; LoadedAt is not null;
+}</code></pre>
+
+<h2 id="2-add-json-metadata">2. Add JSON metadata</h2>
+
+<p>Persistence serializes state to JSON. For trimmed or AOT WebAssembly apps, use a source-generated <code>JsonSerializerContext</code>:</p>
+
+<pre><code>// MyApp.Client/AppJsonContext.cs
+using System.Text.Json.Serialization;
+using MyApp.Client.Features.Profile;
+
+namespace MyApp.Client;
+
+/// &lt;summary&gt;One context for every persisted state type in the app.&lt;/summary&gt;
+[JsonSerializable(typeof(ProfileState))]
+internal sealed partial class AppJsonContext : JsonSerializerContext;</code></pre>
+
+<h2 id="3-opt-the-state-into-persistence">3. Opt the state into persistence</h2>
+
+<pre><code>// MyApp.Client/EventHubSetup.cs (excerpt)
+public static void Configure(RfEventOptions options)
+{
+    options.PersistState(AppJsonContext.Default.ProfileState);
+}</code></pre>
+
+<p><code>options.PersistState&lt;ProfileState&gt;()</code> (no argument) also works. It uses reflection-based JSON and is marked <code>[RequiresUnreferencedCode]</code>, so prefer the <code>JsonTypeInfo</code> overload in anything that runs in WebAssembly.</p>
+
+<h2 id="4-load-only-if-needed">4. Load only if needed</h2>
+
+<p>The loader must not overwrite restored data. Check first:</p>
+
+<pre><code>// MyApp.Client/Features/Profile/Components/ProfileLoader.cs
+namespace MyApp.Client.Features.Profile.Components;
+
+/// &lt;summary&gt;Invisible component that loads the profile once, during prerendering if the page prerenders.&lt;/summary&gt;
+public sealed class ProfileLoader : RfEventComponent
+{
+    protected override async Task OnInitializedAsync()
+    {
+        var profile = State&lt;ProfileState&gt;();
+        if (profile.Value.IsLoaded)
+        {
+            return; // restored from the prerender (or loaded earlier in this session)
+        }
+
+        await Task.Delay(100); // stand-in for an API or database call
+        profile.Set(new ProfileState("Ada Lovelace", "ada@@example.com", DateTime.Now));
+    }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Profile/Components/ProfileCard.razor *@@
+@@inherits RfEventComponent
+
+@@if (Profile.IsLoaded)
+{
+    &lt;p&gt;Signed in as &lt;strong&gt;@@Profile.DisplayName&lt;/strong&gt; (@@Profile.Email)&lt;/p&gt;
+    &lt;small class="text-body-secondary"&gt;Loaded at @@Profile.LoadedAt?.ToLongTimeString() (now rendering in @@RendererInfo.Name)&lt;/small&gt;
+}
+else
+{
+    &lt;p&gt;Loading…&lt;/p&gt;
+}</code></pre>
+
+<pre><code>// MyApp.Client/Features/Profile/Components/ProfileCard.razor.cs
+namespace MyApp.Client.Features.Profile.Components;
+
+public partial class ProfileCard
+{
+    [UseState]
+    private partial ProfileState Profile { get; }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Pages/ProfilePage.razor *@@
+@@page "/profile"
+@@rendermode InteractiveAuto
+@@using MyApp.Client.Features.Profile.Components
+
+&lt;ProfileLoader /&gt;
+&lt;ProfileCard /&gt;</code></pre>
+
+<p>Open <code>/profile</code>, then view the page source. The prerendered HTML already contains <em>"Signed in as Ada Lovelace"</em>. When the page becomes interactive, the time shown doesn't change: the data came from the prerender, not from a second load.</p>
+
+<blockquote>
+<p><code>ProfileCard</code> renders <strong>before</strong> <code>ProfileLoader</code> finishes its <code>await</code>, yet the prerendered HTML is still correct. During prerendering, Blazor keeps rendering until async initialization settles, and hub subscriptions are active during that time, so <code>ProfileCard</code> re-renders when the profile arrives.</p>
+</blockquote>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li>During prerendering, the hub registers a callback with <code>PersistentComponentState</code>. When the prerender ends, it serializes the current <strong>root</strong> value of each opted-in state into the page.</li>
+<li>When the interactive hub first creates that store, it takes the persisted value instead of <code>Initial</code>.</li>
+<li>The data is written for both the Server and the WebAssembly runtime, so it works with Server, WebAssembly and Auto pages.</li>
+</ul>
+
+<h2 id="limits">Limits</h2>
+
+<ul>
+<li><strong>Only root state</strong> is persisted. <code>StateScope</code> instances aren't, because there's no stable identity to match a prerendered scope to its interactive twin.</li>
+<li><strong>Events are never persisted</strong>: they're fire-and-forget.</li>
+<li><strong>Persistence only bridges prerender → interactive.</strong> It doesn't carry state from a Server-phase Auto page to a later WebAssembly-phase page. For that, reload from your API.</li>
+</ul>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>Keep one <code>AppJsonContext</code> in the Client project</strong> listing every persisted state type, next to <code>EventHubSetup.cs</code>.</li>
+<li><strong>Persist only what's expensive to load</strong> (API/database results). Cheap UI state can just start from <code>Initial</code>.</li>
+<li><strong>Always "load if not loaded".</strong> Give the state a way to tell (<code>IsLoaded</code>, a timestamp, a non-null field).</li>
+<li><strong>Mark derived properties <code>[JsonIgnore]</code></strong> so only source data is serialized.</li>
+<li><strong>Load in one place</strong> (a loader component or the page) rather than in every component that reads the state.</li>
+<li><strong>Disable prerendering</strong> (<code>prerender: false</code>) for pages whose data is user-specific and cheap to fetch, or that start background work. Persistence is for when you want the prerendered HTML.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>Data flashes to empty, then reappears</td><td>State not opted in</td><td>Add <code>options.PersistState(…)</code> in <code>EventHubSetup.Configure</code></td></tr>
+<tr><td>Data loads twice</td><td>Loader doesn't check for restored data</td><td>"Load if not loaded" (step 4)</td></tr>
+<tr><td>Works on Server, not on WebAssembly</td><td><code>PersistState</code> configured only in the server <code>Program.cs</code></td><td>Configure in the shared <code>EventHubSetup</code></td></tr>
+<tr><td>Trimming warnings (IL2026) in the Client project</td><td>Using <code>PersistState&lt;T&gt;()</code> without metadata</td><td>Use <code>PersistState(AppJsonContext.Default.T)</code></td></tr>
+<tr><td>Deserialization fails after a deploy</td><td>Persisted shape changed between prerender and interactive</td><td>The hub logs the error and falls back to <code>Initial</code>. Keep persisted records backward compatible</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/09-render-modes">09 · Render modes</a></p>
+</TutorialDetail>
