@@ -1,0 +1,21 @@
+@* A plain component: everything inside the StateScope gets this widget's own TodoListState and scope. *@
+<StateScope TState="TodoListState" Name="widget" Initial="@(new TodoListState(Title, []))">
+    <section class="card todo-widget">
+        <header class="card-header">
+            <div class="card-header-title"><TodoHeader OnRemove="OnRemove" /></div>
+        </header>
+        <div class="card-content">
+            <TodoInput />
+            <TodoItems />
+        </div>
+        <footer class="card-footer"><div class="card-footer-item is-block"><TodoStats /></div></footer>
+    </section>
+</StateScope>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+}

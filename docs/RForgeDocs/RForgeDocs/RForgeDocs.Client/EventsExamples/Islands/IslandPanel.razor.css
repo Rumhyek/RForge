@@ -1,0 +1,11 @@
+.island {
+    border-left: 4px solid #b5b5b5;
+}
+
+    .island.is-server {
+        border-left-color: #3273dc;
+    }
+
+    .island.is-webassembly {
+        border-left-color: #6f42c1;
+    }

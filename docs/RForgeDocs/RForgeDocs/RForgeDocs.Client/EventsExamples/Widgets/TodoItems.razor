@@ -1,0 +1,20 @@
+@inherits RfEventComponent
+
+@if (List.Items.Count == 0)
+{
+    <p class="is-size-7 has-text-grey">Nothing here yet.</p>
+}
+else
+{
+    <ul>
+        @foreach (var item in List.Items)
+        {
+            <li @key="item.Id">
+                <label class="checkbox @(item.Done ? "has-text-grey is-line-through" : "")">
+                    <input type="checkbox" checked="@item.Done" @onchange="() => ToggleAsync(item)" />
+                    @item.Title
+                </label>
+            </li>
+        }
+    </ul>
+}

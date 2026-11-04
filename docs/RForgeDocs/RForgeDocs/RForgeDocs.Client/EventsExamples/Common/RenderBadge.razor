@@ -1,0 +1,7 @@
+@* Shows how many times the parent has rendered. Usage: <RenderBadge Count="@(++_renders)" /> *@
+<span class="tag is-light is-family-monospace" title="How many times this component has rendered">renders: @Count</span>
+
+@code {
+    [Parameter]
+    public int Count { get; set; }
+}

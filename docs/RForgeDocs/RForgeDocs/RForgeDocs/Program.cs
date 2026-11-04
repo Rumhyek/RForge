@@ -2,6 +2,8 @@ using RForgeDocs;
 using RForgeDocs.Components;
 using RForgeDocs.EndPoints;
 using RForge.Blazor;
+using RForge.Blazor.Events;
+using RForgeDocs.Client.EventsExamples;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,10 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddRfForgeBlazorServices();
+
+// One root event hub per circuit (and per request for static rendering and prerendering).
+// The WebAssembly client registers its own hub with the same configuration.
+builder.Services.AddRForgeEvents(EventsDemoHub.Configure);
 
 IocConfig.Register(builder.Configuration, builder.Services);
 
