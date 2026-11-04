@@ -1,0 +1,31 @@
+@inherits RfEventComponent
+
+<section class="card">
+    <header class="card-header">
+        <p class="card-header-title">Cart</p>
+        <div class="card-header-icon">
+            <button class="button is-small" disabled="@(Cart.Lines.Count == 0)" @onclick="Empty">Empty</button>
+        </div>
+    </header>
+    @if (Cart.Lines.Count == 0)
+    {
+        <div class="px-4 py-2 is-size-7 has-text-grey">Your cart is empty.</div>
+    }
+    @foreach (var line in Cart.Lines)
+    {
+        <div class="is-flex px-4 py-2 is-size-7 cart-line" @key="line.ProductId">
+            <span class="is-flex-grow-1">@line.Emoji @line.Name × @line.Quantity</span>
+            <span>@((line.Price * line.Quantity).ToString("C"))</span>
+        </div>
+    }
+    <footer class="card-footer">
+        <div class="card-footer-item is-justify-content-space-between is-size-7">
+            <strong>Total</strong>
+            <strong>@Cart.Total.ToString("C")</strong>
+        </div>
+    </footer>
+    @if (Cart.Source is not null)
+    {
+        <div class="px-4 py-2 is-size-7 has-text-grey cart-source">@Cart.Source</div>
+    }
+</section>

@@ -1,0 +1,61 @@
+@page "/events/example/render-modes"
+@* No @rendermode: this page is statically rendered and hosts interactive islands. *@
+
+<ExampleDetail Title="Render Modes"
+               SubTitle="Events"
+               ComponentName="Events"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs/Components/Pages/Examples/Events/RenderModesPage.razor")"
+               ComponentDetailsUrl="/events/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <ExampleHeader Level="Complex" Mode="Static SSR + Server &amp; WebAssembly islands">
+                        The same component in five islands. Islands share a hub only when they share a DI container, which is
+                        the boundary documented in the <a href="/events/tutorials/09-render-modes">render modes tutorial</a>.
+                    </ExampleHeader>
+
+                    <HowItWorks>
+                        <p><strong>Try it:</strong> increment and ping from each island. Wait for the WebAssembly islands to become interactive first.</p>
+                        <ul>
+                            <li><strong>A, B and E share</strong> a count and pings: every Interactive Server island on a page lives in the same circuit, so they resolve the same Scoped <code>IRfEventHub</code>.</li>
+                            <li><strong>C and D share</strong> with each other: all WebAssembly islands share one runtime and one DI container (the client <code>Program.cs</code> calls <code>AddRForgeEvents</code> too).</li>
+                            <li><strong>Server and WebAssembly islands never share.</strong> They're different DI containers. The library deliberately has no JS bridge.</li>
+                            <li><strong>E shows the cascade caveat.</strong> An <code>EventScope</code> declared in static markup doesn't reach an island inside it. Declare scopes <em>inside</em> interactive components.</li>
+                            <li>The static reader at the top got a value from the request's own throwaway hub. Static and prerendered components read state but never subscribe.</li>
+                        </ul>
+                    </HowItWorks>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+            <StaticStateReader />
+
+            <div class="columns mt-3">
+                <div class="column is-6">
+                    <h2 class="title is-6">Interactive Server: one circuit, one hub</h2>
+                    <div class="is-flex is-flex-direction-column is-gap-3">
+                        <IslandPanel Name="Server A" Mode="Server" @rendermode="InteractiveServer" />
+                        <IslandPanel Name="Server B" Mode="Server" @rendermode="InteractiveServer" />
+                        <EventScope Name="static-scope">
+                            @* This EventScope is rendered statically. Its cascade can't cross into the island,
+                               so island E ends up on the circuit's root hub, the same one A and B use. *@
+                            <IslandPanel Name="Server E (inside a static EventScope)" Mode="Server" @rendermode="InteractiveServer" />
+                        </EventScope>
+                    </div>
+                </div>
+                <div class="column is-6">
+                    <h2 class="title is-6">Interactive WebAssembly: one runtime, one hub</h2>
+                    <div class="is-flex is-flex-direction-column is-gap-3">
+                        <IslandPanel Name="WASM C" Mode="WebAssembly" @rendermode="InteractiveWebAssembly" />
+                        <IslandPanel Name="WASM D" Mode="WebAssembly" @rendermode="InteractiveWebAssembly" />
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+</div>

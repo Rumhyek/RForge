@@ -1,0 +1,25 @@
+.checkout-steps {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.85rem;
+}
+
+    .checkout-steps li {
+        padding: 0.15rem 0.6rem;
+        border-radius: 1rem;
+        background: #ededed;
+        color: #6c757d;
+    }
+
+        .checkout-steps li.active {
+            background: #485fc7;
+            color: #fff;
+        }
+
+        .checkout-steps li.done {
+            background: #d1f2de;
+            color: #0f5132;
+        }

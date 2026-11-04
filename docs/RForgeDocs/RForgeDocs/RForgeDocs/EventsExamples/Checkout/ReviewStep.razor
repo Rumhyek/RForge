@@ -1,0 +1,20 @@
+@inherits RfEventComponent
+
+@if (Form.Status == CheckoutStatus.Editing && Form.Step == 3)
+{
+    <div class="columns is-multiline is-mobile is-gapless is-size-7 mb-2">
+        <div class="column is-4 has-text-weight-semibold">Name</div><div class="column is-8">@Form.Name</div>
+        <div class="column is-4 has-text-weight-semibold">Email</div><div class="column is-8">@Form.Email</div>
+        <div class="column is-4 has-text-weight-semibold">Address</div><div class="column is-8">@Form.Address</div>
+        <div class="column is-4 has-text-weight-semibold">Card</div><div class="column is-8">•••• @Last4(Form.Card)</div>
+        <div class="column is-4 has-text-weight-semibold">Items</div><div class="column is-8">@Cart.Count (@Cart.Total.ToString("C"))</div>
+    </div>
+    <div class="buttons is-right">
+        <button class="button" @onclick="Back">Back</button>
+        <button class="button is-success" disabled="@(Cart.Count == 0)" @onclick="PlaceOrderAsync">Place order</button>
+    </div>
+    @if (Cart.Count == 0)
+    {
+        <div class="has-text-danger is-size-7 has-text-right">Add something to the cart first.</div>
+    }
+}

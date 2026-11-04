@@ -1,0 +1,15 @@
+@inherits RfEventComponent
+
+@if (IsActive)
+{
+    <form class="is-flex is-flex-direction-column is-gap-2" @onsubmit="Continue">
+        <input class="input" placeholder="Full name" @bind="_name" />
+        <input class="input" placeholder="Email (try one containing “crash”)" @bind="_email" />
+        <input class="input" placeholder="Address" @bind="_address" />
+        <button class="button is-primary is-align-self-flex-end" type="submit">Continue to payment</button>
+        @if (_error is not null)
+        {
+            <div class="has-text-danger is-size-7">@_error</div>
+        }
+    </form>
+}

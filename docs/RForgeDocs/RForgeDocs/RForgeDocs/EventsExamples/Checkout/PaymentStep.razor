@@ -1,0 +1,12 @@
+@inherits RfEventComponent
+
+@if (IsActive)
+{
+    <form class="is-flex is-flex-direction-column is-gap-2" @onsubmit="Continue">
+        <input class="input" placeholder="Card number (any value)" @bind="_card" />
+        <div class="buttons is-right">
+            <button class="button" type="button" @onclick="Back">Back</button>
+            <button class="button is-primary" type="submit" disabled="@string.IsNullOrWhiteSpace(_card)">Review order</button>
+        </div>
+    </form>
+}

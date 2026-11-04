@@ -1,0 +1,64 @@
+@page "/events/example/checkout"
+
+@rendermode InteractiveServer
+
+<ExampleDetail Title="Checkout"
+               SubTitle="Events"
+               ComponentName="Events"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs/Components/Pages/Examples/Events/CheckoutPage.razor")"
+               ComponentDetailsUrl="/events/details" />
+
+<SavedCartLoader />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <ExampleHeader Level="Complex" Mode="Interactive Server (prerendered)">
+                        A storefront with a root cart and a self-contained checkout flow. It combines named scopes, async
+                        handlers, error isolation and state carried over from prerendering.
+                    </ExampleHeader>
+
+                    <HowItWorks>
+                        <p><strong>Try it:</strong> reload the page and read the note under the cart. Go through checkout, and once with an email containing <em>crash</em>.</p>
+                        <ul>
+                            <li><strong>Prerender persistence.</strong> <code>SavedCartLoader</code> fills <code>CartState</code> during prerendering. <code>PersistState(…CartState)</code> serializes it into the page, and the interactive circuit restores it instead of loading again. The time in the note is when the load ran: it stays at the page's load time, because the interactive circuit does not load a second time.</li>
+                            <li><strong>Root vs. scoped state.</strong> <code>CartState</code> lives at the root and is shared by the catalog, badge, summary and checkout. <code>CheckoutForm</code> lives in the checkout's <code>StateScope</code>.</li>
+                            <li><strong>Named route.</strong> <em>Place order</em> publishes <code>OrderSubmitted</code> with <code>Route.Named("checkout", Broadcast)</code>. The order log outside the scope never sees it (its counter stays 0).</li>
+                            <li><strong>Async handler + cancellation.</strong> <code>PaymentProcessor</code> awaits a fake payment with the handler's <code>CancellationToken</code>, which is cancelled if you navigate away. It then publishes <code>OrderConfirmed</code>, which bubbles up to the order log.</li>
+                            <li><strong>Error isolation.</strong> With an email containing <em>crash</em>, <code>AnalyticsTracker</code> throws. Its <code>ErrorBoundary</code> shows the error while the payment still completes.</li>
+                            <li><strong>Events + selectors.</strong> <code>CartBadge</code> re-renders for count changes (selector) and pulses on <code>ItemAdded</code> (event).</li>
+                        </ul>
+                    </HowItWorks>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+            <div class="is-flex is-align-items-center is-gap-3 mb-3">
+                <h2 class="title is-5 mb-0 is-flex-grow-1">Products</h2>
+                <CartBadge />
+            </div>
+
+            <div class="columns">
+                <div class="column is-7">
+                    <div class="columns is-multiline is-mobile">
+                        @foreach (var product in Catalog.Products)
+                        {
+                            <div class="column is-6-mobile is-4-tablet"><ProductCard Product="product" /></div>
+                        }
+                    </div>
+                    <CartSummary />
+                </div>
+                <div class="column is-5">
+                    <div class="is-flex is-flex-direction-column is-gap-3">
+                        <CheckoutPanel />
+                        <OrderLog />
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+</div>

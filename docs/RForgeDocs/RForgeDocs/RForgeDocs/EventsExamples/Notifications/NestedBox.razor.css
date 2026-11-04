@@ -1,0 +1,12 @@
+.nested-box {
+    border: 1px dashed #adb5bd;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.nested-label {
+    font-size: 0.7rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}

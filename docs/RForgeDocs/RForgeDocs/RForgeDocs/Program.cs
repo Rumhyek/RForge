@@ -4,6 +4,7 @@ using RForgeDocs.EndPoints;
 using RForge.Blazor;
 using RForge.Blazor.Events;
 using RForgeDocs.Client.EventsExamples;
+using RForgeDocs.EventsExamples.Dashboard;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,9 @@ builder.Services.AddRfForgeBlazorServices();
 // One root event hub per circuit (and per request for static rendering and prerendering).
 // The WebAssembly client registers its own hub with the same configuration.
 builder.Services.AddRForgeEvents(EventsDemoHub.Configure);
+
+// Server-only service that publishes from a timer thread (live dashboard example).
+builder.Services.AddScoped<MarketFeed>();
 
 IocConfig.Register(builder.Configuration, builder.Services);
 

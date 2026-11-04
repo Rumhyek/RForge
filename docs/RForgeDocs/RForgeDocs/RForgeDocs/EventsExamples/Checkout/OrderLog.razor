@@ -1,0 +1,21 @@
+@inherits RfEventComponent
+
+<section class="card">
+    <header class="card-header">
+        <p class="card-header-title">Order log <small class="has-text-grey ml-1">(outside the checkout scope)</small></p>
+        <div class="card-header-icon">
+            <span class="tag is-light" title="OrderSubmitted is broadcast inside the checkout only">OrderSubmitted seen here: @_submittedSeen</span>
+        </div>
+    </header>
+    @if (_orders.Count == 0)
+    {
+        <div class="px-4 py-2 is-size-7 has-text-grey">No orders yet.</div>
+    }
+    @foreach (var order in _orders)
+    {
+        <div class="is-flex px-4 py-2 is-size-7 order-line" @key="order.OrderId">
+            <span class="is-flex-grow-1">@order.At.ToString("HH:mm:ss") · @order.Items item(s)</span>
+            <strong>@order.Total.ToString("C")</strong>
+        </div>
+    }
+</section>

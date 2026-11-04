@@ -1,0 +1,8 @@
+.tick-tape {
+    max-height: 22rem;
+    overflow-y: auto;
+}
+
+.tick-line {
+    border-top: 1px solid #ededed;
+}

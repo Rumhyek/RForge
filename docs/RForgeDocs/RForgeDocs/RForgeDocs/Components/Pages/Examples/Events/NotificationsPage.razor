@@ -1,0 +1,74 @@
+@page "/events/example/notifications"
+
+@rendermode InteractiveServer
+
+<ExampleDetail Title="Notifications"
+               SubTitle="Events"
+               ComponentName="Events"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs/Components/Pages/Examples/Events/NotificationsPage.razor")"
+               ComponentDetailsUrl="/events/details" />
+
+<ToastHost />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <ExampleHeader Level="Simple" Mode="Interactive Server">
+                        Buttons four levels deep raise toasts in a host that sits somewhere else entirely, with no parameters or callbacks passed between them.
+                    </ExampleHeader>
+
+                    <HowItWorks>
+                        <p><strong>Try it:</strong> send a few notifications, hide the listeners, send more, then show them again.</p>
+                        <ul>
+                            <li><code>NotifyButton</code> publishes <code>ToastRequested</code> (an <code>IEvent</code>) and updates <code>NotificationStats</code> (an <code>IState</code>).</li>
+                            <li><code>ToastHost</code> subscribes with <code>[Subscribe(Scope = ScopeKind.Root)]</code>, so it hears publishes from anywhere.</li>
+                            <li><code>EventHistory</code> only counts events received <em>while mounted</em>. Events have no current value, so a late subscriber misses earlier ones.</li>
+                            <li><code>SentCounter</code> reads state, so it always shows the full total, including notifications sent while it was hidden.</li>
+                            <li>This page runs on Interactive Server, so the hub lives in the user's circuit. Another browser tab has its own circuit and its own hub.</li>
+                        </ul>
+                    </HowItWorks>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+            <div class="columns">
+                <div class="column is-7">
+                    <section class="card">
+                        <header class="card-header"><p class="card-header-title">Deeply nested publishers</p></header>
+                        <div class="card-content">
+                            <NestedBox Depth="4" />
+                        </div>
+                    </section>
+                </div>
+                <div class="column is-5">
+                    <section class="card">
+                        <header class="card-header"><p class="card-header-title">Events vs. state</p></header>
+                        <div class="card-content">
+                            <label class="checkbox mb-3">
+                                <input type="checkbox" @bind="_showListeners" />
+                                Show listeners
+                            </label>
+                            @if (_showListeners)
+                            {
+                                <div class="box p-3"><EventHistory /></div>
+                                <div class="box p-3"><SentCounter /></div>
+                            }
+                            else
+                            {
+                                <p class="has-text-grey">Listeners hidden. Send a few notifications, then show them again.</p>
+                            }
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </article>
+    </div>
+</div>
+
+@code {
+    private bool _showListeners = true;
+}

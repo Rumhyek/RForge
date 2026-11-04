@@ -1,0 +1,17 @@
+@inherits RfEventComponent
+
+<section class="card">
+    <header class="card-header">
+        <p class="card-header-title">Tick tape <small class="has-text-grey ml-1">(events)</small></p>
+    </header>
+    <div class="tick-tape">
+        @foreach (var tick in _ticks)
+        {
+            <div class="is-flex px-4 py-2 is-size-7 tick-line">
+                <span class="mr-2 has-text-grey">@tick.At.ToString("HH:mm:ss.f")</span>
+                <span class="is-flex-grow-1 has-text-weight-semibold">@tick.Symbol</span>
+                <span class="@(tick.Change >= 0 ? "has-text-success" : "has-text-danger")">@tick.Price.ToString("N2") (@tick.Change.ToString("+0.00;-0.00"))</span>
+            </div>
+        }
+    </div>
+</section>

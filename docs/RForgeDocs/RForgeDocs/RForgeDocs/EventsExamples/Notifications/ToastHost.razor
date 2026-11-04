@@ -1,0 +1,11 @@
+@inherits RfEventComponent
+
+<div class="toast-stack" aria-live="polite">
+    @foreach (var toast in _toasts)
+    {
+        <div @key="toast.Id" class="notification is-@CssFor(toast.Level) toast-item" role="status">
+            <button type="button" class="delete" aria-label="Close" @onclick="() => Dismiss(toast.Id)"></button>
+            @toast.Message
+        </div>
+    }
+</div>

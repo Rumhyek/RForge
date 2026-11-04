@@ -1,0 +1,10 @@
+@inherits RfEventComponent
+
+<div class="card">
+    <div class="card-content has-text-centered p-3">
+        <div class="product-emoji">@Product.Emoji</div>
+        <div class="has-text-weight-semibold">@Product.Name</div>
+        <div class="has-text-grey is-size-7 mb-2">@Product.Price.ToString("C")</div>
+        <button class="button is-small is-primary" @onclick="AddAsync">Add to cart</button>
+    </div>
+</div>

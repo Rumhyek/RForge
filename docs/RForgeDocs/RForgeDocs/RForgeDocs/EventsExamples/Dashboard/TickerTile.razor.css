@@ -1,0 +1,11 @@
+.ticker-tile {
+    transition: background-color 0.3s ease;
+}
+
+    .ticker-tile.up {
+        background-color: #e8f6ee;
+    }
+
+    .ticker-tile.down {
+        background-color: #fbeaea;
+    }
