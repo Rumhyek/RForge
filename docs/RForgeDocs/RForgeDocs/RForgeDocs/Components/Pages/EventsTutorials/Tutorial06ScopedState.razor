@@ -1,0 +1,216 @@
+@page "/events/tutorials/06-scoped-state"
+
+<TutorialDetail Slug="06-scoped-state">
+<p><strong>Goal:</strong> put the same widget on a page several times, each with its <strong>own</strong> copy of a state type, while code inside the widget stays as simple as with global state.</p>
+
+<p><em>See it running:</em> the <strong>Scoped widgets</strong> sample page (<a href="/events/example/scoped-widgets"><code>/events/example/scoped-widgets</code></a>) and the right half of <strong>Plain components</strong>.</p>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>By default every state type has one instance, at the root. <code>&lt;StateScope TState="X"&gt;</code> creates a new instance of <code>X</code> for its subtree. Inside the subtree, anything that asks for <code>X</code> (<code>[UseState]</code>, <code>State&lt;X&gt;()</code>) gets the <strong>nearest</strong> instance:</p>
+
+<pre><code>Root                              PollState #root
+├── PollCard "Lunch"
+│   └── StateScope&lt;PollState&gt;     PollState #1  ← everything inside resolves here
+└── PollCard "Offsite"
+    └── StateScope&lt;PollState&gt;     PollState #2</code></pre>
+
+<p>Components inside a poll don't know or care which instance they get. That's the point.</p>
+
+<h2 id="1-define-the-state">1. Define the state</h2>
+
+<pre><code>// MyApp.Client/Features/Polls/PollState.cs
+using System.Collections.Immutable;
+
+namespace MyApp.Client.Features.Polls;
+
+public sealed record PollState(string Question, ImmutableDictionary&lt;string, int&gt; Votes) : IState&lt;PollState&gt;
+{
+    public static PollState Initial =&gt; new("Untitled poll", ImmutableDictionary&lt;string, int&gt;.Empty);
+
+    public static PollState Create(string question, params string[] options) =&gt;
+        new(question, options.ToImmutableDictionary(o =&gt; o, _ =&gt; 0));
+
+    public int TotalVotes =&gt; Votes.Values.Sum();
+
+    public PollState Vote(string option) =&gt; this with { Votes = Votes.SetItem(option, Votes[option] + 1) };
+}</code></pre>
+
+<h2 id="2-wrap-the-widget-in-a-statescope">2. Wrap the widget in a <code>StateScope</code></h2>
+
+<pre><code>@@* MyApp.Client/Features/Polls/Components/PollCard.razor *@@
+&lt;StateScope TState="PollState" Initial="Poll"&gt;
+    &lt;div class="card mb-3"&gt;
+        &lt;div class="card-header"&gt;&lt;PollQuestion /&gt;&lt;/div&gt;
+        &lt;div class="card-body"&gt;&lt;PollOptions /&gt;&lt;/div&gt;
+        &lt;div class="card-footer"&gt;&lt;PollTotal /&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/StateScope&gt;
+
+@@code {
+    [Parameter, EditorRequired]
+    public PollState Poll { get; set; } = default!;
+}</code></pre>
+
+<p><code>Initial</code> is optional. Without it, the scope starts from <code>PollState.Initial</code>. It's <strong>read once</strong>: changing the parameter later doesn't reset the poll. Write to the store instead.</p>
+
+<h2 id="3-write-the-children-as-if-the-state-were-global">3. Write the children as if the state were global</h2>
+
+<pre><code>@@* MyApp.Client/Features/Polls/Components/PollQuestion.razor *@@
+@@inherits RfEventComponent
+
+&lt;strong&gt;@@Question&lt;/strong&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Polls/Components/PollQuestion.razor.cs
+namespace MyApp.Client.Features.Polls.Components;
+
+public partial class PollQuestion
+{
+    [UseState(Select = nameof(SelectQuestion))]
+    private partial string Question { get; }
+
+    private static string SelectQuestion(PollState poll) =&gt; poll.Question;
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Polls/Components/PollOptions.razor *@@
+@@inherits RfEventComponent
+
+@@foreach (var (option, votes) in Poll.Votes.OrderBy(v =&gt; v.Key))
+{
+    &lt;button class="btn btn-outline-primary btn-sm me-2" @@onclick="() =&gt; Vote(option)"&gt;@@option (@@votes)&lt;/button&gt;
+}</code></pre>
+
+<pre><code>// MyApp.Client/Features/Polls/Components/PollOptions.razor.cs
+namespace MyApp.Client.Features.Polls.Components;
+
+public partial class PollOptions
+{
+    [UseState]
+    private partial PollState Poll { get; }
+
+    // Resolves to this card's PollState, not the root's and not another card's.
+    private void Vote(string option) =&gt; State&lt;PollState&gt;().Update(p =&gt; p.Vote(option));
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Polls/Components/PollTotal.razor *@@
+@@inherits RfEventComponent
+
+&lt;small&gt;@@Total vote(s)&lt;/small&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Polls/Components/PollTotal.razor.cs
+namespace MyApp.Client.Features.Polls.Components;
+
+public partial class PollTotal
+{
+    [UseState(Select = nameof(SelectTotal))]
+    private partial int Total { get; }
+
+    private static int SelectTotal(PollState poll) =&gt; poll.TotalVotes;
+}</code></pre>
+
+<h2 id="4-use-it-several-times">4. Use it several times</h2>
+
+<pre><code>@@* MyApp.Client/Pages/PollsPage.razor *@@
+@@page "/polls"
+@@rendermode InteractiveAuto
+@@using MyApp.Client.Features.Polls
+@@using MyApp.Client.Features.Polls.Components
+
+&lt;PollCard Poll="@@PollState.Create("Lunch?", "Pizza", "Sushi", "Salad")" /&gt;
+&lt;PollCard Poll="@@PollState.Create("Offsite?", "Beach", "Mountains")" /&gt;</code></pre>
+
+<p>Each card counts its own votes.</p>
+
+<h2 id="5-reach-past-the-scope">5. Reach past the scope</h2>
+
+<p>Sometimes a component inside a scope needs the <strong>root</strong> instance of the same type. Point resolution at the root:</p>
+
+<pre><code>// MyApp.Client/Features/Polls/Components/FeaturedPollBadge.razor.cs
+namespace MyApp.Client.Features.Polls.Components;
+
+/// &lt;summary&gt;Placed inside a PollCard, but shows the app-wide featured poll held at the root.&lt;/summary&gt;
+public partial class FeaturedPollBadge
+{
+    [UseState(Select = nameof(SelectQuestion), Scope = ScopeKind.Root)]
+    private partial string FeaturedQuestion { get; }
+
+    [UseState(Select = nameof(SelectQuestion))]
+    private partial string ThisQuestion { get; }
+
+    private static string SelectQuestion(PollState poll) =&gt; poll.Question;
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Polls/Components/FeaturedPollBadge.razor *@@
+@@inherits RfEventComponent
+
+@@if (FeaturedQuestion == ThisQuestion)
+{
+    &lt;span class="badge text-bg-warning"&gt;Featured&lt;/span&gt;
+}</code></pre>
+
+<p>Types that <strong>no</strong> <code>StateScope</code> provides always fall back to the root, so you only need <code>ScopeKind.Root</code> when the same type exists at both levels. <code>ScopeName = "…"</code> works too, to start resolution at a named scope.</p>
+
+<h2 id="6-scopes-events-and-cleanup">6. Scopes, events and cleanup</h2>
+
+<ul>
+<li><strong>A <code>StateScope</code> is also an event scope.</strong> For components inside it, it's their nearest scope: <code>Route.Local</code> from inside reaches only that scope's listeners, and <code>[Subscribe]</code> handlers listen there by default. Give it a <code>Name</code> to target it with <code>Route.Named</code> (<a href="/events/tutorials/05-scopes-and-routing">tutorial 05</a>).</li>
+<li><strong>To provide several state types</strong> to one subtree, nest <code>StateScope</code>s.</li>
+<li><strong>When the <code>StateScope</code> leaves the page</strong> (e.g. the card is removed), its store is disposed along with all subscriptions to it.</li>
+</ul>
+
+<pre><code>@@* MyApp.Client/Features/Polls/Components/PollCardWithNotes.razor *@@
+@@* Two scoped state types for one widget: nest the scopes. *@@
+&lt;StateScope TState="PollState" Name="poll" Initial="Poll"&gt;
+    &lt;StateScope TState="PollNotesState"&gt;
+        &lt;PollQuestion /&gt;
+        &lt;PollOptions /&gt;
+    &lt;/StateScope&gt;
+&lt;/StateScope&gt;
+
+@@code {
+    [Parameter, EditorRequired]
+    public PollState Poll { get; set; } = default!;
+}</code></pre>
+
+<pre><code>// MyApp.Client/Features/Polls/PollNotesState.cs
+namespace MyApp.Client.Features.Polls;
+
+public sealed record PollNotesState(string Text) : IState&lt;PollNotesState&gt;
+{
+    public static PollNotesState Initial =&gt; new("");
+}</code></pre>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li><code>StateScope</code> creates a child scope, registers it as the <strong>provider</strong> of <code>TState</code>, and cascades the scope (fixed, so the cascade costs nothing).</li>
+<li>Resolution walks up from the component's nearest scope to the first provider of the type. Root provides every type implicitly.</li>
+<li>Each component resolves once, at initialization, so the lookup isn't repeated on every render.</li>
+</ul>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>Put the <code>StateScope</code> in the widget's root component</strong> (<code>PollCard</code>), so callers just write <code>&lt;PollCard /&gt;</code> and can't forget it.</li>
+<li><strong>Pass starting data through <code>Initial</code></strong> from the widget's parameters. Don't write to the store from the parent.</li>
+<li><strong>Write child components as if the state were global.</strong> If a child needs to know it's scoped, the design is usually leaking.</li>
+<li><strong>Use selectors in scoped widgets too.</strong> A list of 50 widgets that each re-render on every change adds up.</li>
+<li><strong>Nest scopes for multiple state types</strong>, outermost first, so the structure reads top-down.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>All cards share one value</td><td><code>StateScope</code> missing, so everything resolves to the root</td><td>Wrap the widget in <code>&lt;StateScope TState="…"&gt;</code></td></tr>
+<tr><td>Changing <code>Initial</code> does nothing</td><td>It's read once at initialization (a warning is logged)</td><td>Write to the store</td></tr>
+<tr><td>A component in the card sees the root value</td><td>It sits <em>outside</em> the <code>StateScope</code> element</td><td>Move it inside</td></tr>
+<tr><td><code>Route.Local</code> from inside the card misses a listener outside the <code>StateScope</code></td><td>The <code>StateScope</code> is the nearest scope</td><td>Use <code>Route.Bubble</code> or <code>Route.Named</code></td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/07-services-and-background-work">07 · Services and background work</a></p>
+</TutorialDetail>

@@ -1,0 +1,253 @@
+@page "/events/tutorials/05-scopes-and-routing"
+
+<TutorialDetail Slug="05-scopes-and-routing">
+<p><strong>Goal:</strong> fence events into part of the page, so two copies of a widget don't hear each other, and choose exactly where each event travels.</p>
+
+<p><em>See it running:</em> the <strong>Scoped widgets</strong> sample page (<a href="/events/example/scoped-widgets"><code>/events/example/scoped-widgets</code></a>) and the <strong>Checkout</strong> page (<a href="/events/example/checkout"><code>/events/example/checkout</code></a>).</p>
+
+<h2 id="the-model-in-one-picture">The model in one picture</h2>
+
+<p>Without scopes there's one channel: every subscriber hears every publish of its event type. <code>&lt;EventScope&gt;</code> adds a node to a <strong>scope tree</strong>, and each component belongs to its <strong>nearest</strong> scope:</p>
+
+<pre><code>Root (the hub)
+├── ActivityLog                ← listens at Root
+└── EventScope "settings"
+    ├── SettingsToolbar        ← publishes from "settings"
+    ├── ProfileSection         ← listens at "settings"
+    ├── NotificationSection    ← listens at "settings"
+    └── SettingsStatus         ← listens at "settings"</code></pre>
+
+<ul>
+<li>A <strong>subscriber</strong> listens at one scope: its nearest one by default.</li>
+<li>A <strong>publish</strong> starts at an origin scope (the publisher's nearest by default) and travels in a <strong>direction</strong>.</li>
+</ul>
+
+<h2 id="routes">Routes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Route</th><th>Starts at</th><th>Goes</th><th>Reaches in the picture (publishing from "settings")</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Route.Bubble</code> <em>(default)</em></td><td>Publisher's scope</td><td>Up to the root</td><td>settings listeners, then ActivityLog</td></tr>
+<tr><td><code>Route.Local</code></td><td>Publisher's scope</td><td>Nowhere else</td><td>settings listeners only</td></tr>
+<tr><td><code>Route.Broadcast</code></td><td>Publisher's scope</td><td>Down into child scopes</td><td>settings listeners, plus any scopes nested inside</td></tr>
+<tr><td><code>Route.Root</code></td><td>Root</td><td>Nowhere else</td><td>ActivityLog only</td></tr>
+<tr><td><code>Route.Global</code></td><td>Root</td><td>Down into <strong>every</strong> scope</td><td>everyone</td></tr>
+<tr><td><code>Route.Named("x")</code></td><td>Nearest enclosing scope named <code>x</code></td><td>Nowhere else (by default)</td><td>that scope's listeners</td></tr>
+<tr><td><code>Route.Named("x", RouteDirection.Broadcast)</code></td><td>Nearest enclosing scope named <code>x</code></td><td>Down</td><td>that scope and everything inside it</td></tr>
+</tbody>
+</table></div>
+
+<p>Bubbling is the default because it matches DOM intuition: something happens inside a region, and the region and everything above it can react, but siblings don't hear it.</p>
+
+<h2 id="1-define-the-events">1. Define the events</h2>
+
+<pre><code>// MyApp.Client/Features/Settings/SettingsEvents.cs
+namespace MyApp.Client.Features.Settings;
+
+/// &lt;summary&gt;Command, broadcast down to every section inside the settings scope.&lt;/summary&gt;
+public sealed record SaveAllRequested : IEvent;
+
+/// &lt;summary&gt;Fact, bubbles up from the section that saved.&lt;/summary&gt;
+public sealed record SectionSaved(string Section) : IEvent;</code></pre>
+
+<h2 id="2-create-the-scope">2. Create the scope</h2>
+
+<p>The component that owns the region declares the scope. The scope only affects the component's <strong>children</strong>, so the owner itself stays outside it:</p>
+
+<pre><code>@@* MyApp.Client/Features/Settings/Components/SettingsPanel.razor *@@
+&lt;EventScope Name="settings"&gt;
+    &lt;div class="card"&gt;
+        &lt;div class="card-header"&gt;&lt;SettingsToolbar /&gt;&lt;/div&gt;
+        &lt;div class="card-body"&gt;
+            &lt;ProfileSection /&gt;
+            &lt;NotificationSection /&gt;
+        &lt;/div&gt;
+        &lt;div class="card-footer"&gt;&lt;SettingsStatus /&gt; &lt;SettingsHelp /&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/EventScope&gt;</code></pre>
+
+<p><code>SettingsPanel</code> is a plain component: it only <em>creates</em> the scope. (<code>SettingsHelp</code> appears in <a href="#6-choose-where-a-subscriber-listens">step 6</a>.)</p>
+
+<h2 id="3-broadcast-a-command-into-the-scope">3. Broadcast a command into the scope</h2>
+
+<pre><code>@@* MyApp.Client/Features/Settings/Components/SettingsToolbar.razor *@@
+@@inherits RfEventComponent
+
+&lt;button class="btn btn-primary btn-sm" @@onclick="SaveAllAsync"&gt;Save all&lt;/button&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Settings/Components/SettingsToolbar.razor.cs
+namespace MyApp.Client.Features.Settings.Components;
+
+public partial class SettingsToolbar
+{
+    // Find the enclosing "settings" scope and broadcast down through it.
+    // A second SettingsPanel on the same page has its own scope and won't hear this.
+    private Task SaveAllAsync() =&gt;
+        PublishAsync(new SaveAllRequested(), Route.Named("settings", RouteDirection.Broadcast)).AsTask();
+}</code></pre>
+
+<p><code>Route.Named</code> is more robust than <code>Route.Broadcast</code> here: if you later wrap the toolbar in its own scope, it still targets the panel.</p>
+
+<h2 id="4-react-inside-the-scope-and-bubble-a-fact-back-up">4. React inside the scope, and bubble a fact back up</h2>
+
+<pre><code>@@* MyApp.Client/Features/Settings/Components/ProfileSection.razor *@@
+@@inherits RfEventComponent
+
+&lt;p&gt;Profile settings… @@(_saving ? "(saving)" : "")&lt;/p&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Settings/Components/ProfileSection.razor.cs
+namespace MyApp.Client.Features.Settings.Components;
+
+public partial class ProfileSection
+{
+    private bool _saving;
+
+    [Subscribe] // nearest scope = "settings"
+    private async Task OnSaveAll(SaveAllRequested request, CancellationToken cancellationToken)
+    {
+        _saving = true;
+        StateHasChanged();
+        await Task.Delay(300, cancellationToken); // pretend to save
+        _saving = false;
+
+        // Default route (Bubble): "settings", then the root.
+        await PublishAsync(new SectionSaved("Profile"), cancellationToken: cancellationToken);
+    }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Settings/Components/NotificationSection.razor *@@
+@@inherits RfEventComponent
+
+&lt;p&gt;Notification settings…&lt;/p&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Settings/Components/NotificationSection.razor.cs
+namespace MyApp.Client.Features.Settings.Components;
+
+public partial class NotificationSection
+{
+    [Subscribe]
+    private Task OnSaveAll(SaveAllRequested request) =&gt; PublishAsync(new SectionSaved("Notifications")).AsTask();
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Settings/Components/SettingsStatus.razor *@@
+@@inherits RfEventComponent
+
+&lt;small&gt;Saved: @@string.Join(", ", _saved)&lt;/small&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Settings/Components/SettingsStatus.razor.cs
+namespace MyApp.Client.Features.Settings.Components;
+
+/// &lt;summary&gt;Inside the scope: hears only its own panel's sections.&lt;/summary&gt;
+public partial class SettingsStatus
+{
+    private readonly List&lt;string&gt; _saved = [];
+
+    [Subscribe]
+    private void OnSectionSaved(SectionSaved e) =&gt; _saved.Add(e.Section);
+}</code></pre>
+
+<h2 id="5-listen-outside-the-scope">5. Listen outside the scope</h2>
+
+<pre><code>@@* MyApp.Client/Features/Settings/Components/ActivityLog.razor *@@
+@@inherits RfEventComponent
+
+&lt;ul class="small"&gt;
+    @@foreach (var entry in _entries)
+    {
+        &lt;li&gt;@@entry&lt;/li&gt;
+    }
+&lt;/ul&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Settings/Components/ActivityLog.razor.cs
+namespace MyApp.Client.Features.Settings.Components;
+
+/// &lt;summary&gt;Outside every scope, so it listens at the root and hears bubbled events from all panels.&lt;/summary&gt;
+public partial class ActivityLog
+{
+    private readonly List&lt;string&gt; _entries = [];
+
+    [Subscribe]
+    private void OnSectionSaved(SectionSaved e) =&gt; _entries.Add($"{DateTime.Now:T} saved {e.Section}");
+
+    // Never fires: SaveAllRequested is broadcast DOWN from "settings", so it never reaches the root.
+    [Subscribe]
+    private void OnSaveAll(SaveAllRequested e) =&gt; _entries.Add("this line never appears");
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Pages/SettingsPage.razor *@@
+@@page "/settings"
+@@rendermode InteractiveAuto
+@@using MyApp.Client.Features.Settings.Components
+
+&lt;div class="row"&gt;
+    &lt;div class="col"&gt;&lt;SettingsPanel /&gt;&lt;/div&gt;
+    &lt;div class="col"&gt;&lt;SettingsPanel /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;ActivityLog /&gt;</code></pre>
+
+<p>Click <em>Save all</em> in the left panel: only the left panel's sections save, only the left status updates, and the activity log records both sections.</p>
+
+<h2 id="6-choose-where-a-subscriber-listens">6. Choose where a subscriber listens</h2>
+
+<p>By default a subscriber listens at its nearest scope. Override that per handler:</p>
+
+<pre><code>// MyApp.Client/Features/Settings/Components/SettingsHelp.razor.cs
+namespace MyApp.Client.Features.Settings.Components;
+
+public partial class SettingsHelp
+{
+    private int _globalSaves;
+    private int _panelSaves;
+
+    // Listen at the root even when placed inside a scope: hears bubbled events from every panel.
+    [Subscribe(Scope = ScopeKind.Root)]
+    private void OnAnySectionSaved(SectionSaved e) =&gt; _globalSaves++;
+
+    // Listen at the nearest enclosing scope named "settings", even if nested deeper inside other scopes.
+    [Subscribe(ScopeName = "settings")]
+    private void OnSaveAll(SaveAllRequested e) =&gt; _panelSaves++;
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Settings/Components/SettingsHelp.razor *@@
+@@inherits RfEventComponent
+
+&lt;small&gt;Saves everywhere: @@_globalSaves · Save-all in this panel: @@_panelSaves&lt;/small&gt;</code></pre>
+
+<p><code>ScopeName</code> lookups throw <code>RfEventScopeNotFoundException</code> if no enclosing scope has that name. That's deliberate, so a typo fails loudly instead of silently hearing nothing.</p>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li><code>&lt;EventScope&gt;</code> creates a child scope and cascades it with <code>IsFixed="true"</code>, so adding a scope costs nothing per descendant.</li>
+<li>Components resolve their nearest scope once, at initialization. Moving a component to another scope means re-creating it, which Blazor does anyway when markup changes.</li>
+<li>When an <code>EventScope</code> leaves the page, its scope and every subscription in it are disposed.</li>
+</ul>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>Declare the scope in the feature's root component</strong> (<code>SettingsPanel</code>), not in a page or layout. The feature then works the same wherever it's placed.</li>
+<li><strong>Name scopes after the feature</strong> (<code>"settings"</code>, <code>"checkout"</code>) and target them with <code>Route.Named</code>. That keeps working when the internal component structure changes.</li>
+<li><strong>Commands go down, facts go up</strong>: broadcast <code>…Requested</code> into a scope, and bubble past-tense facts out of it.</li>
+<li><strong>Use <code>ScopeKind.Root</code> for app-wide listeners</strong> (toasts, logs, analytics) so they hear events from inside every scope.</li>
+<li><strong>Scopes must be inside an interactive component.</strong> A scope declared in a static layout doesn't reach interactive islands (<a href="/events/tutorials/09-render-modes">tutorial 09</a>).</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>The component that renders <code>&lt;EventScope&gt;</code> doesn't hear events inside it</td><td>A scope only applies to its children</td><td>Move the handler into a child component</td></tr>
+<tr><td>Root listener never hears a broadcast</td><td><code>Broadcast</code> goes <em>down</em>, not up</td><td>Bubble a separate fact up, or listen inside the scope</td></tr>
+<tr><td>Listener inside a scope misses events from elsewhere</td><td>Publishes bubble <em>up</em> to the root and don't enter other scopes</td><td>Publish with <code>Route.Global</code>, or listen with <code>ScopeKind.Root</code></td></tr>
+<tr><td><code>RfEventScopeNotFoundException</code></td><td><code>Route.Named</code>/<code>ScopeName</code> used where no enclosing scope has that name</td><td>Check the name, and that the component is inside that scope</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/06-scoped-state">06 · Scoped state</a></p>
+</TutorialDetail>

@@ -1,0 +1,240 @@
+@page "/events/tutorials/07-services-and-background-work"
+
+<TutorialDetail Slug="07-services-and-background-work">
+<p><strong>Goal:</strong> publish events and write state from code that isn't a component, such as a server service, a timer or a SignalR callback, and let components update safely.</p>
+
+<p><em>See it running:</em> the <strong>Live dashboard</strong> sample page (<a href="/events/example/live-dashboard"><code>/events/example/live-dashboard</code></a>).</p>
+
+<h2 id="whats-different-outside-components">What's different outside components</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th></th><th>In a <code>RfEventComponent</code></th><th>In a service</th></tr>
+</thead>
+<tbody>
+<tr><td>Get the hub</td><td><code>PublishAsync</code>, <code>State&lt;T&gt;()</code> helpers</td><td>Inject <code>IRfEventHub</code> (the root)</td></tr>
+<tr><td>Subscribe</td><td><code>[Subscribe]</code>, <code>[UseState]</code></td><td><code>hub.Subscribe&lt;T&gt;(…)</code>, <code>store.Subscribe(…)</code>, and <strong>dispose the result</strong></td></tr>
+<tr><td>Thread</td><td>The renderer's</td><td>Whatever thread you're on. <strong>Publishing from any thread is safe</strong>: components marshal through their own <code>InvokeAsync</code></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="1-define-what-the-service-produces">1. Define what the service produces</h2>
+
+<pre><code>// MyApp.Client/Features/Clock/ClockState.cs
+namespace MyApp.Client.Features.Clock;
+
+public sealed record ClockState(DateTime Now, bool Running) : IState&lt;ClockState&gt;
+{
+    public static ClockState Initial =&gt; new(DateTime.MinValue, false);
+}
+
+/// &lt;summary&gt;Published once per minute boundary.&lt;/summary&gt;
+public sealed record MinutePassed(DateTime At) : IEvent;</code></pre>
+
+<p>These live in the <strong>Client</strong> project, so components in any render mode can use them, even though the service that produces them is server-only.</p>
+
+<h2 id="2-write-a-scoped-service-that-publishes-from-a-timer">2. Write a Scoped service that publishes from a timer</h2>
+
+<pre><code>// MyApp/Services/ClockService.cs
+using MyApp.Client.Features.Clock;
+using RForge.Blazor.Events;
+
+namespace MyApp.Services;
+
+/// &lt;summary&gt;Server-only, Scoped (one per circuit). Ticks on a thread-pool thread, never the renderer's.&lt;/summary&gt;
+public sealed class ClockService(IRfEventHub hub) : IDisposable
+{
+    private readonly Lock _gate = new();
+    private Timer? _timer;
+    private int _lastMinute = -1;
+
+    public void Start()
+    {
+        lock (_gate)
+        {
+            _timer ??= new Timer(_ =&gt; _ = TickAsync(), null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        }
+    }
+
+    public void Stop()
+    {
+        lock (_gate)
+        {
+            _timer?.Dispose();
+            _timer = null;
+        }
+
+        hub.State&lt;ClockState&gt;().Update(s =&gt; s with { Running = false });
+    }
+
+    private async Task TickAsync()
+    {
+        try
+        {
+            var now = DateTime.Now;
+            hub.State&lt;ClockState&gt;().Set(new ClockState(now, Running: true));
+
+            if (now.Minute != _lastMinute)
+            {
+                _lastMinute = now.Minute;
+                await hub.PublishAsync(new MinutePassed(now));
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // The circuit (and its hub) ended between ticks.
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (_gate)
+        {
+            _timer?.Dispose();
+            _timer = null;
+        }
+    }
+}</code></pre>
+
+<p>Register it as <strong>Scoped</strong>:</p>
+
+<pre><code>// MyApp/Program.cs (excerpt)
+builder.Services.AddScoped&lt;ClockService&gt;();</code></pre>
+
+<blockquote>
+<p><strong>Never register a service that holds <code>IRfEventHub</code> as Singleton.</strong> On Blazor Server, the hub is per circuit, so a singleton would capture one user's hub and share it with everyone. In Development, DI scope validation reports this as an error at startup.</p>
+</blockquote>
+
+<h2 id="3-components-just-read">3. Components just read</h2>
+
+<pre><code>@@* MyApp.Client/Features/Clock/Components/ClockFace.razor *@@
+@@inherits RfEventComponent
+
+&lt;span class="font-monospace fs-3"&gt;@@(Clock.Running ? Clock.Now.ToString("HH:mm:ss") : "--:--:--")&lt;/span&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Clock/Components/ClockFace.razor.cs
+namespace MyApp.Client.Features.Clock.Components;
+
+/// &lt;summary&gt;No InvokeAsync anywhere: the base class marshals updates from the timer thread.&lt;/summary&gt;
+public partial class ClockFace
+{
+    [UseState]
+    private partial ClockState Clock { get; }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Clock/Components/MinuteLog.razor *@@
+@@inherits RfEventComponent
+
+&lt;ul class="small"&gt;@@foreach (var at in _minutes) { &lt;li&gt;@@at.ToString("HH:mm")&lt;/li&gt; }&lt;/ul&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Clock/Components/MinuteLog.razor.cs
+namespace MyApp.Client.Features.Clock.Components;
+
+public partial class MinuteLog
+{
+    private readonly List&lt;DateTime&gt; _minutes = [];
+
+    [Subscribe]
+    private void OnMinutePassed(MinutePassed e) =&gt; _minutes.Insert(0, e.At);
+}</code></pre>
+
+<h2 id="4-start-and-stop-from-a-server-page">4. Start and stop from a server page</h2>
+
+<p>The page injects the server-only service, so it lives in the server project and uses <code>InteractiveServer</code>:</p>
+
+<pre><code>@@* MyApp/Components/Pages/ClockPage.razor *@@
+@@page "/clock"
+@@rendermode @@(new InteractiveServerRenderMode(prerender: false))
+@@implements IDisposable
+@@inject MyApp.Services.ClockService Clock
+@@using MyApp.Client.Features.Clock.Components
+
+&lt;ClockFace /&gt;
+&lt;MinuteLog /&gt;
+
+@@code {
+    protected override void OnInitialized() =&gt; Clock.Start();
+
+    public void Dispose() =&gt; Clock.Stop();
+}</code></pre>
+
+<p><code>prerender: false</code> keeps the timer from starting in the throwaway prerender scope (<a href="/events/tutorials/08-prerendering-and-persistence">tutorial 08</a>).</p>
+
+<h2 id="5-subscribe-from-a-service">5. Subscribe from a service</h2>
+
+<p>Services subscribe through <code>IRfEventHub</code> and must dispose the subscription:</p>
+
+<pre><code>// MyApp/Services/ClockAuditor.cs
+using MyApp.Client.Features.Clock;
+using RForge.Blazor.Events;
+
+namespace MyApp.Services;
+
+/// &lt;summary&gt;Scoped listener: logs every minute boundary for this circuit.&lt;/summary&gt;
+public sealed class ClockAuditor : IDisposable
+{
+    private readonly IDisposable _subscription;
+
+    public ClockAuditor(IRfEventHub hub, ILogger&lt;ClockAuditor&gt; logger) =&gt;
+        _subscription = hub.Subscribe&lt;MinutePassed&gt;((e, cancellationToken) =&gt;
+        {
+            logger.LogInformation("Minute passed at {At}", e.At);
+            return ValueTask.CompletedTask;
+        });
+
+    public void Dispose() =&gt; _subscription.Dispose();
+}</code></pre>
+
+<p>A Scoped service is only created when something resolves it. To have it listening for the whole circuit, resolve it early, for example with <code>@@inject ClockAuditor Auditor</code> in a page or layout component that's always interactive.</p>
+
+<p>Service handlers run <strong>on the publisher's thread</strong> (no marshaling: no renderer is involved). Keep them thread-safe.</p>
+
+<h2 id="6-decide-how-service-failures-are-reported">6. Decide how service failures are reported</h2>
+
+<p>A throwing <strong>component</strong> handler always goes to its <code>ErrorBoundary</code>. For <strong>service</strong> handlers you choose:</p>
+
+<pre><code>// MyApp.Client/EventHubSetup.cs (excerpt)
+public static void Configure(RfEventOptions options)
+{
+    options.HandlerErrorMode = HandlerErrorMode.Log;   // default: log and continue
+    // options.HandlerErrorMode = HandlerErrorMode.Throw; // run all, then throw AggregateException to the publisher
+    options.MaxPublishDepth = 16;                      // nested publishes allowed before RfEventReentrancyException
+}</code></pre>
+
+<p><code>MaxPublishDepth</code> catches event loops (A's handler publishes B, B's handler publishes A, …) and stops them with <code>RfEventReentrancyException</code> instead of hanging.</p>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li><code>IRfEventHub</code> is the root scope of the current DI scope: per circuit on Server, per app instance in WebAssembly, per request when rendering statically.</li>
+<li>Store writes are serialized per store (<code>Update</code> is atomic). Component notifications are queued through each component's renderer.</li>
+<li><code>PublishAsync</code> awaits every handler, including component handlers running on the renderer, so a service can rely on "all reactions ran" after the <code>await</code>.</li>
+</ul>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>Put server-only services in the server project</strong> (<code>MyApp/Services/</code>), and keep the state and events they produce in the Client project.</li>
+<li><strong>Register hub-using services as Scoped.</strong> Never Singleton.</li>
+<li><strong>Prefer state for continuous data</strong> (prices, clocks, progress) and events for discrete moments (minute passed, job finished). State means a component that appears later still sees the current value.</li>
+<li><strong>Catch <code>ObjectDisposedException</code> in timers.</strong> The circuit can end between ticks.</li>
+<li><strong>Stop background work when its page goes away</strong> (<code>Dispose</code>/<code>DisposeAsyncCore</code>), and also in the service's own <code>Dispose</code>.</li>
+<li><strong>Turn prerendering off</strong> for pages that start background work on initialization.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>One user sees another user's updates</td><td>Service registered as Singleton</td><td>Register as Scoped</td></tr>
+<tr><td><code>InvalidOperationException: … not associated with the Dispatcher</code></td><td>Calling <code>StateHasChanged</code> from a service callback yourself</td><td>Let the hub do it: write state or publish, and let components react</td></tr>
+<tr><td>Timer keeps running after leaving the page</td><td>Not stopped on dispose</td><td>Stop it in the page's <code>Dispose</code> and in the service's <code>Dispose</code></td></tr>
+<tr><td><code>RfEventReentrancyException</code></td><td>Handlers publish events that trigger each other</td><td>Break the loop, or check whether the change is needed before publishing</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/08-prerendering-and-persistence">08 · Prerendering and persistence</a></p>
+</TutorialDetail>

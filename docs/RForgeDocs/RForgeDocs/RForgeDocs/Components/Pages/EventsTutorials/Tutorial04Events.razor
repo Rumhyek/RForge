@@ -1,0 +1,302 @@
+@page "/events/tutorials/04-events"
+
+<TutorialDetail Slug="04-events">
+<p><strong>Goal:</strong> let a component anywhere in the tree say "this happened" or "please do this", and let any other component react, without passing parameters or callbacks between them.</p>
+
+<p><em>See it running:</em> the <strong>Notifications</strong> sample page (<a href="/events/example/notifications"><code>/events/example/notifications</code></a>).</p>
+
+<h2 id="events-or-state">Events or state?</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Use an <strong>event</strong> when…</th><th>Use <strong>state</strong> (<a href="/events/tutorials/02-state">tutorial 02</a>) when…</th></tr>
+</thead>
+<tbody>
+<tr><td>Something <em>happened</em> or is <em>requested</em>: "item added", "save requested", "show a toast"</td><td>There's a <em>current value</em>: "cart contents", "theme", "selected tab"</td></tr>
+<tr><td>A listener that isn't there at the time <strong>should</strong> miss it</td><td>A component that appears later <strong>must</strong> see the latest value</td></tr>
+<tr><td>Each occurrence matters, even if the payload repeats</td><td>Only the latest value matters, and equal values are no-ops</td></tr>
+</tbody>
+</table></div>
+
+<p>A common pattern is to do both: update state <em>and</em> publish an event (the cart changes and an "item added" animation plays).</p>
+
+<h2 id="1-define-events">1. Define events</h2>
+
+<pre><code>// MyApp.Client/Features/Toasts/ToastEvents.cs
+namespace MyApp.Client.Features.Toasts;
+
+public enum ToastLevel
+{
+    Info,
+    Success,
+    Warning,
+    Danger,
+}
+
+/// &lt;summary&gt;A command: "please show this toast". Named …Requested.&lt;/summary&gt;
+public sealed record ToastRequested(string Message, ToastLevel Level = ToastLevel.Info) : IEvent;
+
+/// &lt;summary&gt;A fact: "the user dismissed a toast". Named in the past tense.&lt;/summary&gt;
+public sealed record ToastDismissed(Guid Id) : IEvent;
+
+/// &lt;summary&gt;A fact: "the user cleared every toast".&lt;/summary&gt;
+public sealed record ToastsCleared : IEvent;</code></pre>
+
+<p>Rules:</p>
+
+<ul>
+<li><strong>Implement <code>IEvent</code>.</strong></li>
+<li><strong>Use an immutable <code>sealed record</code>.</strong> The same instance goes to every handler (analyzer <code>RFEVT012</code> flags mutable events).</li>
+<li><strong>Name facts in the past tense</strong> (<code>ItemAdded</code>, <code>ToastDismissed</code>) and <strong>commands with <code>…Requested</code></strong> (<code>ToastRequested</code>, <code>SaveRequested</code>). That makes it obvious whether a handler is reacting or being asked to act.</li>
+</ul>
+
+<h2 id="2-publish">2. Publish</h2>
+
+<pre><code>@@* MyApp.Client/Features/Toasts/Components/SaveButton.razor *@@
+@@inherits RfEventComponent
+
+&lt;button class="btn btn-primary" @@onclick="SaveAsync"&gt;Save&lt;/button&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Toasts/Components/SaveButton.razor.cs
+namespace MyApp.Client.Features.Toasts.Components;
+
+public partial class SaveButton
+{
+    private async Task SaveAsync()
+    {
+        await Task.Delay(200); // pretend to save
+        await PublishAsync(new ToastRequested("Saved!", ToastLevel.Success));
+    }
+}</code></pre>
+
+<p><code>PublishAsync</code> completes once every handler has run. Delivery is <strong>sequential</strong> and in a predictable order.</p>
+
+<h2 id="3-handle-with-subscribe">3. Handle with <code>[Subscribe]</code></h2>
+
+<pre><code>@@* MyApp.Client/Features/Toasts/Components/ToastHost.razor *@@
+@@inherits RfEventComponent
+
+&lt;div class="toast-stack"&gt;
+    @@foreach (var toast in _toasts)
+    {
+        &lt;div class="alert alert-@@toast.Level.ToString().ToLowerInvariant() d-flex" @@key="toast.Id"&gt;
+            &lt;span class="me-auto"&gt;@@toast.Message&lt;/span&gt;
+            &lt;button class="btn-close" @@onclick="() =&gt; DismissAsync(toast.Id)"&gt;&lt;/button&gt;
+        &lt;/div&gt;
+    }
+    @@if (_toasts.Count &gt; 1)
+    {
+        &lt;button class="btn btn-sm btn-link" @@onclick="ClearAsync"&gt;Clear all&lt;/button&gt;
+    }
+&lt;/div&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Toasts/Components/ToastHost.razor.cs
+namespace MyApp.Client.Features.Toasts.Components;
+
+public partial class ToastHost
+{
+    private readonly List&lt;Toast&gt; _toasts = [];
+
+    // Scope = Root: hear ToastRequested from anywhere, even from inside an EventScope (tutorial 05).
+    [Subscribe(Scope = ScopeKind.Root)]
+    private void OnToastRequested(ToastRequested request) =&gt;
+        _toasts.Add(new Toast(Guid.NewGuid(), request.Message, request.Level));
+
+    private Task DismissAsync(Guid id)
+    {
+        _toasts.RemoveAll(t =&gt; t.Id == id);
+        return PublishAsync(new ToastDismissed(id)).AsTask();
+    }
+
+    private Task ClearAsync()
+    {
+        _toasts.Clear();
+        return PublishAsync(new ToastsCleared()).AsTask();
+    }
+
+    private sealed record Toast(Guid Id, string Message, ToastLevel Level);
+}</code></pre>
+
+<p>The handler's <strong>first parameter type</strong> decides which event it receives. After the handler runs, the component re-renders automatically.</p>
+
+<h2 id="4-supported-handler-shapes">4. Supported handler shapes</h2>
+
+<pre><code>// MyApp.Client/Features/Toasts/Components/ToastAudit.razor.cs
+namespace MyApp.Client.Features.Toasts.Components;
+
+/// &lt;summary&gt;The supported [Subscribe] signatures, one per event type.&lt;/summary&gt;
+public partial class ToastAudit
+{
+    private readonly List&lt;string&gt; _log = [];
+    private int _dismissed;
+
+    // 1. Synchronous.
+    [Subscribe]
+    private void OnDismissed(ToastDismissed e) =&gt; _dismissed++;
+
+    // 2. Asynchronous (Task or ValueTask).
+    [Subscribe]
+    private async Task OnCleared(ToastsCleared e)
+    {
+        await Task.Yield();
+        _log.Add("all cleared");
+    }
+
+    // 3. Asynchronous with a CancellationToken. It's cancelled if the publisher cancels
+    //    OR this component is disposed while the handler is still running.
+    [Subscribe(Render = false)]
+    private async ValueTask OnRequested(ToastRequested e, CancellationToken cancellationToken)
+    {
+        await Task.Delay(50, cancellationToken);
+        // Render = false: no automatic re-render, so call StateHasChanged yourself when needed.
+        if (e.Level == ToastLevel.Danger)
+        {
+            _log.Add("danger toast seen");
+            StateHasChanged();
+        }
+    }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Toasts/Components/ToastAudit.razor *@@
+@@inherits RfEventComponent
+
+&lt;small&gt;Dismissed: @@_dismissed · @@string.Join(" | ", _log.TakeLast(3))&lt;/small&gt;</code></pre>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Signature</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>void M(TEvent e)</code></td><td>Simplest</td></tr>
+<tr><td><code>Task M(TEvent e)</code> / <code>ValueTask M(TEvent e)</code></td><td>Async</td></tr>
+<tr><td><code>Task M(TEvent e, CancellationToken ct)</code> / <code>ValueTask …</code></td><td>Async + cancellation</td></tr>
+</tbody>
+</table></div>
+
+<p>Anything else (static, generic, extra parameters, other return types) gets analyzer error <code>RFEVT004</code>.</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th><code>[Subscribe]</code> option</th><th>Default</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Scope = ScopeKind.Root</code></td><td><code>Nearest</code></td><td>Listen at the root instead of the nearest scope (<a href="/events/tutorials/05-scopes-and-routing">tutorial 05</a>)</td></tr>
+<tr><td><code>ScopeName = "x"</code></td><td>–</td><td>Listen at the nearest enclosing scope named <code>x</code></td></tr>
+<tr><td><code>Render = false</code></td><td><code>true</code></td><td>Skip the automatic <code>StateHasChanged</code></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="5-put-it-together">5. Put it together</h2>
+
+<pre><code>@@* MyApp.Client/Pages/ToastsPage.razor *@@
+@@page "/toasts"
+@@rendermode InteractiveAuto
+@@using MyApp.Client.Features.Toasts.Components
+
+&lt;ToastHost /&gt;
+
+&lt;div class="card"&gt;
+    &lt;div class="card-body"&gt;
+        &lt;div class="card"&gt;
+            &lt;div class="card-body"&gt;
+                @@* Deeply nested, with no parameters or callbacks passed down. *@@
+                &lt;SaveButton /&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;ToastAudit /&gt;</code></pre>
+
+<h2 id="6-when-a-handler-throws">6. When a handler throws</h2>
+
+<p>A handler's exception goes to the nearest <code>ErrorBoundary</code> around <strong>that</strong> component, as if it had thrown while rendering. The publisher and the other handlers aren't affected:</p>
+
+<pre><code>@@* MyApp.Client/Pages/ToastsWithBoundary.razor *@@
+@@page "/toasts-safe"
+@@rendermode InteractiveAuto
+@@using MyApp.Client.Features.Toasts.Components
+
+&lt;ToastHost /&gt;
+&lt;SaveButton /&gt;
+
+&lt;ErrorBoundary&gt;
+    &lt;ChildContent&gt;&lt;ToastAudit /&gt;&lt;/ChildContent&gt;
+    &lt;ErrorContent&gt;The audit panel failed; the rest of the page keeps working.&lt;/ErrorContent&gt;
+&lt;/ErrorBoundary&gt;</code></pre>
+
+<h2 id="7-keep-handlers-fast">7. Keep handlers fast</h2>
+
+<p>Handlers run one after another, and <code>PublishAsync</code> waits for all of them. A handler that awaits a 2-second animation delays every handler after it, <em>and</em> the publisher. Start long work without awaiting it:</p>
+
+<pre><code>// MyApp.Client/Features/Toasts/Components/ToastBell.razor.cs
+namespace MyApp.Client.Features.Toasts.Components;
+
+public partial class ToastBell
+{
+    private bool _ringing;
+
+    [Subscribe(Scope = ScopeKind.Root)]
+    private void OnToastRequested(ToastRequested request)
+    {
+        _ringing = true;
+        _ = StopRingingAsync(); // don't await: let delivery continue
+    }
+
+    private async Task StopRingingAsync()
+    {
+        try
+        {
+            await Task.Delay(1000, DisposalToken); // DisposalToken: cancelled when the component goes away
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        _ringing = false;
+        StateHasChanged();
+    }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Toasts/Components/ToastBell.razor *@@
+@@inherits RfEventComponent
+
+&lt;span class="@@(_ringing ? "text-warning" : "")"&gt;🔔&lt;/span&gt;</code></pre>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li><code>[Subscribe]</code> methods are wired up by the generated <code>RegisterSubscriptions</code> before <code>OnInitialized</code>, and unsubscribed when the component is disposed.</li>
+<li>Delivery goes through each component's <code>InvokeAsync</code>, so publishing from any thread is safe.</li>
+<li>By default a component listens at its <strong>nearest scope</strong> and a publish <strong>bubbles</strong> up from the publisher's nearest scope to the root. Without any <code>EventScope</code>s, everything is at the root, so every subscriber hears every publish of its event type.</li>
+</ul>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>Keep event types next to the feature that owns them</strong> (<code>Features/Toasts/ToastEvents.cs</code>). Several small related events can share one <code>…Events.cs</code> file. Large ones get their own file.</li>
+<li><strong>Use past tense for facts and <code>…Requested</code> for commands.</strong></li>
+<li><strong>Carry only what handlers need</strong> (ids, small values). Handlers can read anything else from state.</li>
+<li><strong>Don't use events for parent → direct child.</strong> A <code>[Parameter]</code> or <code>EventCallback</code> is clearer there. The hub is for components that don't share a direct line.</li>
+<li><strong>Never <code>await</code> long work in a handler.</strong> Fire and forget, using <code>DisposalToken</code>.</li>
+<li><strong>Wrap optional or fragile listeners in an <code>ErrorBoundary</code>.</strong></li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>Handler never runs</td><td>Listener mounts <em>after</em> the publish; events aren't replayed</td><td>Use state if late components must see it</td></tr>
+<tr><td>Handler runs but UI doesn't update</td><td><code>Render = false</code> without <code>StateHasChanged()</code></td><td>Remove <code>Render = false</code>, or call <code>StateHasChanged()</code></td></tr>
+<tr><td>Clicking feels slow</td><td>A handler awaits long work</td><td>Fire and forget (step 7)</td></tr>
+<tr><td>Handler in an <code>EventScope</code> doesn't hear a publish from outside</td><td>The publish doesn't travel <em>into</em> scopes by default</td><td>See <a href="/events/tutorials/05-scopes-and-routing">tutorial 05</a> (<code>Route.Global</code>, <code>ScopeKind.Root</code>)</td></tr>
+<tr><td><code>RFEVT011</code> warning</td><td>Two handlers for the same event in one component</td><td>Merge them, unless you really want both</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/05-scopes-and-routing">05 · Scopes and routing</a></p>
+</TutorialDetail>
