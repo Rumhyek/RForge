@@ -45,9 +45,9 @@
         <div class="menu mt-6">
             <p class="menu-label is-size-6 mb-2">Tutorials</p>
             <ul class="menu-list">
-                @foreach (var tutorial in Tutorials)
+                @foreach (var tutorial in TutorialSet.Events.All)
                 {
-                    @ComponentDetail.SideLink((tutorial.Title, TagInfo.Empty, tutorial.Url))
+                    @ComponentDetail.SideLink(($"{tutorial.Number} {tutorial.Title}", TagInfo.Empty, tutorial.Url))
                 }
             </ul>
         </div>
@@ -375,24 +375,6 @@ public partial class CartBadge
 
     private static string EventsSource(string path) =>
         $"https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Events/{path}";
-
-    // The tutorials are listed here until the tutorial pages share one list with their layout.
-    private static readonly (string Title, string Url)[] Tutorials =
-    [
-        ("01 Setup", "/events/tutorials/01-setup"),
-        ("02 State", "/events/tutorials/02-state"),
-        ("03 State with Cascades", "/events/tutorials/03-state-with-cascades"),
-        ("04 Events", "/events/tutorials/04-events"),
-        ("05 Scopes and Routing", "/events/tutorials/05-scopes-and-routing"),
-        ("06 Scoped State", "/events/tutorials/06-scoped-state"),
-        ("07 Services and Background Work", "/events/tutorials/07-services-and-background-work"),
-        ("08 Prerendering and Persistence", "/events/tutorials/08-prerendering-and-persistence"),
-        ("09 Render Modes", "/events/tutorials/09-render-modes"),
-        ("10 Manual Registration", "/events/tutorials/10-manual-registration"),
-        ("11 Testing with bUnit", "/events/tutorials/11-testing-with-bunit"),
-        ("12 Troubleshooting", "/events/tutorials/12-troubleshooting"),
-        ("13 Best Practices", "/events/tutorials/13-best-practices"),
-    ];
 
     private static readonly (string Id, string Severity, string Meaning)[] Diagnostics =
     [

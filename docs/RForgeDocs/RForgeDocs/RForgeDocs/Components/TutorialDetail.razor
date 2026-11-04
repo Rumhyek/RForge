@@ -1,5 +1,5 @@
-@* Page frame shared by the Events tutorials: hero, breadcrumb, tutorial list on the left, previous/next at the bottom.
-   Pass Slug to show a tutorial; leave it out for the tutorials index. *@
+@* Page frame shared by the library tutorials: hero, breadcrumb, tutorial list on the left, previous/next at the bottom.
+   Pass the library's TutorialSet, plus Slug to show a tutorial; leave Slug out for the tutorials index. *@
 
 <PageTitle>@PageTitleText</PageTitle>
 
@@ -11,14 +11,14 @@
         <ul>
             <li><a href="/">RForge</a></li>
             <li><a href="/component-listing">Components</a></li>
-            <li><a href="/events/details">Events</a></li>
+            <li><a href="@Tutorials.OverviewUrl">@Tutorials.Library</a></li>
             @if (Current == null)
             {
                 <li class="is-active"><a href="#" aria-current="page">Tutorials</a></li>
             }
             else
             {
-                <li><a href="/events/tutorials">Tutorials</a></li>
+                <li><a href="@Tutorials.Route">Tutorials</a></li>
                 <li class="is-active"><a href="#" aria-current="page">@Current.Title</a></li>
             }
         </ul>
@@ -31,15 +31,15 @@
         <div class="column is-3-desktop is-4-tablet side-nav">
             <section class="section">
                 <div class="menu">
-                    <p class="menu-label">Events</p>
+                    <p class="menu-label">@Tutorials.Library</p>
                     <ul class="menu-list">
-                        <li><a href="/events/details">Events overview</a></li>
-                        <li><a href="/events/tutorials" class="@(Current == null ? "is-active" : null)">All tutorials</a></li>
+                        <li><a href="@Tutorials.OverviewUrl">@Tutorials.Library overview</a></li>
+                        <li><a href="@Tutorials.Route" class="@(Current == null ? "is-active" : null)">All tutorials</a></li>
                     </ul>
 
                     <p class="menu-label mt-5">Tutorials</p>
                     <ul class="menu-list">
-                        @foreach (var tutorial in EventsTutorialList.All)
+                        @foreach (var tutorial in Tutorials.All)
                         {
                             <li>
                                 <a href="@tutorial.Url"
@@ -90,6 +90,10 @@
 
 @code {
 
+    /// <summary>The library's tutorials, for example <c>TutorialSet.Events</c>.</summary>
+    [Parameter, EditorRequired]
+    public TutorialSet Tutorials { get; set; }
+
     /// <summary>The slug of the tutorial being shown, for example <c>01-setup</c>. Null shows the index.</summary>
     [Parameter]
     public string Slug { get; set; }
@@ -97,22 +101,22 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    private EventsTutorial Current => EventsTutorialList.All.FirstOrDefault(t => t.Slug == Slug);
+    private Tutorial Current => Tutorials.All.FirstOrDefault(t => t.Slug == Slug);
 
-    private EventsTutorial Previous => IndexOfCurrent > 0 ? EventsTutorialList.All[IndexOfCurrent - 1] : null;
+    private Tutorial Previous => IndexOfCurrent > 0 ? Tutorials.All[IndexOfCurrent - 1] : null;
 
-    private EventsTutorial Next => IndexOfCurrent >= 0 && IndexOfCurrent < EventsTutorialList.All.Count - 1
-        ? EventsTutorialList.All[IndexOfCurrent + 1]
+    private Tutorial Next => IndexOfCurrent >= 0 && IndexOfCurrent < Tutorials.All.Count - 1
+        ? Tutorials.All[IndexOfCurrent + 1]
         : null;
 
-    private int IndexOfCurrent => Current == null ? -1 : EventsTutorialList.All.ToList().IndexOf(Current);
+    private int IndexOfCurrent => Current == null ? -1 : Tutorials.All.ToList().IndexOf(Current);
 
-    private string HeroTitle => Current == null ? "Events Tutorials" : $"{Current.Number} · {Current.Title}";
+    private string HeroTitle => Current == null ? $"{Tutorials.Library} Tutorials" : $"{Current.Number} · {Current.Title}";
 
     private string HeroSubTitle => Current == null
-        ? "Step-by-step guides for RForge.Blazor.Events"
+        ? $"Step-by-step guides for {Tutorials.Package}"
         : Current.Description;
 
-    private string PageTitleText => Current == null ? "Events Tutorials" : $"{Current.Title} · Events Tutorial";
+    private string PageTitleText => Current == null ? $"{Tutorials.Library} Tutorials" : $"{Current.Title} · {Tutorials.Library} Tutorial";
 
 }

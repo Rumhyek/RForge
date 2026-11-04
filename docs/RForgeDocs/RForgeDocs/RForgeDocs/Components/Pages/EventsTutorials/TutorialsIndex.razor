@@ -1,6 +1,6 @@
 @page "/events/tutorials"
 
-<TutorialDetail>
+<TutorialDetail Tutorials="TutorialSet.Events">
 <p>Step-by-step guides for using <code>RForge.Blazor.Events</code> in a Blazor app. They assume you already know Blazor components, dependency injection and render modes, and explain only what's specific to the hub.</p>
 
 <p>Start with <strong>Setup</strong>. After that, each tutorial stands alone: it has its own small example, so you can jump straight to the topic you need.</p>
@@ -11,7 +11,7 @@
             <tr><th>#</th><th>Tutorial</th><th>You'll learn</th></tr>
         </thead>
         <tbody>
-            @foreach (var tutorial in EventsTutorialList.All)
+            @foreach (var tutorial in TutorialSet.Events.All)
             {
                 <tr>
                     <td>@tutorial.Number</td>
