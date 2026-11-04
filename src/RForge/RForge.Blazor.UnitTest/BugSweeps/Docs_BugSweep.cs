@@ -39,6 +39,7 @@ public class Docs_BugSweep
     public void Setup()
     {
         ctx = new BunitTestContext();
+        ctx.SetupHotKeys();
         ctx.Services.AddSingleton<IUserDataGridPageProcessor>(
             new UserDataGridPageProcessor(new MockUserRepository()));
     }

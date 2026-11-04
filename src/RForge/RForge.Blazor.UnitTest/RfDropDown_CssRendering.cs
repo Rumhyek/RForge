@@ -1,6 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using RForge.Blazor.Abstractions.DropDowns;
+using RForge.Blazor.UnitTest;
 
 using BunitTestContext = Bunit.TestContext;
 using SingleDropDown = RForge.Blazor.RfDropDown<string>;
@@ -16,6 +17,8 @@ using MultiDropDown = RForge.Blazor.RfDropDownMulti<string>;
 [TestClass]
 public class RfDropDown_CssRendering : BunitTestContext
 {
+    public RfDropDown_CssRendering() => this.SetupHotKeys();
+
     private static ComponentParameter Param(string name, object value)
         => ComponentParameter.CreateParameter(name, value);
 

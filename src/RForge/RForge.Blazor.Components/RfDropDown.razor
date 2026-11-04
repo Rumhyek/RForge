@@ -4,6 +4,11 @@
 
 @inherits RfDropDownBase<TItem>
 
+@if (EscapeHotKeyActive == true)
+{
+    <RfHotKey Keys="@RfKey.Escape" OnPressed="CloseDropDown" />
+}
+
 <div class="dropdown @DropdownCss">
     <div class="dropdown-trigger">
         <button class="button" type="button" aria-haspopup="true" aria-controls="@DropdownId" @onclick="@OnDropDownClick">

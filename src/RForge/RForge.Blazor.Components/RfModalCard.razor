@@ -2,6 +2,11 @@
 
 @if (IsVisible == true)
 {
+    @if (UseHotKeys == true)
+    {
+        <RfHotKey Keys="@RfKey.Escape" OnPressed="OnEscapePressed" />
+    }
+
     <div class="modal @modalCss" style="@modalStyles">
         <div class="modal-background"></div>
         <div class="modal-card @modalContentCss">

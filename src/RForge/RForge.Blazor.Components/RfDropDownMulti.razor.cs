@@ -101,7 +101,8 @@ public partial class RfDropDownMulti<TItem> : RfDropDownBase<TItem>
     }
 
     /// <summary>
-    /// Handles the item key down event. Supports Enter and Escape keys.
+    /// Handles the item key down event. Supports Enter, and Escape when <see cref="RfDropDownBase{TItem}.UseHotKeys"/>
+    /// is false. Otherwise <see cref="RfHotKey"/> handles Escape, and handling it here too would close a second layer.
     /// </summary>
     /// <param name="e">The keyboard event arguments.</param>
     /// <param name="item">The item that was interacted with.</param>
@@ -113,7 +114,7 @@ public partial class RfDropDownMulti<TItem> : RfDropDownBase<TItem>
             return;
         }
 
-        if (e.Code == "Escape")
+        if (e.Code == "Escape" && UseHotKeys == false)
         {
             await CloseDropDown();
         }
