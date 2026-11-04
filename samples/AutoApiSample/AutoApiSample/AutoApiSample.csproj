@@ -12,7 +12,7 @@
         <ProjectReference Include="..\AutoApiSample.Client\AutoApiSample.Client.csproj" />
         <ProjectReference Include="..\AutoApiSample.Shared\AutoApiSample.Shared.csproj" />
         <ProjectReference Include="..\..\..\src\RForge\RForge.Blazor.AutoApi.Generator\RForge.Blazor.AutoApi.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
     </ItemGroup>
 
 </Project>
