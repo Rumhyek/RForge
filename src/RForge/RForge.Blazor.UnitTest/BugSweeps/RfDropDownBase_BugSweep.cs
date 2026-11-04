@@ -23,7 +23,11 @@ public class RfDropDownBase_BugSweep
     private BunitTestContext ctx;
 
     [TestInitialize]
-    public void Setup() => ctx = new BunitTestContext();
+    public void Setup()
+    {
+        ctx = new BunitTestContext();
+        ctx.SetupHotKeys();
+    }
 
     [TestCleanup]
     public void Cleanup() => ctx.Dispose();

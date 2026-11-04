@@ -1,7 +1,4 @@
 workflow: GitHubFlow/v1
-# Version 1 is the first release of the unified package family. Remove this line
-# once v1.0.0 is tagged: tags drive the version from then on.
-next-version: 1.0.0
 branches:
   main:
     mode: ContinuousDelivery

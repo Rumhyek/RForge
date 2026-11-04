@@ -6,7 +6,7 @@ A light weight Blazor library using Bulma. More details at [RForge](https://rfor
 ## Light Weight and Memory Efficient
 RForge will focus on key components and avoid over-bloating the library with small, simple ones. This approach allows the CSS framework Bulma to excel at what it does best. By leveraging Bulma effectively, RForge ensures low load times and minimal memory usage.
 
-Additionally, RForge will strive to eliminate any JavaScript dependencies, helping to keep the download file size to a minimum. The primary goal is to minimize client-side downloads, particularly when used in WASM environments, where the client would otherwise be burdened with both WASM and JavaScript files.
+Additionally, RForge will strive to eliminate any JavaScript dependencies, helping to keep the download file size to a minimum. The primary goal is to minimize client-side downloads, particularly when used in WASM environments, where the client would otherwise be burdened with both WASM and JavaScript files. The one exception is hot keys, because a page-wide key listener isn't possible without JavaScript. `RfHotKey` and the components that use it (open dropdowns and visible modals) load one small file on first use, and those components can opt out with `UseHotKeys="false"`. No other component uses JavaScript.
 
 Consistent with these principles, RForge will keep its package CSS minimal, concentrating on the utilization of Bulma. This strategy not only keeps RForge's CSS download size compact but also reduces the complexity and memory requirements of the Blazor components themselves.
 

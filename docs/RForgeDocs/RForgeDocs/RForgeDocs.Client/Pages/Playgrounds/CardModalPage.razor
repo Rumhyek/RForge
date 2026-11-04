@@ -34,6 +34,10 @@
                        HelpText="Should the default close button be shown. By default = true.">
             <InputCheckbox @bind-Value=ShowCloseButton class="checkbox" />
         </BulmaCheckbox>
+        <BulmaCheckbox Label="UseHotKeys"
+                       HelpText="If true Esc closes the modal when ShowCloseButton is true. If false no JavaScript is loaded and Esc is ignored. By default = true.">
+            <InputCheckbox @bind-Value=UseHotKeys class="checkbox" />
+        </BulmaCheckbox>
 
         <h3 class="title mt-6 is-size-5">RfModalCard</h3>
 
@@ -69,6 +73,7 @@
                  ModalCss="@ModalCss"
                  ModalContentCss="@ModalContentCss"
                  ShowCloseButton="@ShowCloseButton"
+                 UseHotKeys="@UseHotKeys"
                  Width="@Width"
                  Title="@Title">
         <Head>
@@ -88,6 +93,7 @@ else if (ShowHead == true && ShowFoot == false)
                  ModalCss="@ModalCss"
                  ModalContentCss="@ModalContentCss"
                  ShowCloseButton="@ShowCloseButton"
+                 UseHotKeys="@UseHotKeys"
                  Width="@Width"
                  Title="@Title">
         <Head>
@@ -104,6 +110,7 @@ else if (ShowHead == false && ShowFoot == true)
                  ModalCss="@ModalCss"
                  ModalContentCss="@ModalContentCss"
                  ShowCloseButton="@ShowCloseButton"
+                 UseHotKeys="@UseHotKeys"
                  Width="@Width"
                  Title="@Title">
         <Body>
@@ -120,6 +127,7 @@ else
                  ModalCss="@ModalCss"
                  ModalContentCss="@ModalContentCss"
                  ShowCloseButton="@ShowCloseButton"
+                 UseHotKeys="@UseHotKeys"
                  Width="@Width"
                  Title="@Title">
         <Body>
@@ -156,6 +164,11 @@ else
     /// Should the default close button be shown. By default = true
     /// </summary>
     public bool ShowCloseButton { get; set; } = true;
+
+    /// <summary>
+    /// If true Esc closes the modal when ShowCloseButton is true. If false no JavaScript is loaded and Esc is ignored.
+    /// </summary>
+    public bool UseHotKeys { get; set; } = true;
 
 
     ///<summary>

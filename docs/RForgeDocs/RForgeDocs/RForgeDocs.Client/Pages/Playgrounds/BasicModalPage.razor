@@ -31,6 +31,10 @@
                        HelpText="Should the default close button be shown. By default = true.">
             <InputCheckbox @bind-Value=ShowCloseButton class="checkbox" />
         </BulmaCheckbox>
+        <BulmaCheckbox Label="UseHotKeys"
+                       HelpText="If true Esc closes the modal when ShowCloseButton is true. If false no JavaScript is loaded and Esc is ignored. By default = true.">
+            <InputCheckbox @bind-Value=UseHotKeys class="checkbox" />
+        </BulmaCheckbox>
 
         <BulmaInput Label="Content Option"
                     HelpText="Changes out the content of the modal.">
@@ -58,6 +62,7 @@
          ModalCss="@ModalCss"
          ModalContentCss="@ModalContentCss"
          ShowCloseButton="@ShowCloseButton"
+         UseHotKeys="@UseHotKeys"
          Width="@Width">
 
     @if (ContentOption == BasicModalContent.Simple)
@@ -140,6 +145,11 @@
     /// Should the default close button be shown. By default = true
     /// </summary>
     public bool ShowCloseButton { get; set; } = true;
+
+    /// <summary>
+    /// If true Esc closes the modal when ShowCloseButton is true. If false no JavaScript is loaded and Esc is ignored.
+    /// </summary>
+    public bool UseHotKeys { get; set; } = true;
 
     public BasicModalContent ContentOption { get; set; } = BasicModalContent.Complex;
 

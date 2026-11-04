@@ -181,6 +181,13 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     /// </summary>
     [Parameter]
     public bool IsReadonly { get; set; }
+
+    /// <summary>
+    /// If true Esc closes the open dropdown wherever focus is, using <see cref="RfHotKey"/>, which loads a small
+    /// JavaScript file. If false no JavaScript is loaded and Esc only closes it while focus is on an item. By default = true
+    /// </summary>
+    [Parameter]
+    public bool UseHotKeys { get; set; } = true;
     #endregion
 
     /// <summary>
@@ -420,6 +427,11 @@ public class RfDropDownBase<TItem> : ComponentBase, IDisposable
     }
 
     #region Computeds
+
+    /// <summary>
+    /// True while Esc should close this dropdown through <see cref="RfHotKey"/>.
+    /// </summary>
+    protected bool EscapeHotKeyActive => UseHotKeys == true && IsOpen == true && IsReadonly == false;
 
     /// <summary>
     /// Gets the CSS classes for the dropdown.

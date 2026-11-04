@@ -72,6 +72,13 @@
     public void OnShowModalClick() => ModalIsVisible = true;
 }</xmp></pre>
 
+            <h4>Closing with Esc</h4>
+            <p>
+                While it is visible, Esc closes the modal if <code>ShowCloseButton</code> is true. With no close button Esc does nothing, and it
+                can't reach a modal behind this one. This uses <a href="/hot-key/details"><code>RfHotKey</code></a>, which loads a small
+                JavaScript file. Set <code>UseHotKeys="false"</code> to load no JavaScript, and the modal then ignores Esc.
+            </p>
+
         </div>
 
     </BasicUsage>

@@ -1,8 +1,10 @@
 # RForge.Blazor.Components
 
-A light weight Blazor component library built on [Bulma CSS](https://bulma.io). The components are UI only: no business logic, no JavaScript dependency, and a minimal CSS footprint on top of Bulma.
+A light weight Blazor component library built on [Bulma CSS](https://bulma.io). The components are UI only: no business logic and a minimal CSS footprint on top of Bulma.
 
-Drop downs, a data grid, tabs, a tree view, dialogs, notifications, a context menu, a markdown viewer and more. See every component with live examples on the [documentation site](https://rforge.azurewebsites.net).
+Almost all of it runs without JavaScript. `RfHotKey` loads one small file on first use, and open dropdowns and visible modals use it for Esc. Set `UseHotKeys="false"` on those components to opt out.
+
+Drop downs, a data grid, tabs, a tree view, dialogs, notifications, a context menu, hot keys, a markdown viewer and more. See every component with live examples on the [documentation site](https://rforge.azurewebsites.net).
 
 ## Install
 

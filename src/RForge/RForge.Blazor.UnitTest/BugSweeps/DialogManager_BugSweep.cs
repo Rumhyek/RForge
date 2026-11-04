@@ -24,6 +24,7 @@ public class DialogManager_BugSweep
     public void Setup()
     {
         ctx = new BunitTestContext();
+        ctx.SetupHotKeys();
         dialogManager = new DialogManager();
         // Pre-created instance shared by both rendered managers and the test body.
         ctx.Services.AddSingleton(dialogManager);

@@ -45,6 +45,24 @@ public class RfModalBase : ComponentBase
     public bool ShowCloseButton { get; set; } = true;
 
     /// <summary>
+    /// If true Esc closes the modal when <see cref="ShowCloseButton"/> is true, using <see cref="RfHotKey"/>, which
+    /// loads a small JavaScript file. With no close button Esc does nothing, and it can't reach a modal behind this one.
+    /// If false no JavaScript is loaded and this modal ignores Esc. By default = true
+    /// </summary>
+    [Parameter]
+    public bool UseHotKeys { get; set; } = true;
+
+    /// <summary>
+    /// Handles Esc while the modal is visible.
+    /// </summary>
+    protected async Task OnEscapePressed()
+    {
+        if (ShowCloseButton == false) return;
+
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    /// <summary>
     /// Adds base modal CSS classes.
     /// </summary>
     /// <param name="css">The CSS classes to add.</param>

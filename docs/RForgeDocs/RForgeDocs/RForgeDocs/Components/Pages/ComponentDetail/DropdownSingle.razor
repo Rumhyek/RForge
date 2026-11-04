@@ -122,6 +122,13 @@
     Items = await NameService.SearchAsync(filter);
 }</code></pre>
 
+            <h3>Closing with Esc</h3>
+            <p>
+                While it is open, Esc closes the drop down wherever focus is. This uses <a href="/hot-key/details"><code>RfHotKey</code></a>,
+                which loads a small JavaScript file. Set <code>UseHotKeys="false"</code> to load no JavaScript, and Esc then only closes the
+                drop down while focus is on an item.
+            </p>
+
             <h3>Styling</h3>
             <p>
                 The drop down passes four class parameters through to the elements it renders, so you can style it without fighting the component:

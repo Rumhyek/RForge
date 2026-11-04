@@ -1,0 +1,115 @@
+@page "/hot-key/example/basic-example"
+@rendermode InteractiveAuto
+
+@using RForge.Blazor.Services
+@using RForgeDocs.Abstractions
+@inject IDialogManager DialogManager
+
+<ExampleDetail Title="Basic Example"
+               SubTitle="Combos and Esc layers"
+               ComponentName="Hot Key"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/HotKey/BasicExamplePage.razor")"
+               ComponentDetailsUrl="/hot-key/details" />
+
+<RfHotKey Keys="mod+k" OnPressed="@(() => SearchPresses++)" />
+<RfHotKey Keys="?" OnPressed="@(() => HelpPresses++)" />
+<RfHotKey Keys="@RfKey.Escape" OnPressed="@(() => PageEscapePresses++)" />
+
+@if (SaveHotKeyEnabled == true)
+{
+    <RfHotKey Keys="mod+s" OnPressed="@(() => SavePresses++)" />
+}
+
+<div class="container">
+    <article class="section">
+        <div class="content">
+
+            <p>Hot keys work the same in every interactive render mode. This page is running in: <span id="runtime" class="tag is-info is-light">@Runtime</span></p>
+
+            <h4>Combos</h4>
+            <p><kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on a Mac) has been pressed <strong id="search-presses">@SearchPresses</strong> times.</p>
+            <p>
+                <kbd>?</kbd> has been pressed <strong id="help-presses">@HelpPresses</strong> times. It has no Ctrl, Alt or Cmd,
+                so typing it in this box types it and doesn't count:
+            </p>
+            <div class="block">
+                <input id="typing-box" class="input" type="text" placeholder="Type a ? here" />
+            </div>
+
+            <h4>Only while rendered</h4>
+            <p>
+                While this is ticked <kbd>Ctrl</kbd>+<kbd>S</kbd> counts here. Untick it and the hot key leaves the render tree, so the
+                browser's own save dialog comes back. Saves: <strong id="save-presses">@SavePresses</strong>.
+            </p>
+            <div class="block">
+                <label class="checkbox">
+                    <input id="save-enabled" type="checkbox" @bind="SaveHotKeyEnabled" />
+                    Hot key is rendered
+                </label>
+            </div>
+
+            <h4>Esc layers</h4>
+            <p>
+                This page has its own hot key on Esc, which has been pressed <strong id="page-escape-presses">@PageEscapePresses</strong> times.
+                Anything opened on top of it takes Esc while it's open, so each press closes one layer.
+            </p>
+            <div class="buttons">
+                <a id="open-first" class="button is-primary" @onclick="@(() => FirstModalIsVisible = true)">Open a modal</a>
+                <a id="open-locked" class="button" @onclick="@(() => LockedModalIsVisible = true)">Open a modal with no close button</a>
+            </div>
+
+        </div>
+    </article>
+</div>
+
+<RfModal @bind-IsVisible="FirstModalIsVisible">
+    <div class="content">
+        <p>Open the dropdown, then press Esc until you're back on the page.</p>
+
+        <div class="block">
+            <RfDropDown TItem="string" Items="Fruit" @bind-SelectedItem="SelectedFruit" PlaceholderText="Pick a fruit" ShowFilter="true">
+                @context
+            </RfDropDown>
+        </div>
+
+        <div class="buttons">
+            <a id="open-second" class="button" @onclick="@(() => SecondModalIsVisible = true)">Open a second modal</a>
+            <a id="open-dialog" class="button" @onclick="ShowConfirm">Show a dialog</a>
+        </div>
+    </div>
+</RfModal>
+
+<RfModal @bind-IsVisible="SecondModalIsVisible">
+    <p>Esc closes this one, and the first modal stays open.</p>
+</RfModal>
+
+<RfModal @bind-IsVisible="LockedModalIsVisible" ShowCloseButton="false">
+    <div class="content">
+        <p>This modal has no close button, so Esc does nothing. It doesn't reach the page behind it either.</p>
+        <a id="close-locked" class="button" @onclick="@(() => LockedModalIsVisible = false)">Close</a>
+    </div>
+</RfModal>
+
+<RfDialogManager />
+
+@code {
+
+    private static string Runtime => OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+
+    private int SearchPresses { get; set; }
+    private int HelpPresses { get; set; }
+    private int SavePresses { get; set; }
+    private int PageEscapePresses { get; set; }
+
+    private bool SaveHotKeyEnabled { get; set; } = true;
+
+    private bool FirstModalIsVisible { get; set; }
+    private bool SecondModalIsVisible { get; set; }
+    private bool LockedModalIsVisible { get; set; }
+
+    private List<string> Fruit { get; } = ["Apple", "Banana", "Cherry"];
+    private string SelectedFruit { get; set; }
+
+    private void ShowConfirm() => DialogManager.Confirm("Dialogs need an answer, so Esc does nothing here.", _ => Task.CompletedTask);
+
+}
