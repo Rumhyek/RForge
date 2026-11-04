@@ -1,0 +1,172 @@
+@page "/autoapi/tutorials/08-endpoint-conventions"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="08-endpoint-conventions">
+<p><strong>Goal:</strong> apply ASP.NET features such as rate limiting and endpoint filters to every generated endpoint, and know what metadata the endpoints carry.</p>
+
+<p>This tutorial only affects calls over HTTP, from WebAssembly. Calls from Interactive Server components and from prerendering never reach an endpoint, so none of the conventions below run for them (<a href="/autoapi/tutorials/06-render-modes">tutorial 06</a>).</p>
+
+<h2 id="1-add-conventions-to-the-group">1. Add conventions to the group</h2>
+
+<p><code>MapRForgeAutoApi()</code> returns a <code>RouteGroupBuilder</code> that contains every generated endpoint. Whatever you chain onto it applies to all of them:</p>
+
+<pre><code>// MyApp/Program.cs (excerpt)
+using Microsoft.AspNetCore.RateLimiting;
+using MyApp.Shared;
+
+builder.Services.AddRateLimiter(options =&gt;
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("api", limiter =&gt;
+    {
+        limiter.PermitLimit = 100;
+        limiter.Window = TimeSpan.FromMinutes(1);
+    });
+});
+
+// ...
+
+app.UseRateLimiter();
+
+app.MapRForgeAutoApi()
+    .RequireRateLimiting("api")
+    .AddEndpointFilter(async (context, next) =&gt;
+    {
+        var audit = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata&lt;AuditAttribute&gt;();
+        if (audit is not null) context.HttpContext.Response.Headers["X-Audit"] = audit.Action;
+
+        return await next(context);
+    });</code></pre>
+
+<p>With <code>PermitLimit = 3</code>, five calls to the generated endpoints in a minute answer <code>200 200 200 429 429</code>. The limit is counted across the whole group, not per endpoint. Requests to your pages are not affected.</p>
+
+<p>Any other convention works the same way, because the group is an ordinary <code>RouteGroupBuilder</code>: <code>RequireCors</code>, <code>RequireHost</code>, <code>WithMetadata</code>, more filters, and so on. Put the middleware they need (<code>UseRateLimiter</code>, <code>UseCors</code>) in the pipeline before the endpoints run.</p>
+
+<h2 id="2-names-tags-and-routes">2. Names, tags and routes</h2>
+
+<p>Every endpoint gets a name and a tag. Both are the <strong>interface</strong> name, not the route segment:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Method</th><th>Route</th><th>Name</th><th>Tag</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IBookService.GetAllAsync</code></td><td><code>/api/auto/IBookService/GetAllAsync</code></td><td><code>IBookService_GetAllAsync</code></td><td><code>IBookService</code></td></tr>
+<tr><td><code>IShelfService.CountAsync()</code></td><td><code>/api/auto/shelf/CountAsync</code></td><td><code>IShelfService_CountAsync</code></td><td><code>IShelfService</code></td></tr>
+<tr><td><code>IShelfService.CountAsync(string name)</code> (second overload)</td><td><code>/api/auto/shelf/CountAsync1</code></td><td><code>IShelfService_CountAsync1</code></td><td><code>IShelfService</code></td></tr>
+</tbody>
+</table></div>
+
+<p>The second route comes from <code>RouteSegment = "shelf"</code> on the interface. Overloads get a number added, in declaration order, to both the route and the name (<a href="/autoapi/tutorials/02-methods-and-routes">tutorial 02</a>). Tools that read endpoint metadata, such as <code>EndpointDataSource</code> or <code>LinkGenerator</code>, can use the names and tags.</p>
+
+<h2 id="3-attributes-become-endpoint-metadata">3. Attributes become endpoint metadata</h2>
+
+<p>Every attribute you put on an interface or on one of its methods is added to the endpoint as metadata, so your filters and conventions can read it. Define the attribute in the shared library:</p>
+
+<pre><code>// MyApp.Shared/AuditAttribute.cs
+namespace MyApp.Shared;
+
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
+public sealed class AuditAttribute(string action) : Attribute
+{
+    public string Action { get; } = action;
+    public bool Sensitive { get; set; }
+}</code></pre>
+
+<pre><code>// MyApp.Shared/IShelfService.cs
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Shared;
+
+[RForgeAutoApi(RouteSegment = "shelf")]
+public interface IShelfService
+{
+    [RfAllowAnonymous]
+    [Audit("shelf.count")]
+    Task&lt;int&gt; CountAsync();
+
+    [RfAllowAnonymous]
+    [Audit("shelf.clear", Sensitive = true)]
+    Task ClearAsync();
+}</code></pre>
+
+<p>The generator writes this into the server's endpoint mapping:</p>
+
+<pre><code>// obj/Debug/net10.0/generated/…/MyApp.AutoApiEndpoints.RForgeAutoApi.Server.g.cs (generated; excerpt)
+.WithMetadata(new global::MyApp.Shared.AuditAttribute("shelf.clear") { Sensitive = true })</code></pre>
+
+<p>and the filter from step 1 sees it. An attribute on the <strong>interface</strong> is copied to every endpoint of that interface, in addition to the method's own.</p>
+
+<h3 id="what-is-not-copied">What is not copied</h3>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Not copied</th><th>Why</th></tr>
+</thead>
+<tbody>
+<tr><td>RForge's own attributes (<code>RForgeAutoApi*</code>, <code>RfAuthorize</code>, <code>RfAllowAnonymous</code>)</td><td>Translated instead: <code>RequireAuthorization(...)</code> and <code>AllowAnonymous()</code> (<a href="/autoapi/tutorials/05-authorization">tutorial 05</a>)</td></tr>
+<tr><td>Anything in <code>System.Runtime.CompilerServices</code>, <code>System.Runtime.InteropServices</code> and <code>System.Diagnostics</code> (including <code>System.Diagnostics.CodeAnalysis</code>)</td><td>Compiler, interop and analysis hints</td></tr>
+<tr><td><code>System.ObsoleteAttribute</code> and <code>System.Reflection.DefaultMemberAttribute</code></td><td>They describe the interface to callers, not the endpoint</td></tr>
+<tr><td>Attributes on parameters</td><td>Only interfaces and methods are read</td></tr>
+<tr><td>Types listed in <code>ExcludedAttributes</code></td><td>Your own deny-list (below)</td></tr>
+</tbody>
+</table></div>
+
+<p>Exclude your own attributes in the defaults in the shared library:</p>
+
+<pre><code>// MyApp.Shared/IBookService.cs (excerpt)
+[assembly: RForgeAutoApiDefaults(
+    JsonContext = typeof(AppJsonContext),
+    ExcludedAttributes = new[] { typeof(InternalNoteAttribute) })]</code></pre>
+
+<p><code>[InternalNote("only for the team")]</code> on a method is then ignored.</p>
+
+<h3 id="rfaa010-an-attribute-that-cant-be-copied"><code>RFAA010</code>: an attribute that can't be copied</h3>
+
+<p>The generator rebuilds the attribute from its compile-time arguments. Constructor and named arguments of strings, numbers, booleans, enums, <code>typeof(...)</code> and arrays all work. If it can't rebuild one, it skips the attribute and warns:</p>
+
+<pre><code>warning RFAA010: Attribute 'MyApp.Shared.HiddenAttribute' on 'IShelfService.OddAsync' could not be reconstructed and was not copied to the endpoint</code></pre>
+
+<p>The usual cause is an <code>internal</code> attribute declared in the shared library, which the server project can't use. Make it <code>public</code>, or add it to <code>ExcludedAttributes</code> if it shouldn't reach the endpoint anyway (an excluded attribute is skipped before the check, so it gives no warning). The warning is reported by each project that runs the generator, the server and the client.</p>
+
+<h2 id="4-what-the-endpoints-dont-do">4. What the endpoints don't do</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Feature</th><th>What happens</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>OpenAPI</strong></td><td>With <code>Microsoft.AspNetCore.OpenApi</code> (tested with 10.0), the generated endpoints are <strong>not listed</strong> in the document. They carry a name and tags, but their handler is a plain request delegate with no signature to describe, and the request body is a generated envelope rather than a type.</td></tr>
+<tr><td><strong>Antiforgery</strong></td><td>Generated endpoints accept JSON, not form posts, so <code>UseAntiforgery()</code> doesn't validate them. A <code>POST</code> without a token succeeds with <code>UseAntiforgery()</code> in the pipeline, and you don't need <code>DisableAntiforgery()</code>.</td></tr>
+<tr><td><strong>Authorization</strong></td><td>From your <code>[RfAuthorize]</code> and <code>[RfAllowAnonymous]</code> attributes (<a href="/autoapi/tutorials/05-authorization">tutorial 05</a>). A convention like <code>RequireAuthorization()</code> on the group adds to it.</td></tr>
+<tr><td><strong>Interactive Server calls</strong></td><td>None of the conventions above apply (<a href="/autoapi/tutorials/06-render-modes">tutorial 06</a>).</td></tr>
+</tbody>
+</table></div>
+
+<p>If you need rate limiting or auditing for Interactive Server calls too, do it in your service or in a decorator you register around it.</p>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>Put cross-cutting rules on the group</strong>, once, next to <code>MapRForgeAutoApi()</code>.</li>
+<li><strong>Keep metadata attributes <code>public</code></strong> and in the shared library, and exclude the ones that mean nothing to an endpoint.</li>
+<li><strong>Read the metadata in one filter or convention</strong> instead of repeating the logic in every service method.</li>
+<li><strong>Don't rely on conventions for security.</strong> Calls from Interactive Server skip them; use <code>[RfAuthorize]</code>, which both paths enforce.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>The rate limit never applies, with no error and nothing in the log</td><td><code>UseRateLimiter()</code> is not in the pipeline</td><td>Add it before the endpoints run</td></tr>
+<tr><td>A filter never sees your attribute</td><td>The attribute is <code>internal</code> (<code>RFAA010</code>), excluded, or on a parameter</td><td>Make it public, remove it from <code>ExcludedAttributes</code>, put it on the method or interface</td></tr>
+<tr><td>The generated endpoints are missing from your OpenAPI document</td><td>The built-in OpenAPI generation can't describe request-delegate endpoints</td><td>Document the API another way, or read the endpoint metadata yourself</td></tr>
+<tr><td>Rate limits don't stop a flood from a Blazor Server app</td><td>Interactive Server calls don't go through endpoints</td><td>Limit in the service</td></tr>
+<tr><td><code>RFAA010</code> appears in both the server and the client project</td><td>Both run the generator over the same interfaces</td><td>Fix the attribute once in the shared library</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/autoapi/tutorials/09-testing">09 · Testing</a></p>
+</TutorialDetail>

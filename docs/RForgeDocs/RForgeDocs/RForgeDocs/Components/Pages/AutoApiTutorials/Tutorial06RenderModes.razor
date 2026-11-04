@@ -1,0 +1,186 @@
+@page "/autoapi/tutorials/06-render-modes"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="06-render-modes">
+<p><strong>Goal:</strong> know which code answers a call in each render mode, when HTTP is involved, and what to register in which project.</p>
+
+<p><em>See it running:</em> the <strong>Todos</strong> example (<a href="/autoapi/example/todos"><code>/autoapi/example/todos</code></a>).</p>
+
+<h2 id="the-one-idea">The one idea</h2>
+
+<blockquote>
+<p><strong>A component injects the interface. Which class it gets depends on where the component runs.</strong></p>
+</blockquote>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Where the component runs</th><th><code>IBookService</code> is</th><th>HTTP request?</th><th>JSON serialization?</th></tr>
+</thead>
+<tbody>
+<tr><td>Static rendering and prerendering</td><td>Your service, resolved on the server</td><td>No</td><td>No</td></tr>
+<tr><td>Interactive Server</td><td>Your service, resolved in the circuit</td><td>No</td><td>No</td></tr>
+<tr><td>Interactive WebAssembly</td><td>The generated client</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Interactive Auto</td><td>Your service on the server at first, the generated client once it runs in WebAssembly</td><td>Only in WebAssembly</td><td>Only in WebAssembly</td></tr>
+</tbody>
+</table></div>
+
+<p>On the server a call is an ordinary method call. Nothing is serialized, no endpoint runs, and no endpoint convention (rate limiting, filters) applies. <a href="/autoapi/tutorials/05-authorization">Tutorial 05</a> explains how the rules still apply there.</p>
+
+<h2 id="1-mark-and-register-the-server">1. Mark and register the server</h2>
+
+<p>The server project holds your implementation and the generated endpoints:</p>
+
+<pre><code>// MyApp/AutoApiEndpoints.cs
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+namespace MyApp;
+
+[RForgeAutoApiHost(typeof(IBookService))]
+public static partial class AutoApiEndpoints { }</code></pre>
+
+<pre><code>// MyApp/Program.cs (excerpt)
+builder.Services.AddScoped&lt;IBookService, BookService&gt;();    // your implementation
+builder.Services.AddRForgeAutoApiServer();                  // after it
+
+// ...
+app.MapRForgeAutoApi();                                     // the endpoints WebAssembly calls</code></pre>
+
+<h2 id="2-mark-and-register-the-webassembly-client">2. Mark and register the WebAssembly client</h2>
+
+<p>The client project holds the generated <code>HttpClient</code> implementation:</p>
+
+<pre><code>// MyApp.Client/AutoApiClients.cs
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Client;
+
+[RForgeAutoApiClient(typeof(IBookService))]
+public static partial class AutoApiClients { }</code></pre>
+
+<pre><code>// MyApp.Client/Program.cs
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MyApp.Client;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Services.AddRForgeAutoApi();
+
+await builder.Build().RunAsync();</code></pre>
+
+<p>The generated requests use relative URLs. In a project that references <code>Microsoft.AspNetCore.Components.WebAssembly</code> (every Blazor WebAssembly project does), the client's <code>BaseAddress</code> is set to the app's base address for you (<a href="/autoapi/tutorials/07-httpclient-setup">tutorial 07</a>). Without that reference, set <code>BaseAddress</code> yourself.</p>
+
+<p>Which project needs what:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Project</th><th>Package</th><th>Needs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>MyApp.Shared</code></td><td><code>RForge.Blazor.AutoApi.Abstractions</code></td><td>The interface, its types and the JSON context</td></tr>
+<tr><td><code>MyApp</code> (server)</td><td><code>RForge.Blazor.AutoApi.Generator</code></td><td>The host class, your implementation, <code>AddRForgeAutoApiServer()</code>, <code>MapRForgeAutoApi()</code></td></tr>
+<tr><td><code>MyApp.Client</code></td><td><code>RForge.Blazor.AutoApi.Generator</code></td><td>The client class and <code>AddRForgeAutoApi()</code> in its <code>Program.cs</code></td></tr>
+</tbody>
+</table></div>
+
+<p>An app that uses only Interactive Server never makes the HTTP call, so it needs no client project. It still uses the host class for <code>AddRForgeAutoApiServer()</code>.</p>
+
+<h2 id="3-one-component-every-mode">3. One component, every mode</h2>
+
+<pre><code>@@* MyApp.Client/Pages/Books.razor *@@
+@@page "/books"
+@@rendermode InteractiveAuto
+@@using MyApp.Shared
+@@inject IBookService BookService
+
+&lt;h1&gt;Books&lt;/h1&gt;
+&lt;p&gt;Runtime: @@(OperatingSystem.IsBrowser() ? "WebAssembly" : "Server")&lt;/p&gt;
+
+@@if (_books is null)
+{
+    &lt;p&gt;Loading...&lt;/p&gt;
+}
+else
+{
+    &lt;ul&gt;
+        @@foreach (var book in _books)
+        {
+            &lt;li&gt;@@book.Title by @@book.Author&lt;/li&gt;
+        }
+    &lt;/ul&gt;
+}
+
+@@code {
+    private List&lt;BookDto&gt;? _books;
+
+    protected override async Task OnInitializedAsync() =&gt; _books = await BookService.GetAllAsync();
+}</code></pre>
+
+<p>The component doesn't mention HTTP, the render mode or the generated client. <code>OperatingSystem.IsBrowser()</code> is only there to show where it runs.</p>
+
+<p>When you request <code>/books</code>, the server prerenders the page. The prerendered HTML says <code>Runtime: Server</code> and already lists the books, and the only HTTP request the server sees is the page itself: the call went straight to <code>BookService</code>.</p>
+
+<h2 id="4-what-interactive-auto-does">4. What Interactive Auto does</h2>
+
+<ol>
+<li><strong>Prerender (server).</strong> The component runs once on the server, calling your service directly.</li>
+<li><strong>First visit.</strong> The page becomes interactive on the server, over a circuit, while the WebAssembly files download. Calls are still direct.</li>
+<li><strong>Later visits.</strong> The page becomes interactive in WebAssembly. Calls are HTTP requests to the generated endpoints.</li>
+</ol>
+
+<p>Blazor starts the component again when it becomes interactive, so <code>OnInitializedAsync</code> runs twice: once while prerendering and once when the interactive instance starts. That means two calls to the service. Persist the first result with <code>PersistentComponentState</code> if you want to avoid the second.</p>
+
+<h2 id="5-what-differs-between-the-modes">5. What differs between the modes</h2>
+
+<p>The interface hides the mode, but a few things still differ:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th></th><th>Server (direct call)</th><th>WebAssembly (HTTP)</th></tr>
+</thead>
+<tbody>
+<tr><td>Returned objects</td><td>The very instances your service returned</td><td>Copies deserialized from JSON</td></tr>
+<tr><td>Service lifetime</td><td>Scoped = one per circuit, or per request when prerendering</td><td>A new scope for <strong>every HTTP request</strong> on the server</td></tr>
+<tr><td>Endpoint conventions (<a href="/autoapi/tutorials/08-endpoint-conventions">tutorial 08</a>)</td><td>Don't run</td><td>Run</td></tr>
+<tr><td><code>CancellationToken</code></td><td>The token you pass</td><td>Goes to <code>HttpClient</code>. The service receives the request's <code>RequestAborted</code></td></tr>
+<tr><td>Expected errors (<code>RfException</code> family)</td><td>Thrown by your code</td><td>Rethrown on the client, with the same type, message, status and <code>code</code></td></tr>
+<tr><td>Unexpected errors</td><td>The original exception</td><td><code>RfApiException</code> (<a href="/autoapi/tutorials/04-errors">tutorial 04</a>)</td></tr>
+<tr><td>Authorization</td><td>The decorator (<a href="/autoapi/tutorials/05-authorization">tutorial 05</a>)</td><td>The endpoint</td></tr>
+</tbody>
+</table></div>
+
+<p>Two consequences:</p>
+
+<ul>
+<li><strong>Don't keep state in a Scoped service's fields.</strong> A circuit reuses one instance for many calls, but every HTTP request gets a new one, so the same code would behave differently per mode. Keep state in a Singleton store, a database or a cache, and inject it, as the Todos example does with its <code>DemoTodoStore</code>.</li>
+<li><strong>Return immutable types.</strong> If a component mutates the list or object it received, that changes your service's data when the call was direct, and only a copy when it came over HTTP. Records and copies (<code>list.ToList()</code>) behave the same in both.</li>
+</ul>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>Inject the interface everywhere</strong>, never the generated client or the implementation.</li>
+<li><strong>Register the generated client only in WebAssembly projects</strong>, and the implementation only on the server.</li>
+<li><strong>Return records and copies</strong>, and keep state outside the service instance.</li>
+<li><strong>Test in both modes.</strong> Run a page once in Interactive Server and once in WebAssembly, since the two code paths are different.</li>
+<li><strong>Don't count on ordering between prerender and interactive calls.</strong> Both run, in that order.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>No service for type 'MyApp.Shared.IBookService' has been registered</code> in the browser</td><td><code>AddRForgeAutoApi()</code> missing from <code>MyApp.Client/Program.cs</code></td><td>Add it (<a href="#2-mark-and-register-the-webassembly-client">step 2</a>)</td></tr>
+<tr><td>The same error on the server</td><td>The implementation isn't registered</td><td>Register it before <code>AddRForgeAutoApiServer()</code> (<a href="/autoapi/tutorials/05-authorization#5-registration-order-and-lifetimes">tutorial 05</a>)</td></tr>
+<tr><td>Works on Server, <code>404</code> in WebAssembly</td><td><code>MapRForgeAutoApi()</code> isn't called, or <code>RoutePrefix</code> differs</td><td>Map the endpoints, and keep the defaults in one shared library</td></tr>
+<tr><td><code>An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set.</code></td><td>The client project doesn't reference <code>Microsoft.AspNetCore.Components.WebAssembly</code>, so no base address was set</td><td>Reference it, or set <code>BaseAddress</code> (<a href="/autoapi/tutorials/07-httpclient-setup">tutorial 07</a>)</td></tr>
+<tr><td>Data differs between Server and WebAssembly</td><td>State kept in a Scoped service's fields, or in objects a component mutated</td><td>Move state out of the service and return immutable results</td></tr>
+<tr><td>Items load twice on the first visit</td><td>Prerender and interactive start both call the service</td><td>Persist the result with <code>PersistentComponentState</code></td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/autoapi/tutorials/07-httpclient-setup">07 · HttpClient setup</a></p>
+</TutorialDetail>

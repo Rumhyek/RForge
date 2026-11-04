@@ -1,0 +1,274 @@
+@page "/autoapi/tutorials/05-authorization"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="05-authorization">
+<p><strong>Goal:</strong> protect service methods with <code>[RfAuthorize]</code> in one place, and get the same rules, and the same exceptions, whether a call goes over HTTP or straight to your service.</p>
+
+<h2 id="two-paths-one-set-of-rules">Two paths, one set of rules</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Where the call comes from</th><th>HTTP request?</th><th>What enforces the rules</th></tr>
+</thead>
+<tbody>
+<tr><td>Interactive WebAssembly</td><td>Yes</td><td>The endpoint: ASP.NET authorization, using the rules from your attributes</td></tr>
+<tr><td>Interactive Server, static rendering, prerendering</td><td>No. The component calls your service directly</td><td>A decorator the generator wraps around your registered service</td></tr>
+</tbody>
+</table></div>
+
+<p>During an HTTP call the endpoint resolves your service through the same registration, so both checks run. The second one is cheap and keeps the behavior identical.</p>
+
+<h2 id="1-declare-the-rules">1. Declare the rules</h2>
+
+<p>Put the attributes on the interface in the shared library:</p>
+
+<pre><code>// MyApp.Shared/IBookService.cs (excerpt)
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Shared;
+
+[RForgeAutoApi]
+[RfAuthorize]                                          // every method needs a signed-in user...
+public interface IBookService
+{
+    [RfAllowAnonymous]                                 // ...except this one
+    [RForgeAutoApiMethod(HttpMethod = RfHttpMethod.Get)]
+    Task&lt;List&lt;BookDto&gt;&gt; GetAllAsync(CancellationToken cancellationToken = default);
+
+    Task&lt;BookDto?&gt; GetAsync(int id, CancellationToken cancellationToken = default);    // any signed-in user
+
+    [RfAuthorize(Roles = "Admin,Editor")]              // Admin OR Editor
+    Task&lt;BookDto&gt; AddAsync(string title, string author, CancellationToken cancellationToken = default);
+
+    [RfAuthorize(Policy = "CanDelete")]                // the interface rule AND this policy AND the Admin role
+    [RfAuthorize(Roles = "Admin")]
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+}</code></pre>
+
+<p><code>[RfAuthorize]</code> and <code>[RfAllowAnonymous]</code> mirror ASP.NET's <code>AuthorizeAttribute</code> and <code>AllowAnonymousAttribute</code>, so the shared library needs no ASP.NET reference.</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>You write</th><th>It means</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[RfAuthorize]</code></td><td>A signed-in user</td></tr>
+<tr><td><code>[RfAuthorize(Roles = "Admin,Editor")]</code></td><td>Signed in, and in <code>Admin</code> <strong>or</strong> <code>Editor</code></td></tr>
+<tr><td><code>[RfAuthorize(Policy = "CanDelete")]</code> (or <code>[RfAuthorize("CanDelete")]</code>)</td><td>Signed in, and passes the policy <code>CanDelete</code></td></tr>
+<tr><td><code>[RfAuthorize(AuthenticationSchemes = "Bearer")]</code></td><td>Only identities from those schemes count</td></tr>
+<tr><td>Several <code>[RfAuthorize]</code> (interface plus method, or repeated on a method)</td><td><strong>All</strong> of them must pass</td></tr>
+<tr><td><code>[RfAllowAnonymous]</code> on a method</td><td>No rules for that method, including the ones from the interface</td></tr>
+<tr><td><code>[RfAllowAnonymous]</code> on the interface</td><td>No rules for any method</td></tr>
+</tbody>
+</table></div>
+
+<p>With the interface above:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>User</th><th><code>GetAllAsync</code></th><th><code>GetAsync</code></th><th><code>AddAsync</code></th><th><code>DeleteAsync</code></th></tr>
+</thead>
+<tbody>
+<tr><td>Not signed in</td><td>✅</td><td>401</td><td>401</td><td>401</td></tr>
+<tr><td>Signed in, no role</td><td>✅</td><td>✅</td><td>403</td><td>403</td></tr>
+<tr><td><code>Editor</code></td><td>✅</td><td>✅</td><td>✅</td><td>403</td></tr>
+<tr><td><code>Admin</code></td><td>✅</td><td>✅</td><td>✅</td><td>403 (also needs <code>CanDelete</code>)</td></tr>
+<tr><td><code>Admin</code> with the <code>can_delete</code> claim</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="2-register-authentication-the-policy-and-the-endpoints">2. Register authentication, the policy and the endpoints</h2>
+
+<p>AutoApi doesn't set up authentication. Use whatever your app uses (cookies, Identity, OpenID Connect, JWT). Only the order below matters:</p>
+
+<pre><code>// MyApp/Program.cs (excerpt)
+using Microsoft.AspNetCore.Authentication.Cookies;
+using MyApp;
+using MyApp.Shared;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =&gt;
+    {
+        // API calls need a status code, not a redirect to a login page (see step 4).
+        options.Events.OnRedirectToLogin = context =&gt;
+        {
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            }
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =&gt;
+        {
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return Task.CompletedTask;
+            }
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
+    });
+
+builder.Services.AddAuthorization(options =&gt;
+    options.AddPolicy("CanDelete", policy =&gt; policy.RequireClaim("can_delete")));
+
+builder.Services.AddScoped&lt;IBookService, BookService&gt;();    // 1. your implementation
+builder.Services.AddRForgeAutoApiServer();                  // 2. AFTER it: wraps the registration above
+
+var app = builder.Build();
+
+// The template's status code pages must leave the API alone (see step 4).
+app.UseWhen(
+    context =&gt; !context.Request.Path.StartsWithSegments("/api"),
+    branch =&gt; branch.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true));
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseAntiforgery();
+
+app.MapRForgeAutoApi();                                     // 3. after UseAuthentication / UseAuthorization</code></pre>
+
+<h2 id="3-what-a-failed-check-looks-like">3. What a failed check looks like</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Situation</th><th>Over HTTP</th><th>Exception in the component</th></tr>
+</thead>
+<tbody>
+<tr><td>Not signed in</td><td><code>401</code>, empty body</td><td><code>RfUnauthorizedException</code>: "You must be signed in to perform this action."</td></tr>
+<tr><td>Signed in, not allowed</td><td><code>403</code>, empty body</td><td><code>RfForbiddenException</code>: "You are not allowed to perform this action."</td></tr>
+</tbody>
+</table></div>
+
+<p>In Interactive Server mode the decorator throws the same two exception types with the same messages, so one <code>catch</code> works in every render mode:</p>
+
+<pre><code>@@* MyApp.Client/Pages/AddBook.razor *@@
+@@page "/add-book"
+@@rendermode InteractiveAuto
+@@using MyApp.Shared
+@@using RForge.Blazor.AutoApi
+@@inject IBookService BookService
+
+&lt;button @@onclick="AddAsync"&gt;Add a book&lt;/button&gt;
+
+@@if (_message is not null)
+{
+    &lt;p&gt;@@_message&lt;/p&gt;
+}
+
+@@code {
+    private string? _message;
+
+    private async Task AddAsync()
+    {
+        try
+        {
+            var book = await BookService.AddAsync("Dune Messiah", "Frank Herbert");
+            _message = $"Added {book.Title}.";
+        }
+        catch (RfUnauthorizedException)
+        {
+            _message = "Sign in to add books.";
+        }
+        catch (RfForbiddenException ex)
+        {
+            _message = ex.Message;   // "You are not allowed to perform this action."
+        }
+    }
+}</code></pre>
+
+<p>The attributes only know about the <em>user</em>. For a rule that depends on the <em>item</em> ("only the owner can edit this book"), check it in your service and throw the same exception. The message and <code>code</code> you pass reach the component in WebAssembly too:</p>
+
+<pre><code>// MyApp/BookService.cs (excerpt)
+public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+{
+    // ...
+    throw new RfForbiddenException("Only the owner can change this book.", "not_owner");
+}</code></pre>
+
+<h2 id="4-make-the-api-answer-with-status-codes-not-pages">4. Make the API answer with status codes, not pages</h2>
+
+<p>Two defaults of a Blazor Web App hide the 401 and 403 from the generated client. Both are fixed in the <code>Program.cs</code> above.</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Default</th><th>What happens to an unauthenticated or denied call</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>Cookie authentication challenges with a <strong>redirect</strong></td><td>The response is <code>302</code> to <code>/Account/Login?ReturnUrl=…</code>. <code>HttpClient</code> follows it, so the call ends in whatever that URL returns (a <code>404</code> if you have no such page), and never reaches <code>RfUnauthorizedException</code>.</td><td>Answer <code>401</code> and <code>403</code> for <code>/api</code> paths in <code>OnRedirectToLogin</code> and <code>OnRedirectToAccessDenied</code></td></tr>
+<tr><td>The template's <code>UseStatusCodePagesWithReExecute("/not-found")</code></td><td>The empty <code>401</code>/<code>403</code> is re-run as a <code>POST</code> to the not-found page, and a <code>POST</code> with a JSON body answers <code>400 The request has an incorrect Content-type.</code> The client then throws <code>RfApiException</code>, not <code>RfUnauthorizedException</code>.</td><td>Skip the middleware for <code>/api</code> with <code>UseWhen</code></td></tr>
+</tbody>
+</table></div>
+
+<p>Both checks use <code>/api</code>, the start of the default route prefix <code>/api/auto</code>. If you change <code>RoutePrefix</code> in <code>[RForgeAutoApiDefaults]</code>, change them too. Bearer-token schemes (JWT) already answer <code>401</code> and <code>403</code>, so only the status code pages need the exemption.</p>
+
+<h2 id="5-registration-order-and-lifetimes">5. Registration order and lifetimes</h2>
+
+<p><code>AddRForgeAutoApiServer()</code> looks up your registration of every <code>[RForgeAutoApi]</code> interface and wraps it, keeping its lifetime. It throws at startup if something is wrong:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>You did</th><th>Result</th></tr>
+</thead>
+<tbody>
+<tr><td>Registered an interface that has <code>[RfAuthorize]</code> as <strong>Singleton</strong></td><td><code>InvalidOperationException</code>: "'MyApp.Shared.IBookService' uses [RfAuthorize] and must be registered as Scoped or Transient, not Singleton, so authorization can see the current user."</td></tr>
+<tr><td>Didn't register an <code>[RForgeAutoApi]</code> interface, or called <code>AddRForgeAutoApiServer()</code> before registering it</td><td><code>InvalidOperationException</code>: "'MyApp.Shared.IBookService' is not registered. Register your implementation before calling AddRForgeAutoApiServer()." This applies to every interface, with or without rules.</td></tr>
+<tr><td>Registered the service <strong>again after</strong> <code>AddRForgeAutoApiServer()</code></td><td>No error. The new registration replaces the wrapped one, so Interactive Server and prerendered calls are <strong>no longer checked</strong>. The endpoints still enforce the rules over HTTP.</td></tr>
+</tbody>
+</table></div>
+
+<p>An interface without any <code>[RfAuthorize]</code> can be a Singleton. If a service with rules needs shared state, keep the state in a Singleton store and inject it into the Scoped service, as the <strong>Todos</strong> example (<a href="/autoapi/example/todos"><code>/autoapi/example/todos</code></a>) does.</p>
+
+<h2 id="6-how-the-decorator-finds-the-current-user">6. How the decorator finds the current user</h2>
+
+<p>The decorator needs a user to check. It looks in this order:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Where the call runs</th><th>Source of the user</th></tr>
+</thead>
+<tbody>
+<tr><td>Inside a generated endpoint</td><td><code>HttpContext.User</code> of that request</td></tr>
+<tr><td>A Blazor circuit or a prerender</td><td><code>AuthenticationStateProvider</code></td></tr>
+<tr><td>Neither is available</td><td><code>IHttpContextAccessor.HttpContext.User</code></td></tr>
+<tr><td>Still nothing</td><td>An anonymous user, so <code>RfUnauthorizedException</code></td></tr>
+</tbody>
+</table></div>
+
+<p><code>AddRForgeAutoApiServer()</code> registers <code>IHttpContextAccessor</code> for you.</p>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>Put the rules on the interface, once.</strong> Don't repeat them in endpoint conventions or in the component.</li>
+<li><strong>Start with <code>[RfAuthorize]</code> on the interface</strong> and open single methods with <code>[RfAllowAnonymous]</code>. Forgetting a rule then fails closed.</li>
+<li><strong>Register the service, then <code>AddRForgeAutoApiServer()</code>, and register nothing for that interface afterwards.</strong></li>
+<li><strong>Catch <code>RfUnauthorizedException</code> and <code>RfForbiddenException</code> in components</strong>, not <code>HttpRequestException</code> or status codes. They are the same in every render mode.</li>
+<li><strong>Check item-level rules in the service</strong> and throw <code>RfForbiddenException</code> or <code>RfNotFoundException</code>.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RfApiException</code> with status <code>404</code>, or a JSON parse error when your login page exists</td><td>Cookie challenge redirect followed by <code>HttpClient</code></td><td>Answer <code>401</code>/<code>403</code> for <code>/api</code> (<a href="#4-make-the-api-answer-with-status-codes-not-pages">step 4</a>)</td></tr>
+<tr><td><code>RfApiException</code> with status <code>400</code> instead of <code>RfUnauthorizedException</code></td><td><code>UseStatusCodePagesWithReExecute</code> re-ran the <code>401</code></td><td>Exempt <code>/api</code> with <code>UseWhen</code> (<a href="#4-make-the-api-answer-with-status-codes-not-pages">step 4</a>)</td></tr>
+<tr><td>Anonymous users can call a protected method from an Interactive Server component</td><td>The service was registered after <code>AddRForgeAutoApiServer()</code>, or the interface has no <code>[RfAuthorize]</code></td><td>Check the registration order (<a href="#5-registration-order-and-lifetimes">step 5</a>)</td></tr>
+<tr><td>Startup throws about Scoped or Transient</td><td>A service with <code>[RfAuthorize]</code> is a Singleton</td><td>Register it as Scoped or Transient</td></tr>
+<tr><td>Always <code>RfUnauthorizedException</code> in a circuit, although the user is signed in</td><td><code>AuthenticationStateProvider</code> reports an anonymous user</td><td>Check how authentication state reaches the circuit; the decorator uses what the provider returns</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/autoapi/tutorials/06-render-modes">06 · Render modes</a></p>
+</TutorialDetail>

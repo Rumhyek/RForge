@@ -25,6 +25,16 @@
                 @ComponentDetail.SideLink(("Todos", TagInfo.Empty, "/autoapi/example/todos"))
             </ul>
         </div>
+
+        <div class="menu mt-6">
+            <p class="menu-label is-size-6 mb-2">Tutorials</p>
+            <ul class="menu-list">
+                @foreach (var tutorial in TutorialSet.AutoApi.All)
+                {
+                    @ComponentDetail.SideLink(($"{tutorial.Number} {tutorial.Title}", TagInfo.Empty, tutorial.Url))
+                }
+            </ul>
+        </div>
     </CustomSideLinks>
 
     <Purpose>
@@ -239,7 +249,8 @@ builder.Services.AddRForgeAutoApi();</code></pre>
 }</code></pre>
 
             <p>
-                See it working in the <a href="/autoapi/example/todos">Todos example</a>.
+                See it working in the <a href="/autoapi/example/todos">Todos example</a>, and learn each part step by step in the
+                <a href="/autoapi/tutorials">tutorials</a>.
             </p>
 
             <h2>Attributes</h2>

@@ -1,0 +1,78 @@
+@page "/autoapi/tutorials/10-troubleshooting"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="10-troubleshooting">
+<p><strong>Goal:</strong> find the cause of a build diagnostic, a compiler error or a runtime failure quickly. The tables list every <code>RFAA</code> diagnostic and the problems seen most often, each with a fix. The explanations are in the other tutorials, which the tables link to.</p>
+
+<h2 id="build-diagnostics">Build diagnostics</h2>
+
+<p>The generator reports these. Errors stop the build. Warnings and info point at likely bugs.</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>ID</th><th>Severity</th><th>Message (short)</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RFAA001</code></td><td>Error</td><td><code>'X' must be a non-nested, non-generic 'static partial' class</code></td><td>Declare the marker class as <code>public static partial class X { }</code> at the top level of a namespace, not nested and not generic (<a href="/autoapi/tutorials/01-setup">tutorial 01</a>).</td></tr>
+<tr><td><code>RFAA002</code></td><td>Warning</td><td><code>Assembly 'X' contains no accessible [RForgeAutoApi] interfaces</code></td><td>The type you passed to <code>[RForgeAutoApiHost(typeof(…))]</code> or <code>[RForgeAutoApiClient(typeof(…))]</code> must come from the assembly that holds your interfaces. Pass one of your <code>[RForgeAutoApi]</code> interfaces, and check the interfaces are accessible (<code>public</code>).</td></tr>
+<tr><td><code>RFAA003</code></td><td>Error</td><td><code>'M' returns 'T'; only Task, Task&lt;T&gt;, ValueTask and ValueTask&lt;T&gt; are supported</code></td><td>Make the method async: return <code>Task</code>, <code>Task&lt;T&gt;</code>, <code>ValueTask</code> or <code>ValueTask&lt;T&gt;</code> (<a href="/autoapi/tutorials/02-methods-and-routes">tutorial 02</a>).</td></tr>
+<tr><td><code>RFAA004</code></td><td>Error</td><td><code>'M' is generic; generic interfaces and generic methods are not supported</code></td><td>Use concrete types. Replace a generic method with one method per type. A generic method also reports <code>RFAA009</code> for its type parameter; fix <code>RFAA004</code> first.</td></tr>
+<tr><td><code>RFAA005</code></td><td>Error</td><td><code>Parameter 'p' of 'M' is ref/out/in</code></td><td>Pass the value normally and return the result, using a record if you have several (<a href="/autoapi/tutorials/03-parameters-and-serialization">tutorial 03</a>).</td></tr>
+<tr><td><code>RFAA006</code></td><td>Error</td><td><code>'M' uses GET but parameter 'p' of type 'T' is not a simple type</code></td><td><code>Get</code> and <code>Delete</code> send parameters in the query string, so they take simple types only. Use the default <code>Post</code>, or pass simple values (<a href="/autoapi/tutorials/03-parameters-and-serialization">tutorial 03</a>). Also reported for <code>DELETE</code>.</td></tr>
+<tr><td><code>RFAA007</code></td><td>Error</td><td><code>Custom route 'r' on 'M' contains a placeholder</code></td><td>Routes are static. Remove <code>{id}</code> from <code>Route</code>, and let the method take <code>id</code> as a parameter (<a href="/autoapi/tutorials/02-methods-and-routes">tutorial 02</a>).</td></tr>
+<tr><td><code>RFAA008</code></td><td>Error</td><td><code>Route 'r' is used by more than one method</code></td><td>Give one of the two methods a different <code>Route</code>, or remove the custom route and let the generator number the overloads (<a href="/autoapi/tutorials/02-methods-and-routes">tutorial 02</a>).</td></tr>
+<tr><td><code>RFAA009</code></td><td>Warning</td><td><code>'T' is not registered in 'Ctx'; reflection-based serialization will be used for it</code></td><td>Add <code>[JsonSerializable(typeof(T))]</code> to the context, and keep the context in the <strong>shared library</strong> (see the runtime table below). Without it the type still works, through slower reflection that isn't trim-safe (<a href="/autoapi/tutorials/03-parameters-and-serialization">tutorial 03</a>).</td></tr>
+<tr><td><code>RFAA010</code></td><td>Warning</td><td><code>Attribute 'A' on 'M' could not be reconstructed and was not copied to the endpoint</code></td><td>The generator copies attributes from the interface onto the endpoint, and the host project can't name this one. The usual cause is an <code>internal</code> attribute declared in the shared library. Make it <code>public</code>, or list it in <code>ExcludedAttributes</code> if it shouldn't reach the endpoint (<a href="/autoapi/tutorials/08-endpoint-conventions">tutorial 08</a>).</td></tr>
+<tr><td><code>RFAA011</code></td><td>Error</td><td><code>'M' has more than one CancellationToken parameter</code></td><td>Keep one. It is never sent: the client passes it to <code>HttpClient</code>, the server uses <code>RequestAborted</code> (<a href="/autoapi/tutorials/03-parameters-and-serialization">tutorial 03</a>).</td></tr>
+<tr><td><code>RFAA012</code></td><td>Info</td><td><code>No JsonContext is configured for assembly 'X'; using reflection-based serialization</code></td><td>Add <code>[assembly: RForgeAutoApiDefaults(JsonContext = typeof(AppJsonContext))]</code> to the shared library (<a href="/autoapi/tutorials/03-parameters-and-serialization">tutorial 03</a>). This is only info, so it doesn't show in the console build output; look for it in your IDE's error list.</td></tr>
+<tr><td><code>RFAA013</code></td><td>Error</td><td><code>'I' declares 'm'; [RForgeAutoApi] interfaces may only contain instance methods</code></td><td>Remove properties, events and static members from the interface. Turn a property into a method, for example <code>Task&lt;int&gt; GetCountAsync()</code>.</td></tr>
+<tr><td><code>RFAA014</code></td><td>Error</td><td><code>Only one [RForgeAutoApiHost] class is allowed per project; 'X' is ignored</code></td><td>Keep one host class and one client class per project. A single marker covers every interface in the assemblies of the types you pass to it.</td></tr>
+</tbody>
+</table></div>
+
+<p>Raise a warning to an error in CI so it can't be missed:</p>
+
+<pre><code>&lt;!-- MyApp/MyApp.csproj --&gt;
+&lt;PropertyGroup&gt;
+  &lt;WarningsAsErrors&gt;$(WarningsAsErrors);RFAA009;RFAA010&lt;/WarningsAsErrors&gt;
+&lt;/PropertyGroup&gt;</code></pre>
+
+<h2 id="compiler-errors-you-may-see">Compiler errors you may see</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Error</th><th>Meaning and fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>CS1061: 'IServiceCollection' does not contain a definition for 'AddRForgeAutoApi'</code> (or <code>AddRForgeAutoApiServer</code>, or <code>MapRForgeAutoApi</code>)</td><td>One of three causes. <strong>1.</strong> The project has no <code>RForge.Blazor.AutoApi.Generator</code> reference: NuGet doesn't pass analyzers through project references, so add the package to the server project <em>and</em> the client project. <strong>2.</strong> The marker class's namespace isn't imported: the generator puts the extension methods in the marker class's namespace, so add a <code>using</code> for it in <code>Program.cs</code>. <strong>3.</strong> The marker class is missing, or is the wrong kind: <code>AddRForgeAutoApiServer</code> and <code>MapRForgeAutoApi</code> come from the <code>[RForgeAutoApiHost]</code> class and <code>AddRForgeAutoApi</code> from the <code>[RForgeAutoApiClient]</code> class.</td></tr>
+<tr><td><code>CS0234: The type or namespace name 'AspNetCore' does not exist in the namespace 'Microsoft'</code>, then <code>CS0246</code> for <code>HttpContext</code> and <code>IAuthorizeData</code>, in the generated host code</td><td>The project that holds the <code>[RForgeAutoApiHost]</code> class doesn't reference ASP.NET Core. The host class belongs in the server project (Web SDK), or add <code>&lt;FrameworkReference Include="Microsoft.AspNetCore.App" /&gt;</code>.</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="runtime-problems">Runtime problems</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>Startup throws <code>InvalidOperationException: 'MyApp.Shared.IBookService' is not registered. Register your implementation before calling AddRForgeAutoApiServer().</code></td><td><code>AddRForgeAutoApiServer()</code> wraps your existing registration of each interface. It ran before the registration, or an interface was never registered.</td><td>Register the real implementation of <strong>every</strong> <code>[RForgeAutoApi]</code> interface, then call <code>AddRForgeAutoApiServer()</code> after all of them (<a href="/autoapi/tutorials/05-authorization">tutorial 05</a>).</td></tr>
+<tr><td>Startup throws <code>InvalidOperationException: 'MyApp.Shared.IBookService' uses [RfAuthorize] and must be registered as Scoped or Transient, not Singleton, so authorization can see the current user.</code></td><td>A service with authorization rules is registered as a Singleton.</td><td>Register it with <code>AddScoped</code> or <code>AddTransient</code>. A Singleton is fine for an interface with no <code>[RfAuthorize]</code>.</td></tr>
+<tr><td>The client throws <code>RfApiException</code> with <code>Auto API request failed with status 404: Not Found</code></td><td>The request didn't reach a generated endpoint. Either the server never called <code>MapRForgeAutoApi()</code>, or the client's base address points at a different host or path, or the client and the server were built from different versions of the interface and disagree on a route.</td><td>Call <code>app.MapRForgeAutoApi()</code>, check the client's <code>BaseAddress</code> and any reverse-proxy path, and deploy the server and client from the same build. A routing 404 is an <code>RfApiException</code>; a missing <em>item</em> that your service throws as <code>RfNotFoundException</code> is a different, typed exception (<a href="/autoapi/tutorials/04-errors">tutorial 04</a>).</td></tr>
+<tr><td>The client throws <code>InvalidOperationException: An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set.</code></td><td>The <code>HttpClient</code> has no base address. In a WebAssembly app <code>AddRForgeAutoApi()</code> takes it from <code>IWebAssemblyHostEnvironment</code>. In any other host (tests, a console app, MAUI) nothing sets it.</td><td>Set it: <code>builder.Services.AddRForgeAutoApi().ConfigureHttpClient(c =&gt; c.BaseAddress = new Uri("https://localhost:5001/"))</code> (<a href="/autoapi/tutorials/07-httpclient-setup">tutorial 07</a>).</td></tr>
+<tr><td>Calls fail after you reordered or inserted overloads</td><td>Duplicate default routes get a number in declaration order (<code>FindAsync</code>, <code>FindAsync1</code>, …). Reordering overloads changes which method has which route.</td><td>Deploy the server and the client together, or give each overload its own <code>Route</code> so the order stops mattering (<a href="/autoapi/tutorials/02-methods-and-routes">tutorial 02</a>).</td></tr>
+<tr><td><code>RFAA009</code> is reported for every type, although they're all in your <code>JsonSerializerContext</code></td><td>The context is declared in the same project as the marker class. The generator reads the context from a <strong>referenced</strong> assembly, and a context in the same project looks empty to it.</td><td>Move the context to the shared library, next to the interfaces and the <code>[assembly: RForgeAutoApiDefaults]</code> attribute (<a href="/autoapi/tutorials/03-parameters-and-serialization">tutorial 03</a>).</td></tr>
+<tr><td>Calling an endpoint by hand (curl, Postman) returns <code>400</code> with <code>The request body must be a JSON object.</code> or <code>Missing required parameter 'id'.</code></td><td><code>Post</code>, <code>Put</code> and <code>Patch</code> endpoints expect a JSON <strong>object keyed by parameter name</strong>, even for one parameter. A bare value, a different name or an empty body is rejected.</td><td>Send <code>{"id":1}</code>, not <code>1</code>. Names are matched in camelCase (<a href="/autoapi/tutorials/03-parameters-and-serialization">tutorial 03</a>).</td></tr>
+<tr><td>Calling an endpoint by hand returns <code>405</code></td><td>The method is a <code>Post</code> endpoint and you sent a <code>GET</code>.</td><td>Use the HTTP method the endpoint was generated with. It is <code>Post</code> unless <code>[RForgeAutoApiMethod]</code> says otherwise (<a href="/autoapi/tutorials/02-methods-and-routes">tutorial 02</a>).</td></tr>
+<tr><td>The client throws <code>RfApiException</code> with no useful message for a bug on the server</td><td>Unexpected exceptions are turned into a generic 500 on purpose, so internals don't leak.</td><td>Log the exception on the server and read the <code>TraceId</code> on the <code>RfApiException</code>. In the Development environment the response also carries the exception details (<a href="/autoapi/tutorials/04-errors">tutorial 04</a>).</td></tr>
+<tr><td>A call works in Interactive Server mode and fails in WebAssembly, or the reverse</td><td>The two modes take different paths. Server mode and prerendering call your service directly, with no HTTP and no serialization. WebAssembly serializes the arguments and result and sends them over HTTP.</td><td>Test both paths (<a href="/autoapi/tutorials/09-testing">tutorial 09</a>) and see <a href="/autoapi/tutorials/06-render-modes">tutorial 06</a>.</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="still-stuck">Still stuck?</h2>
+
+<ul>
+<li><strong>Look at the generated code.</strong> Add <code>&lt;EmitCompilerGeneratedFiles&gt;true&lt;/EmitCompilerGeneratedFiles&gt;</code> to the project that holds the marker class and build. The files appear under <code>obj/&lt;configuration&gt;/&lt;framework&gt;/generated/RForge.Blazor.AutoApi.Generator/</code>, for example <code>MyApp.AutoApiEndpoints.RForgeAutoApi.Server.g.cs</code>. They show the exact routes, the binding code and the attributes copied to each endpoint.</li>
+<li>Compare with the working Todos example in the <a href="https://github.com/Rumhyek/RForge/tree/main/samples/AutoApiSample">AutoApi sample</a>.</li>
+<li>Read the <a href="https://github.com/Rumhyek/RForge/blob/main/docs/autoapi/spec.md">specification</a> for the full rules behind each diagnostic.</li>
+</ul>
+</TutorialDetail>

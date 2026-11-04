@@ -1,0 +1,288 @@
+@page "/autoapi/tutorials/04-errors"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="04-errors">
+<p><strong>Goal:</strong> throw errors from a service and catch them in a component, with the same <code>catch</code> blocks working in Interactive Server and in WebAssembly.</p>
+
+<p>This tutorial assumes the projects from <a href="/autoapi/tutorials/01-setup">tutorial 01</a>. The examples are services that fail on purpose.</p>
+
+<h2 id="1-throw-an-expected-error">1. Throw an expected error</h2>
+
+<p>An <code>RfException</code> is an <em>expected</em> error: something went wrong in a way you anticipated and the message is safe to show to a user. Throw it from your service:</p>
+
+<pre><code>// MyApp/BookService.cs
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+namespace MyApp;
+
+public sealed class BookService : IBookService
+{
+    private static readonly BookDto[] Books = [new(1, "Dune", "Frank Herbert"), new(2, "Hyperion", "Dan Simmons")];
+
+    public Task&lt;BookDto&gt; GetBookAsync(int id, CancellationToken cancellationToken = default)
+        =&gt; Task.FromResult(Books.FirstOrDefault(b =&gt; b.Id == id)
+            ?? throw new RfNotFoundException($"Book {id} was not found.", code: "book_not_found"));
+
+    public Task&lt;BookDto&gt; AddAsync(string title, string author)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new RfException("A title is required.", code: "title_required");
+
+        return Task.FromResult(new BookDto(3, title.Trim(), author));
+    }
+
+    // ...
+}</code></pre>
+
+<p><code>RfException</code> takes a message, a status code and an optional code:</p>
+
+<pre><code>new RfException(message, statusCode: 400, code: null)</code></pre>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Argument</th><th>Use</th></tr>
+</thead>
+<tbody>
+<tr><td><code>message</code></td><td>Text for the user. It is sent to the client, so never put secrets or internal details in it.</td></tr>
+<tr><td><code>statusCode</code></td><td>The HTTP status. Default <code>400</code>.</td></tr>
+<tr><td><code>code</code></td><td>A short, stable string your components can switch on, such as <code>"title_required"</code>. Optional.</td></tr>
+</tbody>
+</table></div>
+
+<p>The library has three ready-made subclasses:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Type</th><th>Status</th><th>Use for</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RfUnauthorizedException</code></td><td>401</td><td>The user isn't signed in</td></tr>
+<tr><td><code>RfForbiddenException</code></td><td>403</td><td>The user is signed in but not allowed</td></tr>
+<tr><td><code>RfNotFoundException</code></td><td>404</td><td>The requested item doesn't exist</td></tr>
+</tbody>
+</table></div>
+
+<p>Each takes an optional message and code. Without a message they use a default such as <code>You are not allowed to perform this action.</code> (<a href="/autoapi/tutorials/05-authorization">Tutorial 05</a> shows where the library throws the first two for you.)</p>
+
+<h2 id="2-catch-it-in-a-component">2. Catch it in a component</h2>
+
+<pre><code>@@* MyApp.Client/Pages/BookDetails.razor *@@
+@@page "/books/{Id:int}"
+@@rendermode InteractiveAuto
+@@using MyApp.Shared
+@@using RForge.Blazor.AutoApi
+@@inject IBookService Books
+@@inject ILogger&lt;BookDetails&gt; Logger
+
+@@if (error is not null)
+{
+    &lt;div class="notification is-warning"&gt;@@error&lt;/div&gt;
+}
+else if (book is not null)
+{
+    &lt;p&gt;@@book.Title by @@book.Author&lt;/p&gt;
+}
+
+@@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private BookDto? book;
+    private string? error;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            error = null;
+            book = await Books.GetBookAsync(Id);
+        }
+        catch (RfNotFoundException)
+        {
+            error = "That book doesn't exist.";
+        }
+        catch (RfException ex)
+        {
+            // Expected errors: the message is safe to show, in Server and in WebAssembly.
+            error = ex.Message;
+        }
+        catch (OperationCanceledException)
+        {
+            // The user navigated away. Not an error.
+        }
+        catch (Exception ex)
+        {
+            // Unexpected: RfApiException in WebAssembly, the original exception in Server.
+            Logger.LogError(ex, "Loading book {Id} failed", Id);
+            error = "Something went wrong. Please try again.";
+        }
+    }
+}</code></pre>
+
+<p>Order the <code>catch</code> blocks from the most specific to the least: <code>RfNotFoundException</code>, then <code>RfException</code>, then everything else. The same page behaves the same whether it runs prerendered, in Interactive Server or in WebAssembly.</p>
+
+<h2 id="3-what-travels-over-the-wire">3. What travels over the wire</h2>
+
+<p>In WebAssembly the exception crosses HTTP as a <code>ProblemDetails</code> JSON body. For <code>GetBookAsync(99)</code>:</p>
+
+<pre><code>HTTP/1.1 404 Not Found
+
+{
+  "title": "Book 99 was not found.",
+  "status": 404,
+  "traceId": "00-2d600eff7f71486332e0e179f224f4ef-033d641b56e79653-00",
+  "rfType": "RfException",
+  "code": "book_not_found"
+}</code></pre>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Field</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>status</code></td><td>The exception's <code>StatusCode</code></td></tr>
+<tr><td><code>title</code></td><td>The exception's <code>Message</code></td></tr>
+<tr><td><code>code</code></td><td>The exception's <code>Code</code>, left out when it is null</td></tr>
+<tr><td><code>rfType</code></td><td>Always <code>"RfException"</code>. It tells the client "this is a service error, not a crash".</td></tr>
+<tr><td><code>traceId</code></td><td>Correlates the response with the server logs</td></tr>
+</tbody>
+</table></div>
+
+<p>The generated client turns the response back into an exception:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Response</th><th>The client throws</th></tr>
+</thead>
+<tbody>
+<tr><td><code>401</code></td><td><code>RfUnauthorizedException</code></td></tr>
+<tr><td><code>403</code></td><td><code>RfForbiddenException</code></td></tr>
+<tr><td><code>404</code> with an <code>rfType</code></td><td><code>RfNotFoundException</code></td></tr>
+<tr><td>any status with <code>rfType</code> <code>"RfException"</code></td><td><code>RfException</code> with the same <code>Message</code>, <code>StatusCode</code> and <code>Code</code></td></tr>
+<tr><td>anything else</td><td><code>RfApiException</code> (see section 5)</td></tr>
+</tbody>
+</table></div>
+
+<p>A 401 or 403 always becomes the matching type, whatever the body contains.</p>
+
+<h2 id="4-custom-exception-types">4. Custom exception types</h2>
+
+<p>You can subclass <code>RfException</code> to give an error a name in your own code:</p>
+
+<pre><code>// MyApp.Shared/BookLockedException.cs
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Shared;
+
+public sealed class BookLockedException(int id)
+    : RfException($"Book {id} is locked by another user.", statusCode: 409, code: "book_locked");</code></pre>
+
+<p>The type only survives <em>inside the server</em>. In Interactive Server mode the component calls your service directly, so it catches a <code>BookLockedException</code>. In WebAssembly only the message, status and code cross the wire, so the client throws a plain <code>RfException</code>:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Mode</th><th>A component sees</th></tr>
+</thead>
+<tbody>
+<tr><td>Interactive Server (and prerendering)</td><td><code>BookLockedException</code>, message <code>Book 1 is locked by another user.</code>, <code>StatusCode</code> 409, <code>Code</code> <code>book_locked</code></td></tr>
+<tr><td>WebAssembly</td><td><code>RfException</code>, the same message, <code>StatusCode</code> 409 and <code>Code</code> <code>book_locked</code></td></tr>
+</tbody>
+</table></div>
+
+<p>That's why the examples catch <code>RfException</code> and look at <code>Code</code>, not at the subclass. Only <code>RfUnauthorizedException</code>, <code>RfForbiddenException</code> and <code>RfNotFoundException</code> are rebuilt by type on the client:</p>
+
+<pre><code>// MyApp.Client/Pages/Reserve.razor, inside the @@code block (a catch that works in both modes)
+catch (RfException ex) when (ex.Code == "book_locked")
+{
+    message = "Someone else is editing this book.";
+}</code></pre>
+
+<h2 id="5-unexpected-errors">5. Unexpected errors</h2>
+
+<p>Any other exception is a bug or an outage, not an expected outcome. The server logs it (category <code>RForge.Blazor.AutoApi</code>, level <code>Error</code>) and answers <code>500</code> with a generic message:</p>
+
+<pre><code>HTTP/1.1 500 Internal Server Error
+
+{"title":"An unexpected error occurred.","status":500,"traceId":"00-b7e78a07aa6c523f03a509c4bd1cea19-439c4db45d8a24c2-00"}</code></pre>
+
+<p>In the <strong>Development</strong> environment the body also has a <code>detail</code> field with the exception's type, message and stack trace. In every other environment it doesn't, so nothing internal leaks.</p>
+
+<p>The client turns a <code>500</code>, or any other response that isn't a service error, into an <code>RfApiException</code>:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Property</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><code>StatusCode</code></td><td>The HTTP status</td></tr>
+<tr><td><code>Title</code></td><td>The ProblemDetails title, or the response's reason phrase when there is none</td></tr>
+<tr><td><code>Detail</code></td><td>The ProblemDetails <code>detail</code>. Only filled in Development.</td></tr>
+<tr><td><code>TraceId</code></td><td>The server's trace id, for finding the log entry</td></tr>
+</tbody>
+</table></div>
+
+<p>A wrong URL, a gateway error or a proxy's HTML error page also arrive as an <code>RfApiException</code>, with the status code of that response.</p>
+
+<p>In <strong>Interactive Server</strong> mode there is no HTTP and no conversion: the original exception propagates unchanged, here an <code>InvalidOperationException("The database is on fire.")</code>. Your <code>catch (Exception)</code> block gets an <code>RfApiException</code> in WebAssembly and the original exception on the server, which is why it should log and show a generic message rather than anything from <code>ex.Message</code>.</p>
+
+<h2 id="6-cancellation-and-network-failures">6. Cancellation and network failures</h2>
+
+<ul>
+<li><strong>Cancellation is never converted.</strong> If the token you pass to a call is canceled, the client throws <code>TaskCanceledException</code>, which derives from <code>OperationCanceledException</code>, and the server stops the work: its <code>CancellationToken</code> parameter is <code>RequestAborted</code>. The server doesn't log a canceled request as an error or answer it. Catch <code>OperationCanceledException</code> separately, as in section 2, so navigation doesn't show an error.</li>
+<li><strong>Network failures pass through.</strong> If the server is unreachable, the client throws <code>HttpRequestException</code> unchanged, because there is no response to convert. Catch it if you want a specific offline message. In Server mode there is no network, so it can't happen.</li>
+</ul>
+
+<h2 id="7-errors-from-the-generated-code-itself">7. Errors from the generated code itself</h2>
+
+<p>The generated endpoints report their own binding problems as <code>RfException</code> with status <code>400</code>, so they go through the same <code>catch</code> as your errors:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Cause</th><th><code>RfException</code> message</th></tr>
+</thead>
+<tbody>
+<tr><td>A required parameter is missing</td><td><code>Missing required parameter 'filter'.</code></td></tr>
+<tr><td>A value can't be read as its type</td><td><code>Invalid value for parameter 'page'.</code></td></tr>
+<tr><td>The body isn't valid JSON</td><td><code>The request body is not valid JSON.</code></td></tr>
+</tbody>
+</table></div>
+
+<p><a href="/autoapi/tutorials/03-parameters-and-serialization">Tutorial 03</a> explains when each one happens.</p>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li>The generated endpoint wraps your method in a <code>try</code>/<code>catch</code>. An <code>RfException</code> becomes a ProblemDetails body with its status code; any other exception becomes the <code>500</code> above; a canceled request is dropped.</li>
+<li>The generated client reads the status code and the <code>rfType</code> and <code>code</code> fields, and throws the matching exception.</li>
+<li>In Interactive Server mode no endpoint is involved, so exceptions are just the exceptions your service throws.</li>
+</ul>
+
+<h2 id="-best-practices">✅ Best practices</h2>
+
+<ul>
+<li><strong>Use <code>RfException</code> for outcomes you expect</strong> (validation, not found, conflicts) and let everything else throw normally.</li>
+<li><strong>Write messages for users.</strong> They travel to the browser exactly as written.</li>
+<li><strong>Give errors a <code>code</code></strong> when a component needs to react differently. A string compares the same in both modes, unlike a subclass.</li>
+<li><strong>Catch specific types first</strong>, then <code>RfException</code>, then <code>Exception</code>.</li>
+<li><strong>Log unexpected errors in the component</strong> with the trace id when you have an <code>RfApiException</code>, and show a generic message.</li>
+<li><strong>Never put sensitive data in an exception message</strong> or in <code>Code</code>.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>catch (BookLockedException)</code> works on the server but not in WebAssembly</td><td>Custom subclasses become plain <code>RfException</code> on the client</td><td>Catch <code>RfException</code> and check <code>Code</code></td></tr>
+<tr><td>Users see "An unexpected error occurred."</td><td>A non-<code>RfException</code> was thrown in the service</td><td>Throw <code>RfException</code> for expected cases, or fix the bug and read the log</td></tr>
+<tr><td>The 500 body has no stack trace</td><td>The app isn't running in the Development environment</td><td>That is intended. Use the log and the <code>traceId</code></td></tr>
+<tr><td>An error banner appears when the user navigates away</td><td><code>OperationCanceledException</code> is caught by <code>catch (Exception)</code></td><td>Catch <code>OperationCanceledException</code> first</td></tr>
+<tr><td><code>ex.Message</code> shows internal text in the browser</td><td><code>RfApiException</code> or an unexpected exception message is displayed</td><td>Show your own text for unexpected errors</td></tr>
+<tr><td>Every call throws <code>RfApiException</code> with status 400 or 404 and a plain reason phrase such as <code>Bad Request</code></td><td>The client's <code>HttpClient</code> base address points at the wrong place, so the request never reaches the generated endpoints</td><td>Check the base address and any path in it (<a href="/autoapi/tutorials/07-httpclient-setup">tutorial 07</a>)</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/autoapi/tutorials/05-authorization">05 · Authorization</a></p>
+</TutorialDetail>

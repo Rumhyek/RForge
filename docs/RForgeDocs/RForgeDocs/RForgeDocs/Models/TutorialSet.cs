@@ -28,4 +28,17 @@ public record TutorialSet(string Library, string Route, string OverviewUrl, stri
         ("11", "11-testing-with-bunit", "Testing with bUnit", "Unit-test event-aware components"),
         ("12", "12-troubleshooting", "Troubleshooting", "Every RFEVT diagnostic and the most common runtime mistakes"),
         ("13", "13-best-practices", "Best practices", "One-page checklist: project layout, file placement, naming, design rules"));
+
+    public static TutorialSet AutoApi { get; } = Create("AutoApi", "/autoapi/tutorials", "/autoapi/details", "RForge.Blazor.AutoApi",
+        ("01", "01-setup", "Setup", "Install the packages, declare an interface, mark the server and the client, call it from a component"),
+        ("02", "02-methods-and-routes", "Methods and routes", "Choose HTTP methods and routes, and see how return types become status codes"),
+        ("03", "03-parameters-and-serialization", "Parameters and serialization", "How arguments travel, which types work in GET, and the JSON context that keeps WebAssembly fast"),
+        ("04", "04-errors", "Errors", "Throw RfException on the server and catch it the same way in every render mode"),
+        ("05", "05-authorization", "Authorization", "Protect methods with [RfAuthorize], including in Interactive Server where no HTTP call is made"),
+        ("06", "06-render-modes", "Render modes", "What runs where in Server, WebAssembly and Auto, and when HTTP is involved"),
+        ("07", "07-httpclient-setup", "HttpClient setup", "Base addresses, message handlers for tokens and extra named clients"),
+        ("08", "08-endpoint-conventions", "Endpoint conventions", "Rate limiting, antiforgery, tags and attributes on the generated endpoints"),
+        ("09", "09-testing", "Testing", "Test the generated client against the generated endpoints, and fake the interface in component tests"),
+        ("10", "10-troubleshooting", "Troubleshooting", "Every RFAA diagnostic and the most common runtime mistakes"),
+        ("11", "11-best-practices", "Best practices", "One-page checklist: project layout, interfaces, errors, authorization, testing"));
 }
