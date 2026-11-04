@@ -91,7 +91,7 @@
     private string _error;
     private bool _interactive;
 
-    // net8 has no RendererInfo: the browser runtime means WebAssembly, and OnAfterRender never runs while prerendering.
+    // The browser runtime means WebAssembly, and OnAfterRender never runs while prerendering.
     private static string Runtime => OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
 
     protected override async Task OnInitializedAsync() => _items = await TodoService.GetAllAsync();

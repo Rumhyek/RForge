@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RForge.Blazor.Events.Sample.Client\RForge.Blazor.Events.Sample.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
   </ItemGroup>
 
   <ItemGroup>

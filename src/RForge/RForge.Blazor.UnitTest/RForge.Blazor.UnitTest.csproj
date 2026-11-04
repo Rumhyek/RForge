@@ -15,18 +15,29 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="bunit" Version="1.40.0" />
+    <!-- bunit brings AngleSharp 1.2.0 (GHSA-pgww-w46g-26qg, fixed in 1.5.0). -->
+    <PackageReference Include="AngleSharp" Version="1.5.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.6.4" />
     <PackageReference Include="MSTest.TestFramework" Version="3.6.4" />
     <PackageReference Include="Verify.MSTest" Version="28.4.0" />
     <ProjectReference Include="..\RForge.Blazor.Components\RForge.Blazor.Components.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+
+  </ItemGroup>
+
+  <!-- The docs app targets net10.0, so the tests that exercise it only build and run on net10.0.
+       The component tests run on every target framework. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <!-- #99: Docs_BugSweep repros exercise the docs app (page + processor) directly. -->
     <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocsLibrary\RForgeDocsLibrary.csproj" />
     <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocs\RForgeDocs.Client\RForgeDocs.Client.csproj" />
     <!-- #107/#108: the docs API routes (UserEndpoints) are exercised in-process over loopback. -->
     <ProjectReference Include="..\..\..\docs\RForgeDocs\RForgeDocs\RForgeDocs\RForgeDocs.csproj" />
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
+    <Compile Remove="BugSweeps\Docs_*.cs" />
   </ItemGroup>
 
   <ItemGroup>
