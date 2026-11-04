@@ -56,11 +56,11 @@ With the interface above:
 
 | User | `GetAllAsync` | `GetAsync` | `AddAsync` | `DeleteAsync` |
 |---|---|---|---|---|
-| Not signed in | | 401 | 401 | 401 |
-| Signed in, no role | | | 403 | 403 |
-| `Editor` | | | | 403 |
-| `Admin` | | | | 403 (also needs `CanDelete`) |
-| `Admin` with the `can_delete` claim | | | | |
+| Not signed in | Allowed | 401 | 401 | 401 |
+| Signed in, no role | Allowed | Allowed | 403 | 403 |
+| `Editor` | Allowed | Allowed | Allowed | 403 |
+| `Admin` | Allowed | Allowed | Allowed | 403 (also needs `CanDelete`) |
+| `Admin` with the `can_delete` claim | Allowed | Allowed | Allowed | Allowed |
 
 ## 2. Register authentication, the policy and the endpoints
 
