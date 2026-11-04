@@ -5,9 +5,18 @@
 
 <p>This tutorial uses a Blazor Web App with <strong>Auto</strong> interactivity, which has a server project (<code>MyApp</code>) and a client project (<code>MyApp.Client</code>). That covers every render mode. If your app only uses Interactive Server, you have a single project: put the "Client" files in it and skip the client-specific steps.</p>
 
-<h2 id="1-lay-out-the-project">1. Lay out the project</h2>
+<h2 id="1-lay-out-the-project-recommended-not-required">1. Lay out the project (recommended, not required)</h2>
 
-<p>The hub needs a few files in specific places. This is the layout used throughout the tutorials:</p>
+<p>This is the layout the tutorials use. It is a recommendation: you can organize files however suits your app. Only these four things are required:</p>
+
+<ol>
+<li>Every project that contains event-aware components references <code>RForge.Blazor.Events</code> (NuGet doesn't pass analyzers through project references, so <a href="#2-reference-the-package">step 2</a> adds it to both projects).</li>
+<li>Every host that runs interactive components calls <code>AddRForgeEvents</code>, with the same configuration (<a href="#4-register-the-hub-in-both-hosts">step 4</a>).</li>
+<li>State and event types live in a project that your WebAssembly code can see.</li>
+<li>Event-aware components start with <code>@@inherits RfEventComponent</code>, and keep <code>[Subscribe]</code> and <code>[UseState]</code> members in the code-behind (<code>.razor.cs</code>), not in an <code>@@code</code> block.</li>
+</ol>
+
+<p>The recommended layout:</p>
 
 <pre><code>MyApp/                                  server project (Blazor Web App host)
 ├── Program.cs                          registers the hub for the server
@@ -15,7 +24,7 @@
 └── Components/                         layout, App.razor, server-only pages
 MyApp.Client/                           everything that might run in WebAssembly
 ├── Program.cs                          registers the hub for the WebAssembly runtime
-├── EventHubSetup.cs                         ONE hub configuration shared by both Program.cs files
+├── EventHubSetup.cs                    ONE hub configuration shared by both Program.cs files
 ├── AppJsonContext.cs                   JSON metadata for persisted state (tutorial 08)
 ├── GlobalUsings.cs                     global using RForge.Blazor.Events;
 ├── _Imports.razor                      @@using RForge.Blazor.Events
@@ -28,7 +37,7 @@ MyApp.Client/                           everything that might run in WebAssembly
 │           └── Something.razor.cs      code-behind with [Subscribe] / [UseState]
 └── Pages/                              routable pages that run in WebAssembly / Auto</code></pre>
 
-<p>Why these locations:</p>
+<p>Why we suggest these locations:</p>
 
 <div class="table-container"><table class="table is-striped">
 <thead>
