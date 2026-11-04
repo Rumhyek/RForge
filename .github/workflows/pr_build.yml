@@ -35,6 +35,10 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
+      # The docs site is not in RForge.sln and only deploys on a release, so build it here.
+      - name: Build the docs site
+        run: dotnet build ../../docs/RForgeDocs/RForgeDocs.sln --configuration Release
+
       # Test projects run on every target framework they declare.
       - name: Test with dotnet
         run: dotnet test --configuration Release --no-build
