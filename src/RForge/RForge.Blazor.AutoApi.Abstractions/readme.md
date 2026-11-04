@@ -343,6 +343,10 @@ The files appear under `obj/<Configuration>/<TargetFramework>/generated/RForge.B
 
 ---
 
+## Tutorials
+
+Step-by-step guides with compile-checked code and the recommended file layout, from setup to authorization, testing and troubleshooting: [docs/autoapi/tutorials](https://github.com/Rumhyek/RForge/blob/main/docs/autoapi/tutorials/README.md).
+
 ## Working on this repository
 
 | Path | Contents |
