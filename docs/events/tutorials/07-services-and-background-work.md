@@ -221,7 +221,7 @@ public static void Configure(RfEventOptions options)
 - Store writes are serialized per store (`Update` is atomic). Component notifications are queued through each component's renderer.
 - `PublishAsync` awaits every handler, including component handlers running on the renderer, so a service can rely on "all reactions ran" after the `await`.
 
-## ✅ Best practices
+## Best practices
 
 - **Put server-only services in the server project** (`MyApp/Services/`), and keep the state and events they produce in the Client project.
 - **Register hub-using services as Scoped.** Never Singleton.

@@ -56,11 +56,11 @@ With the interface above:
 
 | User | `GetAllAsync` | `GetAsync` | `AddAsync` | `DeleteAsync` |
 |---|---|---|---|---|
-| Not signed in | ✅ | 401 | 401 | 401 |
-| Signed in, no role | ✅ | ✅ | 403 | 403 |
-| `Editor` | ✅ | ✅ | ✅ | 403 |
-| `Admin` | ✅ | ✅ | ✅ | 403 (also needs `CanDelete`) |
-| `Admin` with the `can_delete` claim | ✅ | ✅ | ✅ | ✅ |
+| Not signed in | | 401 | 401 | 401 |
+| Signed in, no role | | | 403 | 403 |
+| `Editor` | | | | 403 |
+| `Admin` | | | | 403 (also needs `CanDelete`) |
+| `Admin` with the `can_delete` claim | | | | |
 
 ## 2. Register authentication, the policy and the endpoints
 
@@ -217,7 +217,7 @@ The decorator needs a user to check. It looks in this order:
 
 `AddRForgeAutoApiServer()` registers `IHttpContextAccessor` for you.
 
-## ✅ Best practices
+## Best practices
 
 - **Put the rules on the interface, once.** Don't repeat them in endpoint conventions or in the component.
 - **Start with `[RfAuthorize]` on the interface** and open single methods with `[RfAllowAnonymous]`. Forgetting a rule then fails closed.

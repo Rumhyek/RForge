@@ -159,7 +159,7 @@ Inside the `StateScope`, both the event-aware `ThemeSwitcher` and the plain `The
 - `<StateScope CascadeValue="true">` renders an extra, non-fixed `<CascadingValue>` around its children with the current value. Without the flag, it doesn't render one and costs nothing.
 - Cascading-parameter consumers get the new value through `SetParametersAsync`, so they re-render on **every** change. There are no selectors on this path.
 
-## ✅ Best practices
+## Best practices
 
 - **Use cascades only for components you can't put on `RfEventComponent`.** Your own components should use `[UseState]` with selectors.
 - **Configure `CascadeRootState` in `EventHubSetup.Configure`**, never in only one `Program.cs`. Otherwise the cascade disappears when the page switches runtime.

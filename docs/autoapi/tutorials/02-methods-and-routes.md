@@ -182,7 +182,7 @@ error RFAA008: Route '/api/v1/shared' is used by more than one method ('IBadDupl
 - Each endpoint accepts exactly one HTTP method. A request with another method doesn't reach your service.
 - The prefix, the default HTTP method and the JSON context are read from `[assembly: RForgeAutoApiDefaults]`.
 
-## ✅ Best practices
+## Best practices
 
 - **Use `Get` for reads that take simple parameters**, so browsers and proxies can treat them as reads. Keep the default `Post` for everything that takes objects.
 - **Version the prefix** (`/api/v1`) in the assembly attribute if other clients will call these endpoints.

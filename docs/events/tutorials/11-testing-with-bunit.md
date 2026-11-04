@@ -261,7 +261,7 @@ public sealed class ProfileLoaderAndCard : ComponentBase
 }
 ```
 
-## ✅ Best practices
+## Best practices
 
 - **One `BunitContext` per test** (xUnit creates a new test-class instance per test, so inheriting from `EventTestContext` gives you that for free). Each context has its own hub, so tests can't leak state into each other.
 - **Arrange state through `Hub.State<T>()` before rendering** rather than clicking through the UI to get there.

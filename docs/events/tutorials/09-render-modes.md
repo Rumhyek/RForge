@@ -20,10 +20,10 @@
 
 | Mode | Events | State | Notes |
 |---|---|---|---|
-| Static SSR | ✅ within the request | ✅ within the request | Nothing updates after the HTML is sent |
-| Interactive Server | ✅ | ✅ | Publishing from background threads is safe |
-| Interactive WebAssembly | ✅ | ✅ | Generated code is trim/AOT-safe |
-| Interactive Auto | ✅ per runtime | ✅ per runtime | State doesn't move from Server to WebAssembly |
+| Static SSR | within the request | within the request | Nothing updates after the HTML is sent |
+| Interactive Server | | | Publishing from background threads is safe |
+| Interactive WebAssembly | | | Generated code is trim/AOT-safe |
+| Interactive Auto | per runtime | per runtime | State doesn't move from Server to WebAssembly |
 
 ## 1. Register in both hosts
 
@@ -77,7 +77,7 @@ Cascading values don't cross from static rendering into an interactive island, a
     <SettingsPanel @rendermode="InteractiveServer" />
 </EventScope>
 
-@* ✅ SettingsPanel declares its own <EventScope Name="settings"> inside itself,
+@* SettingsPanel declares its own <EventScope Name="settings"> inside itself,
       so the scope lives in the island. *@
 <SettingsPanel @rendermode="InteractiveServer" />
 ```
@@ -91,7 +91,7 @@ An `InteractiveAuto` page runs on Server until the WebAssembly runtime is downlo
 - Root state isn't carried from the Server phase to the WebAssembly phase. Reload data from its source (see "load if not loaded" in [tutorial 08](08-prerendering-and-persistence.md#4-load-only-if-needed)).
 - Server-only services (`MyApp/Services`) aren't available in WebAssembly. Pages that need them should be `InteractiveServer`.
 
-## ✅ Best practices
+## Best practices
 
 - **Choose one interactive render mode per page region**, ideally per page or app-wide.
 - **Keep event-aware code in the Client project** so it can run anywhere. Put only server-only pages and services in the server project.

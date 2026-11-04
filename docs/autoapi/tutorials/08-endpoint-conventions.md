@@ -140,7 +140,7 @@ The usual cause is an `internal` attribute declared in the shared library, which
 
 If you need rate limiting or auditing for Interactive Server calls too, do it in your service or in a decorator you register around it.
 
-## ✅ Best practices
+## Best practices
 
 - **Put cross-cutting rules on the group**, once, next to `MapRForgeAutoApi()`.
 - **Keep metadata attributes `public`** and in the shared library, and exclude the ones that mean nothing to an endpoint.

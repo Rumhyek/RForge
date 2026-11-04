@@ -208,7 +208,7 @@ Because Server mode never serializes, a type that can't survive JSON (a cycle, a
 - For `Get` and `Delete`, the client builds the query string itself and the server converts each value to the parameter type.
 - The context is read by both generators, so the server and the client always serialize the same way.
 
-## ✅ Best practices
+## Best practices
 
 - **Register every type you send or return** in the JSON context, and treat `RFAA009` as something to fix, not to ignore.
 - **Use records for data types.** They serialize without ceremony and compare by value.

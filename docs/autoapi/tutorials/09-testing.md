@@ -530,7 +530,7 @@ public sealed class BookListTests : BunitContext
 - `TestServer` runs the whole ASP.NET pipeline in memory: routing, authentication, authorization, the endpoint filter that turns exceptions into ProblemDetails. Only the network is missing.
 - Sign-in headers and the test auth scheme stand in for your real identity setup. The `[RfAuthorize]` rules run exactly as they do in production.
 
-## ✅ Best practices
+## Best practices
 
 - Test the round trip once per interface, and cover each exception type and each authorization rule you rely on. These tests are short and catch the mistakes that only show up in WebAssembly.
 - Also test Interactive Server mode for any interface with `[RfAuthorize]`. It is a different code path (the decorator) with the same promise.

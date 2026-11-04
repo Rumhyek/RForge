@@ -285,7 +285,7 @@ The other `.g.cs` files are small runtime helpers the generator emits as `intern
 - The server and the client are generated from the same interface, so their routes and parameter names always agree.
 - Nothing uses reflection at runtime when you provide a `JsonSerializerContext`.
 
-## ✅ Best practices
+## Best practices
 
 - **Keep the shared library free of ASP.NET.** It only needs the abstractions package, so any project can reference it.
 - **Name the JSON context in `[assembly: RForgeAutoApiDefaults]` from the start**, so the generated code never falls back to reflection.

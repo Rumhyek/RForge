@@ -188,7 +188,7 @@ public sealed record PollNotesState(string Text) : IState&lt;PollNotesState&gt;
 <li>Each component resolves once, at initialization, so the lookup isn't repeated on every render.</li>
 </ul>
 
-<h2 id="-best-practices">✅ Best practices</h2>
+<h2 id="-best-practices">Best practices</h2>
 
 <ul>
 <li><strong>Put the <code>StateScope</code> in the widget's root component</strong> (<code>PollCard</code>), so callers just write <code>&lt;PollCard /&gt;</code> and can't forget it.</li>

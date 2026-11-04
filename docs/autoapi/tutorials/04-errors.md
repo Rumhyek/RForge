@@ -231,7 +231,7 @@ The generated endpoints report their own binding problems as `RfException` with 
 - The generated client reads the status code and the `rfType` and `code` fields, and throws the matching exception.
 - In Interactive Server mode no endpoint is involved, so exceptions are just the exceptions your service throws.
 
-## ✅ Best practices
+## Best practices
 
 - **Use `RfException` for outcomes you expect** (validation, not found, conflicts) and let everything else throw normally.
 - **Write messages for users.** They travel to the browser exactly as written.

@@ -247,7 +247,7 @@ public partial class SettingsHelp
 - Components resolve their nearest scope once, at initialization. Moving a component to another scope means re-creating it, which Blazor does anyway when markup changes.
 - When an `EventScope` leaves the page, its scope and every subscription in it are disposed.
 
-## ✅ Best practices
+## Best practices
 
 - **Declare the scope in the feature's root component** (`SettingsPanel`), not in a page or layout. The feature then works the same wherever it's placed.
 - **Name scopes after the feature** (`"settings"`, `"checkout"`) and target them with `Route.Named`. That keeps working when the internal component structure changes.

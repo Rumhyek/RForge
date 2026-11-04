@@ -245,7 +245,7 @@ If the generator isn't running, the build fails with **CS9248** ("partial proper
 - `RfEventComponent` finds the hub, runs the generated `RegisterSubscriptions` before your `OnInitialized`, re-renders the component when state it reads changes, and unsubscribes on dispose.
 - State types are created lazily from their `Initial` value the first time anything asks for them. No registration is needed.
 
-## ✅ Best practices
+## Best practices
 
 - **Put state, events and event-aware components in the Client project.** Then they work in every render mode.
 - **Use one `EventHubSetup.Configure` for both hosts.** Two hand-written configurations drift apart.

@@ -144,7 +144,7 @@ Two consequences:
 - **Don't keep state in a Scoped service's fields.** A circuit reuses one instance for many calls, but every HTTP request gets a new one, so the same code would behave differently per mode. Keep state in a Singleton store, a database or a cache, and inject it, as the Todos example does with its `DemoTodoStore`.
 - **Return immutable types.** If a component mutates the list or object it received, that changes your service's data when the call was direct, and only a copy when it came over HTTP. Records and copies (`list.ToList()`) behave the same in both.
 
-## ✅ Best practices
+## Best practices
 
 - **Inject the interface everywhere**, never the generated client or the implementation.
 - **Register the generated client only in WebAssembly projects**, and the implementation only on the server.

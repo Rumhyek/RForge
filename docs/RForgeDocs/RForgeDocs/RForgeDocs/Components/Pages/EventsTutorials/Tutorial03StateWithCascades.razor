@@ -151,7 +151,7 @@ private void Toggle() =&gt; (Scope ?? Hub).State&lt;ThemeState&gt;().Update(/* â
 <li>Cascading-parameter consumers get the new value through <code>SetParametersAsync</code>, so they re-render on <strong>every</strong> change. There are no selectors on this path.</li>
 </ul>
 
-<h2 id="-best-practices">âœ… Best practices</h2>
+<h2 id="-best-practices">Best practices</h2>
 
 <ul>
 <li><strong>Use cascades only for components you can't put on <code>RfEventComponent</code>.</strong> Your own components should use <code>[UseState]</code> with selectors.</li>

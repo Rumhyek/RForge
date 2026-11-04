@@ -147,7 +147,7 @@ builder.Services.AddRForgeAutoApi();
 
 This is the place for a cache, an offline store or a test double. The server isn't affected; it has its own registration.
 
-## ✅ Best practices
+## Best practices
 
 - **Add handlers to the builder `AddRForgeAutoApi()` returns**, and to each extra named client that needs them.
 - **Register a handler's dependencies as Singletons.**
