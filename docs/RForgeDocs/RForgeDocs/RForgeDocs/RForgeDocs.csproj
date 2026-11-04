@@ -18,6 +18,9 @@
     <ProjectReference Include="..\..\..\..\src\RForge\RForge.Blazor.Events.Generators\RForge.Blazor.Events.Generators.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\..\src\RForge\RForge.Blazor.AutoApi.Generator\RForge.Blazor.AutoApi.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\RForgeDocs.Abstractions\RForgeDocs.Abstractions.csproj" />
     <ProjectReference Include="..\..\RForgeDocsLibrary\RForgeDocsLibrary.csproj" />
     <ProjectReference Include="..\RForgeDocs.Client\RForgeDocs.Client.csproj" />

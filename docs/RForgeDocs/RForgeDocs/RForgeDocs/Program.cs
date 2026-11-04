@@ -1,4 +1,6 @@
 using RForgeDocs;
+using RForgeDocs.Abstractions.AutoApiDemo;
+using RForgeDocs.AutoApiDemo;
 using RForgeDocs.Components;
 using RForgeDocs.EndPoints;
 using RForge.Blazor;
@@ -23,6 +25,11 @@ builder.Services.AddRForgeEvents(EventsDemoHub.Configure);
 builder.Services.AddScoped<MarketFeed>();
 
 IocConfig.Register(builder.Configuration, builder.Services);
+
+// AutoApi demo: Interactive Server and prerendering call the service directly, WebAssembly calls the generated endpoints.
+builder.Services.AddSingleton<DemoTodoStore>();
+builder.Services.AddScoped<IDemoTodoService, DemoTodoService>();
+builder.Services.AddRForgeAutoApiServer();
 
 var app = builder.Build();
 
@@ -52,5 +59,6 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(RForgeDocs.Client._Imports).Assembly);
 
 app.MapUserApi();
+app.MapRForgeAutoApi();
 
 app.Run();

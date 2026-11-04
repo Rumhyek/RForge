@@ -1,0 +1,127 @@
+@page "/autoapi/example/todos"
+
+@rendermode InteractiveAuto
+
+@using RForge.Blazor.AutoApi
+@using RForgeDocs.Abstractions.AutoApiDemo
+@inject IDemoTodoService TodoService
+
+<ExampleDetail Title="Todos"
+               SubTitle="AutoApi"
+               ComponentName="AutoApi"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/AutoApi/TodosExamplePage.razor")"
+               ComponentDetailsUrl="/autoapi/details" />
+
+<div class="columns">
+    <div class="column is-5">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <ExampleHeader Level="Simple" Mode="Interactive Auto">
+                        A todo list that calls one interface, <code>IDemoTodoService</code>, from Interactive Server and from WebAssembly.
+                    </ExampleHeader>
+
+                    <HowItWorks>
+                        <p><strong>Try it:</strong> add, toggle and delete items, then reload. The first load runs on the server; once the WebAssembly runtime has downloaded, later loads run in the browser. The badge shows which one served the call.</p>
+                        <ul>
+                            <li><code>IDemoTodoService</code> is marked <code>[RForgeAutoApi]</code> in a shared library. This page only injects the interface.</li>
+                            <li>On the server (prerendering and Interactive Server) the injected service is the real <code>DemoTodoService</code>. No HTTP request is made.</li>
+                            <li>In WebAssembly the injected service is a class the generator wrote. It calls the generated endpoints with <code>HttpClient</code>.</li>
+                            <li>A validation error is an <code>RfException</code> in both modes, so the one <code>catch</code> below works everywhere. Try adding an empty title, or more than @DemoLimits.MaxItems items.</li>
+                            <li>The list is stored in server memory and shared by every visitor of this site. It holds @DemoLimits.MaxItems items, titles up to @DemoLimits.MaxTitleLength characters, and goes back to its starting items every 30 minutes.</li>
+                        </ul>
+                    </HowItWorks>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+            <section class="card">
+                <header class="card-header">
+                    <p class="card-header-title">Todos</p>
+                    <div class="card-header-icon">
+                        <span class="tag @(_interactive ? "is-success" : "is-warning")">@(_interactive ? $"{Runtime} (interactive)" : "prerendering")</span>
+                    </div>
+                </header>
+                <div class="card-content">
+                    <form @onsubmit="AddAsync" class="field has-addons">
+                        <div class="control is-expanded">
+                            <input class="input" placeholder="What needs doing?" @bind="_newTitle" disabled="@(!_interactive)" />
+                        </div>
+                        <div class="control">
+                            <button class="button is-primary" type="submit" disabled="@(!_interactive)">Add</button>
+                        </div>
+                    </form>
+
+                    @if (_error is not null)
+                    {
+                        <div class="notification is-warning is-light">@_error</div>
+                    }
+
+                    @if (_items is null)
+                    {
+                        <p><em>Loading...</em></p>
+                    }
+                    else
+                    {
+                        <ul class="menu-list">
+                            @foreach (var item in _items)
+                            {
+                                <li class="is-flex is-align-items-center is-gap-2 py-1">
+                                    <input type="checkbox" checked="@item.Done" disabled="@(!_interactive)"
+                                           @onchange="() => RunAsync(() => TodoService.ToggleAsync(item.Id))" />
+                                    <span class="is-flex-grow-1" style="@(item.Done ? "text-decoration: line-through;" : "")">@item.Title</span>
+                                    <button class="button is-small is-danger is-outlined" disabled="@(!_interactive)"
+                                            @onclick="() => RunAsync(() => TodoService.DeleteAsync(item.Id))">Delete</button>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </section>
+        </article>
+    </div>
+</div>
+
+@code {
+
+    private List<DemoTodo> _items;
+    private string _newTitle = "";
+    private string _error;
+    private bool _interactive;
+
+    // net8 has no RendererInfo: the browser runtime means WebAssembly, and OnAfterRender never runs while prerendering.
+    private static string Runtime => OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+
+    protected override async Task OnInitializedAsync() => _items = await TodoService.GetAllAsync();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender) return;
+        _interactive = true;
+        StateHasChanged();
+    }
+
+    private Task AddAsync() => RunAsync(async () =>
+    {
+        await TodoService.AddAsync(_newTitle);
+        _newTitle = "";
+    });
+
+    private async Task RunAsync(Func<Task> action)
+    {
+        try
+        {
+            _error = null;
+            await action();
+            _items = await TodoService.GetAllAsync();
+        }
+        catch (RfException ex)
+        {
+            // Same exception type in Interactive Server and WebAssembly.
+            _error = ex.Message;
+        }
+    }
+
+}

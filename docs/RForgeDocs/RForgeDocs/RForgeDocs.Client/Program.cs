@@ -13,6 +13,9 @@ builder.Services.AddRfForgeBlazorServices();
 // The WebAssembly runtime has its own DI container, so it needs its own event hub.
 builder.Services.AddRForgeEvents(EventsDemoHub.Configure);
 
+// Generated HttpClient implementation of the shared AutoApi interfaces.
+builder.Services.AddRForgeAutoApi();
+
 IocConfig.Register(builder.Configuration, builder.Services);
 
 await builder.Build().RunAsync();
