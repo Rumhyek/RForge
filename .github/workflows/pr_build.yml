@@ -35,6 +35,12 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
+      # The tutorial pages are generated from docs/<library>/tutorials. Fail when a page and its markdown differ.
+      - name: Check the generated tutorial pages
+        run: |
+          python3 ../../docs/tools/convert-tutorials.py events --check
+          python3 ../../docs/tools/convert-tutorials.py autoapi --check
+
       # The docs site is not in RForge.sln and only deploys on a release, so build it here.
       - name: Build the docs site
         run: dotnet build ../../docs/RForgeDocs/RForgeDocs.sln --configuration Release
