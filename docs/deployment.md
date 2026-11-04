@@ -11,6 +11,8 @@ nuget.org and the live docs site when someone **publishes the draft GitHub relea
 | Publish the draft release | `deploy_release` | Packs `X.Y.Z` and pushes it to the GitHub feed and nuget.org |
 | Publish the draft release | `deploy_rforge_docs` | Builds `docs/RForgeDocs` and deploys it to https://rforge.azurewebsites.net, unless the release is marked as a prerelease |
 
+The docs site targets .NET 10 and is published framework-dependent, so the `rforge` Azure web app has to run the .NET 10 runtime.
+
 All four workflows can also be started by hand from the Actions tab.
 `deploy_release` then asks which tag to package, and `deploy_rforge_docs` deploys
 whichever branch you pick straight to production.

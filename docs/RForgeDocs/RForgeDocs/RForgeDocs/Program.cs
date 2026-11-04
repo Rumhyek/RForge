@@ -50,8 +50,10 @@ if(app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-app.UseStaticFiles();
 app.UseAntiforgery();
+
+// Serves wwwroot, the scoped CSS bundle, library assets and the Blazor script. UseStaticFiles() no longer serves blazor.web.js on .NET 10.
+app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
