@@ -1,0 +1,107 @@
+@page "/hot-key/details"
+
+<ComponentDetail Title="Hot Key"
+                 SubTitle="Run an action when a key combo is pressed anywhere on the page">
+
+    <Examples>
+        @ComponentDetail.SideLink(("Basic example", TagInfo.Empty, "/hot-key/example/basic-example"))
+
+    </Examples>
+
+    <RepoLinks>
+        @ComponentDetail.SideLink(("RfHotKey.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/RfHotKey.cs"))
+        @ComponentDetail.SideLink(("RfKey.cs", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/RfKey.cs"))
+        @ComponentDetail.SideLink(("rf-hotkeys.js", TagInfo.Backend, "https://github.com/Rumhyek/RForge/blob/main/src/RForge/RForge.Blazor.Components/wwwroot/rf-hotkeys.js"))
+    </RepoLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                <code>RfHotKey</code> runs an action when a key combo is pressed, wherever focus is on the page.
+                It renders no markup, and it needs no service or host component.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>Use <code>RfHotKey</code> for keyboard shortcuts that belong to whatever is on screen.</p>
+
+            <h4>When not to Use</h4>
+            <p>Don't use <code>RfHotKey</code> when:</p>
+            <ul>
+                <li>The key only matters while focus is inside one element. Use <code>@@onkeydown</code> on that element.</li>
+                <li>The page uses static rendering. Hot keys need an interactive render mode.</li>
+            </ul>
+        </div>
+    </Purpose>
+
+    <BasicUsage>
+        <div class="content">
+
+            <p>A hot key is active while the component is rendered, so an <code>@@if</code> around it decides when it applies.</p>
+
+            <pre><code>&lt;RfHotKey Keys="mod+s" OnPressed="SaveAsync" /&gt;
+
+@@if (IsOpen == true)
+{
+    &lt;RfHotKey Keys="@@RfKey.Escape" OnPressed="Close" /&gt;
+}</code></pre>
+
+            <h3>Writing a combo</h3>
+            <p>
+                <code>Keys</code> takes any modifiers and one key, joined with <code>+</code>. A combo that isn't valid throws an
+                <code>ArgumentException</code> when the component renders. <code>RfKey</code> has constants for the modifiers and
+                named keys, and <code>RfKey.Combo</code> builds and checks a combo:
+            </p>
+            <pre><code>&lt;RfHotKey Keys="@@RfKey.Combo(RfKey.Mod, RfKey.Shift, "k")" OnPressed="OpenSearch" /&gt;</code></pre>
+
+            <div class="table-container">
+                <table class="table is-striped">
+                    <thead>
+                        <tr><th>Part</th><th>Written as</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Modifiers</td><td><code>ctrl</code>, <code>alt</code>, <code>shift</code>, and <code>mod</code>, which is Cmd on a Mac and Ctrl everywhere else</td></tr>
+                        <tr><td>Letters and digits</td><td>Themselves: <code>s</code>, <code>1</code></td></tr>
+                        <tr><td>Symbols</td><td>The character itself: <code>?</code>, not <code>shift+/</code>, because the key for a symbol differs between keyboards</td></tr>
+                        <tr><td>Named keys</td><td><code>escape</code>, <code>enter</code>, <code>tab</code>, <code>space</code>, <code>backspace</code>, <code>delete</code>, <code>arrowup</code>, <code>arrowdown</code>, <code>arrowleft</code>, <code>arrowright</code>, <code>home</code>, <code>end</code>, <code>pageup</code>, <code>pagedown</code>, <code>plus</code>, <code>f1</code> to <code>f12</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>When two hot keys use the same combo</h3>
+            <p>
+                Only the most recently rendered one fires. When it is removed, the previous one applies again.
+                This is how an open modal takes Esc from the page behind it.
+            </p>
+
+            <h3>While typing</h3>
+            <p>
+                A key with no Ctrl, Alt or Cmd doesn't fire while focus is in an input, textarea, select or contenteditable, so it types
+                normally. Set <code>AllowWhileTyping</code> to change that. Combos with those modifiers, Esc and the function keys always fire.
+            </p>
+
+            <h3>Browser shortcuts</h3>
+            <p>
+                A match stops the browser's own action for that combo, such as the save dialog on <code>mod+s</code>, but only while the
+                hot key is rendered. Browsers keep some combos for themselves, such as Ctrl+W and Ctrl+T, and those can't be captured.
+            </p>
+
+            <h3>JavaScript</h3>
+            <p>
+                <code>RfHotKey</code> needs a page-wide key listener, which Blazor can't provide without JavaScript. It loads one small file
+                the first time a hot key renders, so a page without one downloads nothing, and you don't add a script tag.
+                If the file can't load, the hot key doesn't work and a warning is logged. Nothing else on the page is affected.
+            </p>
+            <p>
+                <code>RfDropDown</code>, <code>RfDropDownMulti</code>, <code>RfModal</code>, <code>RfModalCard</code> and <code>RfModalImage</code>
+                use a hot key for Esc while they are open. Set <code>UseHotKeys="false"</code> on them to opt out and load no JavaScript.
+                The other components don't use JavaScript at all.
+            </p>
+        </div>
+    </BasicUsage>
+
+    <Setup>
+        <BasicSetupDetails />
+    </Setup>
+
+</ComponentDetail>

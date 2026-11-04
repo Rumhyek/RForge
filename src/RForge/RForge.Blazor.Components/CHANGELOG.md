@@ -1,5 +1,12 @@
 # RForge.Blazor.Components
 
+## Version 1.1.0
+
+- Added `RfHotKey`, which runs an action when a key combo is pressed anywhere on the page, and `RfKey`, which has constants for the modifiers and named keys and builds combos. A hot key is active while the component is rendered, and when several use the same combo only the most recently rendered one fires (#11).
+- Changed `RfModal`, `RfModalCard` and `RfModalImage`: Esc now closes a visible modal that has a close button. A modal with `ShowCloseButton="false"` stays open and keeps Esc from reaching a modal behind it (#11).
+- Changed `RfDropDown` and `RfDropDownMulti`: Esc now closes an open dropdown wherever focus is, not only while focus is on an item (#11).
+- This package now includes one small JavaScript file. `RfHotKey` loads it on first use, and open dropdowns and visible modals use `RfHotKey` for Esc. Set `UseHotKeys="false"` on those components to load no JavaScript, which keeps the earlier Esc behavior. No other component uses JavaScript, and you don't add a script tag (#11).
+
 ## Version 1.0.0
 
 This package was published as `RForge.Blazor` before 1.0.0. `RForge.Blazor` is now a bundle of the whole RForge.Blazor family (see its changelog), and the components live here. Nothing else changed since 0.15.0.

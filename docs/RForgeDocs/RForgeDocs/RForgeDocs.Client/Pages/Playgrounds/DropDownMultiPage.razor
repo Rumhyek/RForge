@@ -102,6 +102,10 @@
                        HelpText="If true the items within the dropdown cannot be modified within.">
             <InputCheckbox @bind-Value=@IsReadonly class="checkbox" />
         </BulmaCheckbox>
+        <BulmaCheckbox Label="UseHotKeys"
+                       HelpText="If true Esc closes the open dropdown wherever focus is. If false no JavaScript is loaded and Esc only closes it while focus is on an item. By default = true.">
+            <InputCheckbox @bind-Value=@UseHotKeys class="checkbox" />
+        </BulmaCheckbox>
 
         <BulmaInput Label="Position"
                     HelpText="Determines how to render the selected item within a drop down options.">
@@ -149,7 +153,8 @@
                     OnOpen=@((filter) => Logger.AddLog($"OnOpen(filter: '{filter}')"))
 
                     ShowSelectedItemInDropDown=@ShowSelectedItemInDropDown
-                    IsReadonly=@IsReadonly>
+                    IsReadonly=@IsReadonly
+                    UseHotKeys=@UseHotKeys>
 
             @context.FirstName @context.LastName (@context.Id)
 
@@ -259,6 +264,11 @@
     /// If true the items within the dropdown cannot be modified within.
     /// </summary>
     public bool IsReadonly { get; set; }
+
+    /// <summary>
+    /// If true Esc closes the open dropdown wherever focus is. If false no JavaScript is loaded and Esc only closes it while focus is on an item.
+    /// </summary>
+    public bool UseHotKeys { get; set; } = true;
 
 
     /// <summary>
