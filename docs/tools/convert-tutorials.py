@@ -30,7 +30,7 @@ LIBRARIES = {
         # Links from a tutorial to the design docs and the samples go to GitHub.
         "link_rules": [
             (r"^\.\./design/([\w.-]+\.md)(#.*)?$", GITHUB + r"/blob/main/docs/events/design/\1\2"),
-            (r"^\.\./\.\./\.\./samples$", GITHUB + "/tree/main/samples"),
+            (r"^\.\./\.\./\.\./samples(/[\w./-]*)?$", GITHUB + r"/tree/main/samples\1"),
         ],
         # The sample pages became example pages on the docs site.
         "example_rule": (r"^/examples/([\w-]+)$", r"/events/example/\1"),
@@ -42,7 +42,7 @@ LIBRARIES = {
         "route": "/autoapi/tutorials",
         "link_rules": [
             (r"^\.\./spec\.md(#.*)?$", GITHUB + r"/blob/main/docs/autoapi/spec.md\1"),
-            (r"^\.\./\.\./\.\./samples$", GITHUB + "/tree/main/samples"),
+            (r"^\.\./\.\./\.\./samples(/[\w./-]*)?$", GITHUB + r"/tree/main/samples\1"),
         ],
         "example_rule": None,
     },
@@ -65,14 +65,34 @@ def github_slug(heading):
     return text.replace(" ", "-")
 
 
+def heading_ids(markdown):
+    """The ids of every heading in a tutorial, numbered the way the converter numbers duplicates."""
+    ids, found, in_code = {}, set(), False
+    for line in markdown.replace("\r\n", "\n").split("\n"):
+        if line.startswith("```"):
+            in_code = not in_code
+            continue
+        heading = re.match(r"^(#{2,4}) (.+)$", line)
+        if heading and not in_code:
+            slug = github_slug(heading.group(2).strip())
+            count = ids.get(slug, 0)
+            ids[slug] = count + 1
+            found.add(slug if not count else f"{slug}-{count}")
+    return found
+
+
 class Converter:
-    def __init__(self, config, slugs):
+    def __init__(self, config, slugs, anchors):
         self.config = config
         self.slugs = slugs
+        self.anchors = anchors  # tutorial slug -> set of heading ids
+        self.current = None
 
     # ---- links -----------------------------------------------------------------------------------------------
 
     def map_link(self, url):
+        if url.startswith("#") and url[1:] not in self.anchors[self.current]:
+            raise ConvertError(f"link to a heading that does not exist: {url}")
         for pattern, replacement in self.config["link_rules"]:
             if re.match(pattern, url):
                 return re.sub(pattern, replacement, url)
@@ -82,6 +102,8 @@ class Converter:
                 return self.config["route"]
             if match.group(1) not in self.slugs:
                 raise ConvertError(f"link to an unknown tutorial: {url}")
+            if match.group(2) and match.group(2)[1:] not in self.anchors[match.group(1)]:
+                raise ConvertError(f"link to a heading that does not exist: {url}")
             return f"{self.config['route']}/{match.group(1)}{match.group(2) or ''}"
         return url
 
@@ -240,17 +262,20 @@ def main():
     parser.add_argument("library", choices=sorted(LIBRARIES))
     parser.add_argument("--check", action="store_true", help="compare with the existing pages instead of writing them")
     args = parser.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8")  # Diffs can contain characters the Windows console code page lacks.
 
     config = LIBRARIES[args.library]
     sources = sorted(p for p in config["markdown"].glob("[0-9][0-9]-*.md"))
     if not sources:
         sys.exit(f"no tutorials found in {config['markdown']}")
-    converter = Converter(config, {p.stem for p in sources})
+    texts = {p.stem: p.read_text(encoding="utf-8") for p in sources}
+    converter = Converter(config, set(texts), {slug: heading_ids(text) for slug, text in texts.items()})
 
     differences = 0
     for source in sources:
         try:
-            body = converter.convert(source.read_text(encoding="utf-8"))
+            converter.current = source.stem
+            body = converter.convert(texts[source.stem])
         except ConvertError as error:
             sys.exit(f"{source.name}: {error}")
         page = (
