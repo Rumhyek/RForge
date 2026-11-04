@@ -272,7 +272,7 @@ public partial class ToastBell
 <li>By default a component listens at its <strong>nearest scope</strong> and a publish <strong>bubbles</strong> up from the publisher's nearest scope to the root. Without any <code>EventScope</code>s, everything is at the root, so every subscriber hears every publish of its event type.</li>
 </ul>
 
-<h2 id="-best-practices">Best practices</h2>
+<h2 id="best-practices">Best practices</h2>
 
 <ul>
 <li><strong>Keep event types next to the feature that owns them</strong> (<code>Features/Toasts/ToastEvents.cs</code>). Several small related events can share one <code>…Events.cs</code> file. Large ones get their own file.</li>

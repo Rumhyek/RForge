@@ -250,7 +250,7 @@ public sealed class ProfileLoaderAndCard : ComponentBase
     }
 }</code></pre>
 
-<h2 id="-best-practices">Best practices</h2>
+<h2 id="best-practices">Best practices</h2>
 
 <ul>
 <li><strong>One <code>BunitContext</code> per test</strong> (xUnit creates a new test-class instance per test, so inheriting from <code>EventTestContext</code> gives you that for free). Each context has its own hub, so tests can't leak state into each other.</li>

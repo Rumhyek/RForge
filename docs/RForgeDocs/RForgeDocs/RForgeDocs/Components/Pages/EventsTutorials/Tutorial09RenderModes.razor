@@ -32,8 +32,8 @@
 </thead>
 <tbody>
 <tr><td>Static SSR</td><td>within the request</td><td>within the request</td><td>Nothing updates after the HTML is sent</td></tr>
-<tr><td>Interactive Server</td><td>✅</td><td>✅</td><td>Publishing from background threads is safe</td></tr>
-<tr><td>Interactive WebAssembly</td><td>✅</td><td>✅</td><td>Generated code is trim/AOT-safe</td></tr>
+<tr><td>Interactive Server</td><td>Works</td><td>Works</td><td>Publishing from background threads is safe</td></tr>
+<tr><td>Interactive WebAssembly</td><td>Works</td><td>Works</td><td>Generated code is trim/AOT-safe</td></tr>
 <tr><td>Interactive Auto</td><td>per runtime</td><td>per runtime</td><td>State doesn't move from Server to WebAssembly</td></tr>
 </tbody>
 </table></div>
@@ -101,7 +101,7 @@ builder.Services.AddRForgeEvents(EventHubSetup.Configure);</code></pre>
 <li>Server-only services (<code>MyApp/Services</code>) aren't available in WebAssembly. Pages that need them should be <code>InteractiveServer</code>.</li>
 </ul>
 
-<h2 id="-best-practices">Best practices</h2>
+<h2 id="best-practices">Best practices</h2>
 
 <ul>
 <li><strong>Choose one interactive render mode per page region</strong>, ideally per page or app-wide.</li>

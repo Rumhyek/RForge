@@ -21,8 +21,8 @@
 | Mode | Events | State | Notes |
 |---|---|---|---|
 | Static SSR | within the request | within the request | Nothing updates after the HTML is sent |
-| Interactive Server | | | Publishing from background threads is safe |
-| Interactive WebAssembly | | | Generated code is trim/AOT-safe |
+| Interactive Server | Works | Works | Publishing from background threads is safe |
+| Interactive WebAssembly | Works | Works | Generated code is trim/AOT-safe |
 | Interactive Auto | per runtime | per runtime | State doesn't move from Server to WebAssembly |
 
 ## 1. Register in both hosts

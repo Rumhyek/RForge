@@ -239,7 +239,7 @@ public sealed class CounterLogger : IDisposable
 <li>Components are notified through their own <code>InvokeAsync</code>, so writing from any thread is safe, and several quick writes collapse into one render with the latest value.</li>
 </ul>
 
-<h2 id="-best-practices">Best practices</h2>
+<h2 id="best-practices">Best practices</h2>
 
 <ul>
 <li><strong>One state type per concept, in its feature folder</strong> (<code>Features/Counter/CounterState.cs</code>). Big "app state" records make every selector work harder and couple unrelated features.</li>
