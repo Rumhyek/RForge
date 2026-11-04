@@ -226,7 +226,7 @@ Prefer step 3 (decide at registration) when you can. Late subscriptions are the 
 - `SubscriptionBuilder.On` and `.State` wrap your delegate so it runs through `InvokeAsync`, re-renders (unless `render: false`), routes exceptions to the `ErrorBoundary`, and is released when the component is disposed: exactly what the attributes do.
 - `Scope.Subscribe` and `IStateStore.Subscribe` are the lower-level APIs that services use ([tutorial 07](07-services-and-background-work.md)). They do none of that for you.
 
-## ✅ Best practices
+## Best practices
 
 - **Default to attributes.** Use manual registration only for what attributes can't express, and say why in a comment.
 - **Call `base.RegisterSubscriptions(builder)` first** in a manual override, so registrations from a base component aren't lost.

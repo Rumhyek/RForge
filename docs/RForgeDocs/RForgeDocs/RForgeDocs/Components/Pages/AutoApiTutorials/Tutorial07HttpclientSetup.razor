@@ -1,0 +1,181 @@
+@page "/autoapi/tutorials/07-httpclient-setup"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="07-httpclient-setup">
+<p><strong>Goal:</strong> control how the generated WebAssembly client makes its calls: the base address, authentication tokens, other APIs, and replacing the client altogether.</p>
+
+<p>This tutorial only affects calls made over HTTP, from WebAssembly. In Interactive Server mode and while prerendering there is no <code>HttpClient</code> (<a href="/autoapi/tutorials/06-render-modes">tutorial 06</a>).</p>
+
+<h2 id="1-the-default-client">1. The default client</h2>
+
+<p><code>AddRForgeAutoApi()</code> registers one named <code>HttpClient</code>, <code>RForgeAutoApi</code>, and a generated class that implements each of your interfaces with it:</p>
+
+<pre><code>// MyApp.Client/Program.cs
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MyApp.Client;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Services.AddRForgeAutoApi();
+
+await builder.Build().RunAsync();</code></pre>
+
+<p>What you get without any further setup:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th></th><th>Behavior</th></tr>
+</thead>
+<tbody>
+<tr><td>Client name</td><td><code>RForgeAutoApi</code> (change it with <code>HttpClientName</code> in <code>[RForgeAutoApiDefaults]</code>)</td></tr>
+<tr><td>Request URL</td><td>Relative, without a leading slash: <code>api/auto/IBookService/GetAllAsync</code></td></tr>
+<tr><td>Base address</td><td>The app's base address (<code>IWebAssemblyHostEnvironment.BaseAddress</code>), unless you set one</td></tr>
+<tr><td>Service lifetime</td><td>The generated classes are registered as Scoped</td></tr>
+</tbody>
+</table></div>
+
+<p>Because the URLs are relative, a base address that has a path keeps it: with <code>https://example.com/app/</code> the call goes to <code>https://example.com/app/api/auto/IBookService/GetAllAsync</code>.</p>
+
+<p>The automatic base address needs the client project to reference <code>Microsoft.AspNetCore.Components.WebAssembly</code>. Every Blazor WebAssembly project does. In a project without it, no base address is set and you must configure one.</p>
+
+<h2 id="2-add-a-handler-for-example-a-bearer-token">2. Add a handler, for example a bearer token</h2>
+
+<p><code>AddRForgeAutoApi()</code> returns the <code>IHttpClientBuilder</code> of the default client, so you add handlers and settings to it like to any other client:</p>
+
+<pre><code>// MyApp.Client/TokenHandler.cs
+using System.Net.Http.Headers;
+
+namespace MyApp.Client;
+
+public interface ITokenStore
+{
+    ValueTask&lt;string?&gt; GetTokenAsync(CancellationToken cancellationToken);
+}
+
+/// &lt;summary&gt;Adds the bearer token to every request made by the client it is attached to.&lt;/summary&gt;
+public sealed class TokenHandler(ITokenStore tokens) : DelegatingHandler
+{
+    protected override async Task&lt;HttpResponseMessage&gt; SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var token = await tokens.GetTokenAsync(cancellationToken);
+        if (token is not null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        return await base.SendAsync(request, cancellationToken);
+    }
+}</code></pre>
+
+<pre><code>// MyApp.Client/Program.cs (excerpt)
+builder.Services.AddSingleton&lt;ITokenStore, SessionTokenStore&gt;();   // your own token source
+builder.Services.AddTransient&lt;TokenHandler&gt;();
+
+builder.Services.AddRForgeAutoApi()
+    .AddHttpMessageHandler&lt;TokenHandler&gt;();</code></pre>
+
+<p>Two things to know:</p>
+
+<ul>
+<li><strong>The handler belongs to one named client.</strong> Other clients that AutoApi registers (step 3) don't get it. Add the handler to each one that needs it.</li>
+<li><strong>Handlers get their own DI scope</strong> from <code>IHttpClientFactory</code>, not the one your components use. Register what a handler depends on as a Singleton, as above.</li>
+</ul>
+
+<p>When the API is on the same origin as the app and uses cookie authentication, the browser sends the cookies on its own and you need no handler. For tokens, or an API on another origin, you do.</p>
+
+<h2 id="3-call-another-api">3. Call another API</h2>
+
+<p>An interface can use a different named client. Set <code>HttpClientName</code> on the interface, and override it on a method if you like:</p>
+
+<pre><code>// MyApp.Shared/IReportService.cs
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Shared;
+
+[RForgeAutoApi(HttpClientName = "ReportsApi")]
+public interface IReportService
+{
+    Task&lt;decimal&gt; TotalSalesAsync();
+
+    [RForgeAutoApiMethod(HttpClientName = "ExportsApi")]
+    Task&lt;string&gt; ExportAsync(string format);
+}</code></pre>
+
+<p>The name for a method is the first one that is set: <strong>method, then interface, then the assembly default</strong> (<code>"RForgeAutoApi"</code>, or <code>HttpClientName</code> in <code>[RForgeAutoApiDefaults]</code>). With the interfaces in this tutorial:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Method</th><th>Client</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IBookService.GetAllAsync</code></td><td><code>RForgeAutoApi</code> (the default)</td></tr>
+<tr><td><code>IReportService.TotalSalesAsync</code></td><td><code>ReportsApi</code> (from the interface)</td></tr>
+<tr><td><code>IReportService.ExportAsync</code></td><td><code>ExportsApi</code> (from the method)</td></tr>
+</tbody>
+</table></div>
+
+<p><code>AddRForgeAutoApi()</code> registers <strong>every</strong> client name your interfaces use. In WebAssembly each of them gets the app's base address, so they all call your own server until you say otherwise. To point a client at another server, configure it with <code>AddHttpClient(name)</code>:</p>
+
+<pre><code>// MyApp.Client/Program.cs (excerpt)
+builder.Services.AddRForgeAutoApi()
+    .AddHttpMessageHandler&lt;TokenHandler&gt;();
+
+builder.Services.AddHttpClient("ReportsApi", client =&gt; client.BaseAddress = new Uri("https://reports.example.com/"))
+    .AddHttpMessageHandler&lt;TokenHandler&gt;();</code></pre>
+
+<p>Your configuration is added on top of what AutoApi registered, and it wins whether you call <code>AddHttpClient</code> before or after <code>AddRForgeAutoApi()</code>. The resulting calls:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Call</th><th>URL</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IBookService.GetAllAsync</code></td><td><code>https://site.example/app/api/auto/IBookService/GetAllAsync</code></td></tr>
+<tr><td><code>IReportService.TotalSalesAsync</code></td><td><code>https://reports.example.com/api/auto/IReportService/TotalSalesAsync</code></td></tr>
+<tr><td><code>IReportService.ExportAsync</code></td><td><code>https://site.example/app/api/auto/IReportService/ExportAsync</code> (no <code>ExportsApi</code> base address was set)</td></tr>
+</tbody>
+</table></div>
+
+<p>The route is the same everywhere. The other server must run the generated endpoints for <code>IReportService</code> (its own host class and <code>MapRForgeAutoApi()</code>), use the same <code>RoutePrefix</code>, and allow your origin with CORS when it is a different origin.</p>
+
+<p>To change the base address of the default client itself, use the builder <code>AddRForgeAutoApi()</code> returns:</p>
+
+<pre><code>// MyApp.Client/Program.cs (excerpt)
+builder.Services.AddRForgeAutoApi()
+    .ConfigureHttpClient(client =&gt; client.BaseAddress = new Uri("https://api.example.com/v2/"));
+// IBookService.GetAllAsync now calls https://api.example.com/v2/api/auto/IBookService/GetAllAsync</code></pre>
+
+<h2 id="4-replace-the-generated-client">4. Replace the generated client</h2>
+
+<p>The generated classes are registered with <code>TryAddScoped</code>, so an implementation you registered <strong>before</strong> <code>AddRForgeAutoApi()</code> is kept. One you register after it replaces the generated one, as any later registration does. Either way yours wins:</p>
+
+<pre><code>// MyApp.Client/Program.cs (excerpt)
+builder.Services.AddScoped&lt;IBookService, CachingBookService&gt;();   // your own, perhaps wrapping HttpClient calls
+builder.Services.AddRForgeAutoApi();</code></pre>
+
+<p>This is the place for a cache, an offline store or a test double. The server isn't affected; it has its own registration.</p>
+
+<h2 id="-best-practices">Best practices</h2>
+
+<ul>
+<li><strong>Add handlers to the builder <code>AddRForgeAutoApi()</code> returns</strong>, and to each extra named client that needs them.</li>
+<li><strong>Register a handler's dependencies as Singletons.</strong></li>
+<li><strong>Give each external API its own interface</strong> and <code>HttpClientName</code>, so one <code>AddHttpClient</code> call configures all its methods.</li>
+<li><strong>Keep <code>RoutePrefix</code> and the client names in <code>[RForgeAutoApiDefaults]</code></strong> in the shared library, so the server and the client always read the same values.</li>
+<li><strong>Leave the app's base address alone</strong> when the API is the app's own server.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>Calls to <code>IReportService</code> have no <code>Authorization</code> header</td><td>The handler was added to the default client only</td><td>Add the handler to <code>ReportsApi</code> as well</td></tr>
+<tr><td><code>IReportService</code> calls your own server instead of the reports server</td><td>No <code>BaseAddress</code> configured for <code>ReportsApi</code>, so it kept the app's</td><td><code>AddHttpClient("ReportsApi", c =&gt; c.BaseAddress = …)</code></td></tr>
+<tr><td><code>An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set.</code></td><td>The client project doesn't reference <code>Microsoft.AspNetCore.Components.WebAssembly</code></td><td>Reference it, or set <code>BaseAddress</code></td></tr>
+<tr><td>Calls to a path-based host go to the wrong URL</td><td><code>BaseAddress</code> has no trailing slash, so its last segment is dropped</td><td>End it with <code>/</code>: <code>https://example.com/app/</code></td></tr>
+<tr><td>A handler can't read a Scoped service your components share</td><td><code>IHttpClientFactory</code> gives handlers a separate DI scope</td><td>Use a Singleton</td></tr>
+<tr><td><code>404</code> from the other server</td><td>Its generated endpoints aren't mapped, or its <code>RoutePrefix</code> differs</td><td>Map the same interfaces and use the same defaults</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/autoapi/tutorials/08-endpoint-conventions">08 · Endpoint conventions</a></p>
+</TutorialDetail>

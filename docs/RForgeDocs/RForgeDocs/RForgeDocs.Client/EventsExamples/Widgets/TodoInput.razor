@@ -1,0 +1,10 @@
+@inherits RfEventComponent
+
+<form class="field has-addons mb-2" @onsubmit="AddAsync">
+    <div class="control is-expanded">
+        <input class="input is-small" placeholder="New item…" @bind="_title" @bind:event="oninput" />
+    </div>
+    <div class="control">
+        <button class="button is-small is-primary" type="submit" disabled="@string.IsNullOrWhiteSpace(_title)">Add</button>
+    </div>
+</form>

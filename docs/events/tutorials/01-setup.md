@@ -4,9 +4,16 @@
 
 This tutorial uses a Blazor Web App with **Auto** interactivity, which has a server project (`MyApp`) and a client project (`MyApp.Client`). That covers every render mode. If your app only uses Interactive Server, you have a single project: put the "Client" files in it and skip the client-specific steps.
 
-## 1. Lay out the project
+## 1. Lay out the project (recommended, not required)
 
-The hub needs a few files in specific places. This is the layout used throughout the tutorials:
+This is the layout the tutorials use. It is a recommendation: you can organize files however suits your app. Only these four things are required:
+
+1. Every project that contains event-aware components references `RForge.Blazor.Events` (NuGet doesn't pass analyzers through project references, so [step 2](#2-reference-the-package) adds it to both projects).
+2. Every host that runs interactive components calls `AddRForgeEvents`, with the same configuration ([step 4](#4-register-the-hub-in-both-hosts)).
+3. State and event types live in a project that your WebAssembly code can see.
+4. Event-aware components start with `@inherits RfEventComponent`, and keep `[Subscribe]` and `[UseState]` members in the code-behind (`.razor.cs`), not in an `@code` block.
+
+The recommended layout:
 
 ```
 MyApp/                                  server project (Blazor Web App host)
@@ -15,7 +22,7 @@ MyApp/                                  server project (Blazor Web App host)
 └── Components/                         layout, App.razor, server-only pages
 MyApp.Client/                           everything that might run in WebAssembly
 ├── Program.cs                          registers the hub for the WebAssembly runtime
-├── EventHubSetup.cs                         ONE hub configuration shared by both Program.cs files
+├── EventHubSetup.cs                    ONE hub configuration shared by both Program.cs files
 ├── AppJsonContext.cs                   JSON metadata for persisted state (tutorial 08)
 ├── GlobalUsings.cs                     global using RForge.Blazor.Events;
 ├── _Imports.razor                      @using RForge.Blazor.Events
@@ -29,7 +36,7 @@ MyApp.Client/                           everything that might run in WebAssembly
 └── Pages/                              routable pages that run in WebAssembly / Auto
 ```
 
-Why these locations:
+Why we suggest these locations:
 
 | File | Location | Why |
 |---|---|---|
@@ -238,7 +245,7 @@ If the generator isn't running, the build fails with **CS9248** ("partial proper
 - `RfEventComponent` finds the hub, runs the generated `RegisterSubscriptions` before your `OnInitialized`, re-renders the component when state it reads changes, and unsubscribes on dispose.
 - State types are created lazily from their `Initial` value the first time anything asks for them. No registration is needed.
 
-## ✅ Best practices
+## Best practices
 
 - **Put state, events and event-aware components in the Client project.** Then they work in every render mode.
 - **Use one `EventHubSetup.Configure` for both hosts.** Two hand-written configurations drift apart.

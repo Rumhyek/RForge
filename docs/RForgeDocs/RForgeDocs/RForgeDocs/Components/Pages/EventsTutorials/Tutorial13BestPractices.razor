@@ -1,0 +1,123 @@
+@page "/events/tutorials/13-best-practices"
+
+<TutorialDetail Tutorials="TutorialSet.Events" Slug="13-best-practices">
+<p>A one-page checklist of the recommendations from the tutorials. Each item links to the tutorial that explains it.</p>
+
+<h2 id="project-layout">Project layout</h2>
+
+<pre><code>MyApp/                                  server project
+├── Program.cs                          AddRForgeEvents(EventHubSetup.Configure)
+├── Services/                           server-only Scoped services that publish/subscribe
+└── Components/Pages/                   pages that need server-only services (InteractiveServer)
+MyApp.Client/                           anything that may run in WebAssembly
+├── Program.cs                          AddRForgeEvents(EventHubSetup.Configure)
+├── EventHubSetup.cs                         the single hub configuration
+├── AppJsonContext.cs                   JSON metadata for persisted state
+├── GlobalUsings.cs                     global using RForge.Blazor.Events;
+├── _Imports.razor                      @@using RForge.Blazor.Events
+├── Features/&lt;Feature&gt;/
+│   ├── &lt;Feature&gt;State.cs
+│   ├── &lt;Feature&gt;Events.cs
+│   └── Components/X.razor + X.razor.cs
+└── Pages/
+MyApp.Tests/                            bUnit tests, one class per feature</code></pre>
+
+<h2 id="where-each-file-goes">Where each file goes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>File</th><th>Put it in</th><th>Why</th><th>Tutorial</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IState</code> records</td><td><code>MyApp.Client/Features/&lt;Feature&gt;/&lt;Feature&gt;State.cs</code></td><td>WebAssembly needs them, and the server references the client</td><td><a href="/events/tutorials/02-state">02</a></td></tr>
+<tr><td><code>IEvent</code> records</td><td><code>MyApp.Client/Features/&lt;Feature&gt;/&lt;Feature&gt;Events.cs</code></td><td>Same, and they sit next to the state they relate to</td><td><a href="/events/tutorials/04-events">04</a></td></tr>
+<tr><td>Event-aware components</td><td><code>MyApp.Client/Features/&lt;Feature&gt;/Components/</code></td><td>Run in every render mode, and stay next to their state</td><td><a href="/events/tutorials/01-setup">01</a></td></tr>
+<tr><td>Component attributes (<code>[Subscribe]</code>, <code>[UseState]</code>)</td><td>The <code>.razor.cs</code> code-behind</td><td>The generator can't see <code>@@code</code> blocks</td><td><a href="/events/tutorials/01-setup">01</a></td></tr>
+<tr><td><code>@@inherits RfEventComponent</code></td><td>The <code>.razor</code> file</td><td>Otherwise Razor declares <code>: ComponentBase</code> (CS0263)</td><td><a href="/events/tutorials/01-setup">01</a></td></tr>
+<tr><td><code>EventHubSetup.Configure</code></td><td><code>MyApp.Client/EventHubSetup.cs</code></td><td>Server and WebAssembly hubs must be configured identically</td><td><a href="/events/tutorials/01-setup">01</a></td></tr>
+<tr><td><code>JsonSerializerContext</code></td><td><code>MyApp.Client/AppJsonContext.cs</code></td><td>One place listing every persisted state</td><td><a href="/events/tutorials/08-prerendering-and-persistence">08</a></td></tr>
+<tr><td>Services using databases/secrets</td><td><code>MyApp/Services/</code></td><td>Must not ship to the browser</td><td><a href="/events/tutorials/07-services-and-background-work">07</a></td></tr>
+<tr><td><code>EventScope</code>/<code>StateScope</code></td><td>The feature's root component</td><td>Works wherever the feature is placed, including inside islands</td><td><a href="/events/tutorials/05-scopes-and-routing">05</a>, <a href="/events/tutorials/06-scoped-state">06</a></td></tr>
+<tr><td>Event tests</td><td><code>MyApp.Tests/&lt;Feature&gt;Tests.cs</code></td><td>One test class per feature mirrors the source layout</td><td><a href="/events/tutorials/11-testing-with-bunit">11</a></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="naming">Naming</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Thing</th><th>Convention</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td>State</td><td><code>&lt;Noun&gt;State</code></td><td><code>CartState</code>, <code>ThemeState</code></td></tr>
+<tr><td>Event: a fact</td><td>Past tense</td><td><code>ItemAdded</code>, <code>SectionSaved</code></td></tr>
+<tr><td>Event: a command</td><td><code>&lt;Verb&gt;Requested</code></td><td><code>ToastRequested</code>, <code>SaveAllRequested</code></td></tr>
+<tr><td>Selector</td><td><code>Select&lt;What&gt;</code></td><td><code>SelectCount</code>, <code>SelectIsEven</code></td></tr>
+<tr><td>Handler</td><td><code>On&lt;Event&gt;</code></td><td><code>OnItemAdded</code></td></tr>
+<tr><td>Scope name</td><td>Feature name, lowercase</td><td><code>"checkout"</code>, <code>"settings"</code></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="state">State</h2>
+
+<ul>
+<li>[ ] <code>sealed record</code> implementing <code>IState&lt;T&gt;</code> with a sensible <code>Initial</code>. (<a href="/events/tutorials/02-state">02</a>)</li>
+<li>[ ] Immutable: replace with <code>with</code>. <code>ImmutableList</code>/<code>ImmutableDictionary</code> for collections. (<a href="/events/tutorials/02-state#7-state-that-holds-a-collection">02</a>)</li>
+<li>[ ] One state per concept; no giant "AppState". (<a href="/events/tutorials/02-state">02</a>)</li>
+<li>[ ] Domain rules live on the record (<code>cart.Add(product)</code>), not in components. (<a href="/events/tutorials/02-state">02</a>)</li>
+<li>[ ] Readers use <code>[UseState]</code> (with a selector for one or two fields). Writers use <code>State&lt;T&gt;()</code>. (<a href="/events/tutorials/02-state#4-re-render-less-with-a-selector">02</a>)</li>
+<li>[ ] Persist only expensive-to-load root state, always "load if not loaded", and <code>[JsonIgnore]</code> derived properties. (<a href="/events/tutorials/08-prerendering-and-persistence">08</a>)</li>
+</ul>
+
+<h2 id="events">Events</h2>
+
+<ul>
+<li>[ ] <code>sealed record</code> implementing <code>IEvent</code>, carrying ids and small values only. (<a href="/events/tutorials/04-events">04</a>)</li>
+<li>[ ] Use an event for "it happened" and state for "what it is now". Often you'll do both. (<a href="/events/tutorials/04-events#events-or-state">04</a>)</li>
+<li>[ ] Handlers are fast: fire-and-forget long work with <code>DisposalToken</code>. (<a href="/events/tutorials/04-events#7-keep-handlers-fast">04</a>)</li>
+<li>[ ] App-wide listeners (toasts, logging) use <code>ScopeKind.Root</code>. (<a href="/events/tutorials/04-events">04</a>, <a href="/events/tutorials/05-scopes-and-routing">05</a>)</li>
+<li>[ ] Don't use the hub for direct parent → child. Use <code>[Parameter]</code>/<code>EventCallback</code>. (<a href="/events/tutorials/04-events">04</a>)</li>
+</ul>
+
+<h2 id="scopes">Scopes</h2>
+
+<ul>
+<li>[ ] Commands go <strong>down</strong> (<code>Route.Named("x", Broadcast)</code>), facts go <strong>up</strong> (default <code>Bubble</code>). (<a href="/events/tutorials/05-scopes-and-routing">05</a>)</li>
+<li>[ ] Target scopes by name rather than by position. (<a href="/events/tutorials/05-scopes-and-routing#3-broadcast-a-command-into-the-scope">05</a>)</li>
+<li>[ ] Multiple widget instances each get a <code>StateScope</code>, with starting data passed through <code>Initial</code>. (<a href="/events/tutorials/06-scoped-state">06</a>)</li>
+<li>[ ] Child components are written as if the state were global. (<a href="/events/tutorials/06-scoped-state#3-write-the-children-as-if-the-state-were-global">06</a>)</li>
+</ul>
+
+<h2 id="services-and-threads">Services and threads</h2>
+
+<ul>
+<li>[ ] Services that use <code>IRfEventHub</code> are <strong>Scoped</strong>, never Singleton. (<a href="/events/tutorials/07-services-and-background-work">07</a>)</li>
+<li>[ ] Every <code>hub.Subscribe(…)</code> / <code>store.Subscribe(…)</code> in a service is disposed. (<a href="/events/tutorials/07-services-and-background-work#5-subscribe-from-a-service">07</a>)</li>
+<li>[ ] Background work stops when its page or circuit goes away, and timers catch <code>ObjectDisposedException</code>. (<a href="/events/tutorials/07-services-and-background-work">07</a>)</li>
+<li>[ ] Components never call <code>InvokeAsync</code> for hub updates. The base class does. (<a href="/events/tutorials/07-services-and-background-work#3-components-just-read">07</a>)</li>
+</ul>
+
+<h2 id="render-modes">Render modes</h2>
+
+<ul>
+<li>[ ] <code>AddRForgeEvents(EventHubSetup.Configure)</code> in <strong>both</strong> <code>Program.cs</code> files. (<a href="/events/tutorials/01-setup#4-register-the-hub-in-both-hosts">01</a>)</li>
+<li>[ ] One interactive render mode per area that must communicate. (<a href="/events/tutorials/09-render-modes#2-mixed-islands-dont-talk-to-each-other">09</a>)</li>
+<li>[ ] Scopes are declared inside the interactive component. (<a href="/events/tutorials/09-render-modes#3-declare-scopes-inside-the-island">09</a>)</li>
+<li>[ ] <code>prerender: false</code> for pages that start background work. (<a href="/events/tutorials/07-services-and-background-work#4-start-and-stop-from-a-server-page">07</a>)</li>
+</ul>
+
+<h2 id="advanced">Advanced</h2>
+
+<ul>
+<li>[ ] Prefer attributes. Use manual registration only for what they can't express, and comment why. (<a href="/events/tutorials/10-manual-registration">10</a>)</li>
+<li>[ ] With attributes, extend via <code>partial void OnRegisterSubscriptions</code>, never a second override. (<a href="/events/tutorials/10-manual-registration#3-mix-attributes-and-manual-code">10</a>)</li>
+<li>[ ] Components whose captured parameters can change get a <code>@@key</code>. (<a href="/events/tutorials/10-manual-registration#1-a-selector-that-depends-on-a-parameter">10</a>)</li>
+</ul>
+
+<h2 id="testing">Testing</h2>
+
+<ul>
+<li>[ ] A shared <code>EventTestContext</code> that adds the hub and sets <code>RendererInfo</code>. (<a href="/events/tutorials/11-testing-with-bunit#2-a-base-class-for-hub-tests">11</a>)</li>
+<li>[ ] Arrange through <code>Hub.State&lt;T&gt;()</code>, act inside <code>cut.InvokeAsync</code>, and use spies for published events. (<a href="/events/tutorials/11-testing-with-bunit">11</a>)</li>
+</ul>
+</TutorialDetail>

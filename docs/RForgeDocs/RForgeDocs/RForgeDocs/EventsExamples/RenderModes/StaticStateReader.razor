@@ -1,0 +1,9 @@
+@inherits RfEventComponent
+
+<div class="notification is-light mb-0">
+    <div><strong>Static component</strong> (no render mode): it renders once on the server and never becomes interactive.</div>
+    <div class="is-size-7">
+        It read <code>IslandState.Count = @Island.Count</code> from this request's own hub while the HTML was generated.
+        It never subscribed and never re-renders. Static output is a snapshot.
+    </div>
+</div>

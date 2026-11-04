@@ -1,0 +1,243 @@
+@page "/autoapi/tutorials/03-parameters-and-serialization"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="03-parameters-and-serialization">
+<p><strong>Goal:</strong> know how method parameters and return values travel over HTTP, what happens when one is missing or invalid, and how to keep JSON fast and trim-safe in WebAssembly.</p>
+
+<p>This tutorial assumes the projects from <a href="/autoapi/tutorials/01-setup">tutorial 01</a>. You only edit the shared library.</p>
+
+<h2 id="1-how-parameters-are-sent">1. How parameters are sent</h2>
+
+<p>How a method's parameters travel depends on its HTTP method:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>HTTP method</th><th>Parameters</th><th>Wire format</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Post</code> (default), <code>Put</code>, <code>Patch</code></td><td>Any type the JSON context knows</td><td>A JSON object keyed by parameter name: <code>{ "filter": {...}, "page": 2 }</code></td></tr>
+<tr><td><code>Get</code>, <code>Delete</code></td><td><strong>Simple types only</strong></td><td>The query string: <code>?genre=Science&amp;page=2</code></td></tr>
+</tbody>
+</table></div>
+
+<p>Here is an interface that uses both:</p>
+
+<pre><code>// MyApp.Shared/BookDto.cs
+namespace MyApp.Shared;
+
+public enum Genre { Fiction, Science, History }
+
+public record BookDto(int Id, string Title, string Author, Genre Genre, DateOnly? PublishedOn);
+
+public record BookFilter(string? TitleContains, Genre? Genre);</code></pre>
+
+<pre><code>// MyApp.Shared/IBookService.cs
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Shared;
+
+[RForgeAutoApi]
+public interface IBookService
+{
+    // GET: simple types only, sent in the query string
+    [RForgeAutoApiMethod(HttpMethod = RfHttpMethod.Get)]
+    Task&lt;List&lt;BookDto&gt;&gt; FindAsync(
+        string? titleContains,
+        Genre genre = Genre.Fiction,
+        int page = 1,
+        DateOnly? since = null,
+        CancellationToken cancellationToken = default);
+
+    // POST: any type, sent as a JSON object keyed by parameter name
+    Task&lt;List&lt;BookDto&gt;&gt; SearchAsync(BookFilter filter, int page = 1, CancellationToken cancellationToken = default);
+
+    Task&lt;BookDto&gt; AddAsync(BookDto book, string? note = null);
+
+    [RForgeAutoApiMethod(HttpMethod = RfHttpMethod.Delete)]
+    Task DeleteAsync(Guid id, Genre genre);
+}</code></pre>
+
+<p>The requests look like this:</p>
+
+<pre><code># FindAsync: a query string. The client leaves out null values.
+curl "https://localhost:5001/api/auto/IBookService/FindAsync?titleContains=du&amp;genre=Fiction&amp;page=2&amp;since=1960-01-01"
+
+# SearchAsync: a body keyed by parameter name
+curl -X POST https://localhost:5001/api/auto/IBookService/SearchAsync \
+     -H "Content-Type: application/json" \
+     -d '{"filter":{"titleContains":"x","genre":2},"page":3}'</code></pre>
+
+<p>The body is <strong>always</strong> an object keyed by parameter name, even for a single parameter. Each value is written separately, so the generator never creates a request type, and adding a parameter with a default value later doesn't break existing callers.</p>
+
+<p>The generated client sends every parameter on every call, including the ones that have default values.</p>
+
+<h2 id="2-simple-types">2. Simple types</h2>
+
+<p><code>Get</code> and <code>Delete</code> accept only simple types, because there is no good way to put an object in a query string. The simple types are:</p>
+
+<ul>
+<li>numbers (<code>int</code>, <code>long</code>, <code>decimal</code>, <code>double</code> and the other numeric types), <code>bool</code> and <code>char</code></li>
+<li><code>string</code> and <code>Guid</code></li>
+<li><code>DateTime</code>, <code>DateTimeOffset</code>, <code>DateOnly</code>, <code>TimeOnly</code> and <code>TimeSpan</code></li>
+<li>enums</li>
+<li>the nullable versions of all of these</li>
+</ul>
+
+<p>Values are formatted with the invariant culture, so a query string reads the same on every machine. Dates use the round-trip format (<code>1960-01-01</code>), and an enum is sent by name (<code>genre=Science</code>). The server accepts either the name or the number (<code>genre=1</code>).</p>
+
+<p>Any other parameter type on a <code>Get</code> or <code>Delete</code> method fails the build with <code>RFAA006</code>:</p>
+
+<pre><code>// MyApp.Shared/IBadBookService.cs (does not build)
+[RForgeAutoApi]
+public interface IBadBookService
+{
+    [RForgeAutoApiMethod(HttpMethod = RfHttpMethod.Get)]
+    Task&lt;List&lt;BookDto&gt;&gt; FindAsync(BookFilter filter);   // error RFAA006
+
+    [RForgeAutoApiMethod(HttpMethod = RfHttpMethod.Delete)]
+    Task DeleteAsync(List&lt;int&gt; ids);                    // error RFAA006
+}</code></pre>
+
+<pre><code>error RFAA006: 'IBadBookService.FindAsync' uses GET but parameter 'filter' of type 'MyApp.Shared.BookFilter' is not a simple type</code></pre>
+
+<p>Fix it by passing the pieces separately, or by using <code>Post</code>.</p>
+
+<p><code>ref</code>, <code>out</code> and <code>in</code> parameters are not supported (<code>RFAA005</code>).</p>
+
+<h2 id="3-missing-optional-and-invalid-values">3. Missing, optional and invalid values</h2>
+
+<p>The server decides what to do with each parameter:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Request</th><th>The server</th></tr>
+</thead>
+<tbody>
+<tr><td>The parameter is present and valid</td><td>Passes it to your method</td></tr>
+<tr><td>It is missing and has a <strong>default value</strong></td><td>Uses the default (<code>page = 1</code>, <code>genre = Genre.Fiction</code>)</td></tr>
+<tr><td>It is missing, has no default, and is <strong>nullable</strong> (<code>string?</code>, <code>int?</code>, <code>DateOnly?</code>)</td><td>Passes <code>null</code></td></tr>
+<tr><td>It is missing and is neither</td><td>Answers <code>400</code> with <code>Missing required parameter 'filter'.</code></td></tr>
+<tr><td>It can't be read as the parameter's type (<code>page=abc</code>, <code>genre=Poetry</code>)</td><td>Answers <code>400</code> with <code>Invalid value for parameter 'page'.</code></td></tr>
+<tr><td>The body isn't valid JSON</td><td>Answers <code>400</code> with <code>The request body is not valid JSON.</code></td></tr>
+</tbody>
+</table></div>
+
+<p>For example, <code>FindAsync</code> called with no query string at all runs with <code>titleContains = null</code>, <code>genre = Fiction</code>, <code>page = 1</code> and <code>since = null</code>. A call to <code>DeleteAsync</code> without <code>genre</code> fails:</p>
+
+<pre><code>{"title":"Missing required parameter 'genre'.","status":400,"traceId":"00-7ef4...","rfType":"RfException"}</code></pre>
+
+<p>Other details:</p>
+
+<ul>
+<li><strong>Unknown properties are ignored.</strong> A body with an extra <code>"extra": 1</code> still works.</li>
+<li><strong>A JSON <code>null</code> for a non-nullable parameter reaches your method as <code>null</code>.</strong> The server does not enforce nullable annotations, so validate input that matters inside the service.</li>
+<li><strong>Adding a parameter with a default value is a compatible change.</strong> An older client that doesn't send it gets the default. Adding a parameter <em>without</em> a default breaks older clients, because the server answers <code>400</code>.</li>
+</ul>
+
+<p>The <code>400</code> answers are <code>RfException</code> errors, so a component sees them as <code>RfException</code> too (<a href="/autoapi/tutorials/04-errors">tutorial 04</a>).</p>
+
+<h2 id="4-cancellationtoken">4. CancellationToken</h2>
+
+<p>A <code>CancellationToken</code> parameter is never sent over the wire:</p>
+
+<ul>
+<li>on the <strong>server</strong>, it receives <code>HttpContext.RequestAborted</code>, so your method stops when the browser abandons the request;</li>
+<li>on the <strong>client</strong>, the token you pass goes to <code>HttpClient</code>, which cancels the request.</li>
+</ul>
+
+<p>A method can have at most one (<code>RFAA011</code>):</p>
+
+<pre><code>error RFAA011: 'IBadService.RunAsync' has more than one CancellationToken parameter</code></pre>
+
+<p>Put it last and give it <code>= default</code>, as in the examples, so callers can omit it.</p>
+
+<h2 id="5-the-json-context">5. The JSON context</h2>
+
+<p>WebAssembly is where serialization cost matters. Reflection-based <code>System.Text.Json</code> is slow on the first call and isn't trim-safe. A <code>JsonSerializerContext</code> removes the reflection, and the generated code on both sides uses it. Declare one in the shared library and name it in the assembly attribute, as in <a href="/autoapi/tutorials/01-setup">tutorial 01</a>:</p>
+
+<pre><code>// MyApp.Shared/AppJsonContext.cs
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+[assembly: RForgeAutoApiDefaults(JsonContext = typeof(AppJsonContext))]
+
+namespace MyApp.Shared;
+
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+[JsonSerializable(typeof(BookDto))]
+[JsonSerializable(typeof(List&lt;BookDto&gt;))]
+[JsonSerializable(typeof(BookFilter))]
+public partial class AppJsonContext : JsonSerializerContext;</code></pre>
+
+<p>Every type the generated code reads or writes has to be known to the context. These are the parameter types of <code>Post</code>, <code>Put</code> and <code>Patch</code> methods and the type inside every <code>Task&lt;T&gt;</code>. Query-string values (<code>Get</code>, <code>Delete</code>) don't go through JSON. A type counts as known when you register it, or when a type you registered uses it: <code>BookDto</code> has an <code>int</code>, a <code>string</code>, a <code>Genre</code> and a <code>DateOnly?</code>, so those need no entry of their own. For a type that is neither, the build warns:</p>
+
+<pre><code>warning RFAA009: 'MyApp.Shared.BookFilter' is not registered in 'global::MyApp.Shared.AppJsonContext'; reflection-based serialization will be used for it</code></pre>
+
+<p>Add a <code>[JsonSerializable]</code> line for it. If you ignore the warning the call still works, but that type uses reflection and isn't trim-safe. Simple types such as <code>Guid</code>, <code>decimal</code> and <code>bool</code> are not exempt: <code>Task&lt;Guid&gt; CreateAsync()</code> warns until you add <code>[JsonSerializable(typeof(Guid))]</code>.</p>
+
+<p><strong>The context has to live in a referenced assembly.</strong> The generator reads the context from the assembly's compiled metadata, because one source generator can't use the output of another. A context declared in the same project as the marker class looks empty, so every type in it reports <code>RFAA009</code>. Keep the context next to the interfaces in the shared library.</p>
+
+<h3 id="enums-as-strings">Enums as strings</h3>
+
+<p><code>JsonSerializerDefaults.Web</code> writes enums as numbers (<code>"genre": 2</code>). To send names instead, add one option to the context. The server still accepts numbers:</p>
+
+<pre><code>// MyApp.Shared/AppJsonContext.cs
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web, UseStringEnumConverter = true)]</code></pre>
+
+<h3 id="without-a-context">Without a context</h3>
+
+<p>If you don't set <code>JsonContext</code>, the generated code falls back to reflection with the web defaults, and the build reports <code>RFAA012</code>. It is an informational message, so <code>dotnet build</code> doesn't print it; it shows in the IDE's error list. Everything still works. You only lose the trim-safe, reflection-free path.</p>
+
+<h2 id="6-where-serialization-happens">6. Where serialization happens</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Render mode</th><th>What the call does</th></tr>
+</thead>
+<tbody>
+<tr><td>Static rendering and prerendering</td><td>Calls your service directly. No HTTP, no JSON.</td></tr>
+<tr><td>Interactive Server</td><td>Calls your service directly. No HTTP, no JSON.</td></tr>
+<tr><td>WebAssembly</td><td>The generated client serializes the arguments, sends the request, and reads the JSON response.</td></tr>
+</tbody>
+</table></div>
+
+<p>Because Server mode never serializes, a type that can't survive JSON (a cycle, a type with no suitable converter) works on the server and fails in WebAssembly. Put the type in the context and test the WebAssembly path (<a href="/autoapi/tutorials/09-testing">tutorial 09</a>).</p>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li>For <code>Post</code>, <code>Put</code> and <code>Patch</code>, the generated client writes each argument with <code>Utf8JsonWriter</code> using the type information from your context, and the server reads each value out of the body by name.</li>
+<li>For <code>Get</code> and <code>Delete</code>, the client builds the query string itself and the server converts each value to the parameter type.</li>
+<li>The context is read by both generators, so the server and the client always serialize the same way.</li>
+</ul>
+
+<h2 id="-best-practices">Best practices</h2>
+
+<ul>
+<li><strong>Register every type you send or return</strong> in the JSON context, and treat <code>RFAA009</code> as something to fix, not to ignore.</li>
+<li><strong>Use records for data types.</strong> They serialize without ceremony and compare by value.</li>
+<li><strong>Give new parameters a default value</strong> so older clients keep working during a rolling deployment.</li>
+<li><strong>Keep <code>Get</code> for simple reads.</strong> Use <code>Post</code> as soon as a parameter is an object.</li>
+<li><strong>Validate input in the service.</strong> Nullable annotations aren't enforced on the wire.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RFAA006</code> on a <code>Get</code> or <code>Delete</code> method</td><td>A parameter isn't a simple type</td><td>Pass simple values, or use <code>Post</code></td></tr>
+<tr><td><code>RFAA009</code> for <code>Guid</code>, <code>decimal</code>, <code>List&lt;int&gt;</code></td><td>The type isn't known to the context</td><td>Add <code>[JsonSerializable(typeof(...))]</code></td></tr>
+<tr><td><code>RFAA009</code> for every type</td><td>The context is declared in the same project as the marker class</td><td>Move it to the shared library</td></tr>
+<tr><td><code>400 Missing required parameter</code> after a release</td><td>A parameter was added without a default value</td><td>Give it a default, or deploy server and client together</td></tr>
+<tr><td><code>400 Invalid value for parameter</code> for an enum</td><td>The value is neither a valid name nor a number</td><td>Send <code>Science</code> or <code>1</code>, not <code>Poetry</code></td></tr>
+<tr><td>A call works on the server but fails in WebAssembly</td><td>The type can't round-trip through JSON</td><td>Add it to the context and test in WebAssembly</td></tr>
+<tr><td><code>RFAA011</code></td><td>Two <code>CancellationToken</code> parameters</td><td>Keep one</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/autoapi/tutorials/04-errors">04 · Errors</a></p>
+</TutorialDetail>

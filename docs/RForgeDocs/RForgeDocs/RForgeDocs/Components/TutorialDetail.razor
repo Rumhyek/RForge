@@ -1,0 +1,122 @@
+@* Page frame shared by the library tutorials: hero, breadcrumb, tutorial list on the left, previous/next at the bottom.
+   Pass the library's TutorialSet, plus Slug to show a tutorial; leave Slug out for the tutorials index. *@
+
+<PageTitle>@PageTitleText</PageTitle>
+
+<HeroSection Title="@HeroTitle" SubTitle="@HeroSubTitle" />
+
+<div class="container">
+
+    <div class="breadcrumb mt-2" aria-label="breadcrumbs">
+        <ul>
+            <li><a href="/">RForge</a></li>
+            <li><a href="/component-listing">Components</a></li>
+            <li><a href="@Tutorials.OverviewUrl">@Tutorials.Library</a></li>
+            @if (Current == null)
+            {
+                <li class="is-active"><a href="#" aria-current="page">Tutorials</a></li>
+            }
+            else
+            {
+                <li><a href="@Tutorials.Route">Tutorials</a></li>
+                <li class="is-active"><a href="#" aria-current="page">@Current.Title</a></li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="container is-fluid">
+    <div class="columns">
+
+        <div class="column is-3-desktop is-4-tablet side-nav">
+            <section class="section">
+                <div class="menu">
+                    <p class="menu-label">@Tutorials.Library</p>
+                    <ul class="menu-list">
+                        <li><a href="@Tutorials.OverviewUrl">@Tutorials.Library overview</a></li>
+                        <li><a href="@Tutorials.Route" class="@(Current == null ? "is-active" : null)">All tutorials</a></li>
+                    </ul>
+
+                    <p class="menu-label mt-5">Tutorials</p>
+                    <ul class="menu-list">
+                        @foreach (var tutorial in Tutorials.All)
+                        {
+                            <li>
+                                <a href="@tutorial.Url"
+                                   class="@(tutorial == Current ? "is-active" : null)"
+                                   title="@tutorial.Description">@tutorial.Number · @tutorial.Title</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </section>
+        </div>
+
+        <div class="column">
+            <div class="content-container">
+                <section class="section">
+                    <div class="content">
+                        @ChildContent
+                    </div>
+
+                    @if (Current != null)
+                    {
+                        <nav class="level mt-6" aria-label="Tutorial pages">
+                            <div class="level-left">
+                                @if (Previous != null)
+                                {
+                                    <a class="button is-primary is-outlined" href="@Previous.Url" rel="prev">
+                                        <span class="icon"><i class="fas fa-arrow-left"></i></span>
+                                        <span>@Previous.Number · @Previous.Title</span>
+                                    </a>
+                                }
+                            </div>
+                            <div class="level-right">
+                                @if (Next != null)
+                                {
+                                    <a class="button is-primary" href="@Next.Url" rel="next">
+                                        <span>@Next.Number · @Next.Title</span>
+                                        <span class="icon"><i class="fas fa-arrow-right"></i></span>
+                                    </a>
+                                }
+                            </div>
+                        </nav>
+                    }
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    /// <summary>The library's tutorials, for example <c>TutorialSet.Events</c>.</summary>
+    [Parameter, EditorRequired]
+    public TutorialSet Tutorials { get; set; }
+
+    /// <summary>The slug of the tutorial being shown, for example <c>01-setup</c>. Null shows the index.</summary>
+    [Parameter]
+    public string Slug { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private Tutorial Current => Tutorials.All.FirstOrDefault(t => t.Slug == Slug);
+
+    private Tutorial Previous => IndexOfCurrent > 0 ? Tutorials.All[IndexOfCurrent - 1] : null;
+
+    private Tutorial Next => IndexOfCurrent >= 0 && IndexOfCurrent < Tutorials.All.Count - 1
+        ? Tutorials.All[IndexOfCurrent + 1]
+        : null;
+
+    private int IndexOfCurrent => Current == null ? -1 : Tutorials.All.ToList().IndexOf(Current);
+
+    private string HeroTitle => Current == null ? $"{Tutorials.Library} Tutorials" : $"{Current.Number} · {Current.Title}";
+
+    private string HeroSubTitle => Current == null
+        ? $"Step-by-step guides for {Tutorials.Package}"
+        : Current.Description;
+
+    private string PageTitleText => Current == null ? $"{Tutorials.Library} Tutorials" : $"{Current.Title} · {Tutorials.Library} Tutorial";
+
+}

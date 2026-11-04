@@ -265,7 +265,7 @@ Store callbacks run **synchronously on the writer's thread**. Keep them short an
 - `Set`/`Update` compare the new value to the old one. If they're equal, nothing happens. Otherwise subscribers are notified.
 - Components are notified through their own `InvokeAsync`, so writing from any thread is safe, and several quick writes collapse into one render with the latest value.
 
-## ✅ Best practices
+## Best practices
 
 - **One state type per concept, in its feature folder** (`Features/Counter/CounterState.cs`). Big "app state" records make every selector work harder and couple unrelated features.
 - **Name states `…State`** so they're easy to tell apart from events.

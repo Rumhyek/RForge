@@ -273,7 +273,7 @@ public partial class ToastBell
 - Delivery goes through each component's `InvokeAsync`, so publishing from any thread is safe.
 - By default a component listens at its **nearest scope** and a publish **bubbles** up from the publisher's nearest scope to the root. Without any `EventScope`s, everything is at the root, so every subscriber hears every publish of its event type.
 
-## ✅ Best practices
+## Best practices
 
 - **Keep event types next to the feature that owns them** (`Features/Toasts/ToastEvents.cs`). Several small related events can share one `…Events.cs` file. Large ones get their own file.
 - **Use past tense for facts and `…Requested` for commands.**

@@ -1,0 +1,7 @@
+@inherits RfEventComponent
+
+<div class="is-flex is-align-items-center is-gap-2 is-flex-grow-1">
+    <strong class="is-flex-grow-1">@Title</strong>
+    <button class="button is-small" @onclick="ClearCompleted" title="Route.Local: stays inside this widget">Clear done</button>
+    <button class="button is-small is-danger is-outlined" @onclick="OnRemove" title="Removes the widget and disposes its scope">✕</button>
+</div>

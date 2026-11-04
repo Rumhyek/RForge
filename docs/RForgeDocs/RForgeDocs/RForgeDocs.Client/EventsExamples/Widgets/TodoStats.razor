@@ -1,0 +1,7 @@
+@inherits RfEventComponent
+
+<div class="is-flex is-align-items-center is-gap-2 is-size-7">
+    <progress class="progress is-primary is-small m-0 is-flex-grow-1" value="@Progress.Done" max="@Math.Max(Progress.Total, 1)"></progress>
+    <span class="is-flex-shrink-0">@Progress.Done / @Progress.Total done</span>
+    <RenderBadge Count="@(++_renders)" />
+</div>

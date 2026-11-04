@@ -1,0 +1,19 @@
+@inherits RfEventComponent
+
+<section class="card island is-@Mode.ToLowerInvariant()">
+    <header class="card-header">
+        <p class="card-header-title">@Name</p>
+        <div class="tags card-header-icon">
+            <span class="tag is-light">@Mode</span>
+            <span class="tag @(_interactive ? "is-success" : "is-warning")">@(_interactive ? "interactive" : "not interactive yet")</span>
+        </div>
+    </header>
+    <div class="card-content">
+        <p class="mb-2">Shared <code>IslandState.Count</code>: <strong class="is-size-4">@Island.Count</strong></p>
+        <div class="buttons mb-2">
+            <button class="button is-small is-primary" disabled="@(!_interactive)" @onclick="Increment">Increment</button>
+            <button class="button is-small is-primary is-outlined" disabled="@(!_interactive)" @onclick="PingAsync">Ping other islands</button>
+        </div>
+        <p class="is-size-7">Last ping received: <strong>@(_lastPing ?? "none")</strong></p>
+    </div>
+</section>

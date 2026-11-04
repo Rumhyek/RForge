@@ -1,0 +1,439 @@
+@page "/autoapi/details"
+@using RForgeDocs.Abstractions
+
+<ComponentDetail Title="AutoApi"
+                 SubTitle="Write a service interface once, call it from any render mode">
+
+    <CustomSideLinks>
+
+        <div class="menu">
+            <p class="menu-label is-size-6 mb-2">Repository Links</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("Attributes", TagInfo.Library, AbstractionsSource("")))
+                @ComponentDetail.SideLink(("Generator", TagInfo.Backend, "https://github.com/Rumhyek/RForge/tree/main/src/RForge/RForge.Blazor.AutoApi.Generator"))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("IDemoTodoService.cs", TagInfo.Library, "https://github.com/Rumhyek/RForge/blob/main/docs/RForgeDocs/RForgeDocs.Abstractions/AutoApiDemo/IDemoTodoService.cs"))
+                @ComponentDetail.SideLink(("DemoTodoService.cs", TagInfo.Backend, RForgeHelpers.RepoDocsUrl("/RForgeDocs/AutoApiDemo/DemoTodoService.cs")))
+                @ComponentDetail.SpacerLink()
+                @ComponentDetail.SideLink(("Specification", TagInfo.External, "https://github.com/Rumhyek/RForge/blob/main/docs/autoapi/spec.md"))
+            </ul>
+        </div>
+
+        <div class="menu mt-6">
+            <p class="menu-label is-size-6 mb-2">Examples</p>
+            <ul class="menu-list">
+                @ComponentDetail.SideLink(("Todos", TagInfo.Empty, "/autoapi/example/todos"))
+            </ul>
+        </div>
+
+        <div class="menu mt-6">
+            <p class="menu-label is-size-6 mb-2">Tutorials</p>
+            <ul class="menu-list">
+                @foreach (var tutorial in TutorialSet.AutoApi.All)
+                {
+                    @ComponentDetail.SideLink(($"{tutorial.Number} {tutorial.Title}", TagInfo.Empty, tutorial.Url))
+                }
+            </ul>
+        </div>
+    </CustomSideLinks>
+
+    <Purpose>
+        <div class="content">
+
+            <p>
+                AutoApi removes the hand written controller and the hand written API client. You declare a service interface
+                <strong>once</strong>, in a shared library, and a source generator writes the rest:
+            </p>
+
+            <ul>
+                <li>
+                    <strong>On the server</strong> it creates minimal API endpoints that call your real implementation. It can also
+                    wrap that implementation so authorization is enforced in Interactive Server mode too.
+                </li>
+                <li>
+                    <strong>In WebAssembly</strong> it creates an implementation of the same interface that calls those endpoints
+                    with <code>HttpClient</code>.
+                </li>
+            </ul>
+
+            <p>
+                Components inject the interface and do not need to know which render mode they run in. The same calls, the same
+                exceptions and the same authorization rules apply everywhere.
+            </p>
+
+            <h4>When to Use</h4>
+            <p>
+                In a Blazor Web App that uses Interactive Auto, or both Interactive Server and Interactive WebAssembly, when a
+                component needs data from the server and you do not want to write the endpoint, the client and the error mapping
+                twice.
+            </p>
+
+            <h4>Features</h4>
+            <ul>
+                <li>One interface for every render mode: the server uses the real implementation, WebAssembly uses a generated client.</li>
+                <li>The same <code>RfException</code> family in every mode, sent over the wire as ProblemDetails.</li>
+                <li>
+                    <code>[RfAuthorize]</code> enforced on the endpoint <strong>and</strong> by a generated server-side decorator, so
+                    Interactive Server calls are protected as well.
+                </li>
+                <li>Fast and trim safe in WebAssembly when you provide a <code>JsonSerializerContext</code>.</li>
+                <li>The shared library stays free of ASP.NET: attributes and exceptions ship in a dependency free package.</li>
+            </ul>
+
+        </div>
+    </Purpose>
+
+    <Setup>
+        <div class="content">
+
+            <ol>
+                <li>Install the packages</li>
+                <li>Declare the interface in a shared library</li>
+                <li>Mark the server and the client</li>
+                <li>Register the services</li>
+            </ol>
+
+            <h2>Install the Packages</h2>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>Package</th>
+                        <th>Install in</th>
+                        <th>Contents</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>RForge.Blazor.AutoApi.Abstractions</code></td>
+                        <td>The shared library</td>
+                        <td>Attributes, <code>RfHttpMethod</code> and the exception types. No ASP.NET dependency.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RForge.Blazor.AutoApi.Generator</code></td>
+                        <td>The server project and the client project</td>
+                        <td>The source generator and its diagnostics. It adds no runtime assembly.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h6>Command Line</h6>
+            <pre><code>dotnet add MyApp.Shared package RForge.Blazor.AutoApi.Abstractions
+dotnet add MyApp package RForge.Blazor.AutoApi.Generator
+dotnet add MyApp.Client package RForge.Blazor.AutoApi.Generator</code></pre>
+
+            <p>
+                The <code>RForge.Blazor</code> package installs the whole family instead, including both AutoApi packages. Install
+                it in each project that needs a generator, because NuGet does not pass analyzers through project references.
+            </p>
+
+            <pre><code>MyApp.Shared   -&gt; Abstractions          (interfaces, DTOs, JsonSerializerContext)
+MyApp          -&gt; Generator + Shared    (server host, real implementations)
+MyApp.Client   -&gt; Generator + Shared    (WebAssembly project)</code></pre>
+
+            <h2>Declare the Interface</h2>
+
+            <p>
+                Put the interface, its data types and a <code>JsonSerializerContext</code> in the shared library. The context has to
+                live in a <strong>referenced</strong> assembly, because the generator reads it from there. A context in the same
+                project as the marker class looks empty to the generator and reports <code>RFAA009</code>.
+            </p>
+
+            <pre><code>[assembly: RForgeAutoApiDefaults(JsonContext = typeof(AppJsonContext))]
+
+[RForgeAutoApi]
+public interface IOrderService
+{
+    Task&lt;OrderDto?&gt; GetOrderAsync(int id, CancellationToken cancellationToken = default);
+}
+
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+[JsonSerializable(typeof(OrderDto))]
+[JsonSerializable(typeof(int))]
+public partial class AppJsonContext : JsonSerializerContext { }</code></pre>
+
+            <h2>Mark the Server and the Client</h2>
+
+            <pre><code>// Server project
+[RForgeAutoApiHost(typeof(IOrderService))]
+public static partial class AutoApiEndpoints { }
+
+// Client project
+[RForgeAutoApiClient(typeof(IOrderService))]
+public static partial class AutoApiClients { }</code></pre>
+
+            <p>Use one host class and one client class per project (<code>RFAA014</code>).</p>
+
+            <h2>Register the Services</h2>
+
+            <pre><code>// Program.cs (server)
+builder.Services.AddScoped&lt;IOrderService, OrderService&gt;();  // your real implementation
+builder.Services.AddRForgeAutoApiServer();                  // call AFTER your registrations
+// ...
+app.MapRForgeAutoApi();
+
+// Program.cs (WebAssembly client)
+builder.Services.AddRForgeAutoApi();</code></pre>
+
+            <h2>Requirements</h2>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>Requirement</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>.NET</td>
+                        <td>.NET 8, 9 or 10. The generator runs on the .NET 8 SDK and newer.</td>
+                    </tr>
+                    <tr>
+                        <td>Services with authorization</td>
+                        <td>Must be Scoped or Transient. A Singleton cannot see the current user, so registering one throws at startup.</td>
+                    </tr>
+                    <tr>
+                        <td>Deployment</td>
+                        <td>
+                            Reordering overloads changes their generated routes, so deploy the server and the client together.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Which Package Do I Install?</h2>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>You want</th>
+                        <th>Install</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>The UI components only</td>
+                        <td><code>RForge.Blazor.Components</code></td>
+                    </tr>
+                    <tr>
+                        <td>Typed events and state only</td>
+                        <td><code>RForge.Blazor.Events</code></td>
+                    </tr>
+                    <tr>
+                        <td>An API generated from a service interface</td>
+                        <td><code>RForge.Blazor.AutoApi.Abstractions</code> and <code>RForge.Blazor.AutoApi.Generator</code></td>
+                    </tr>
+                    <tr>
+                        <td>Everything</td>
+                        <td><code>RForge.Blazor</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </Setup>
+
+    <BasicUsage>
+        <div class="content">
+
+            <p>
+                Inject the interface in any component. It works in every render mode.
+            </p>
+
+            <pre><code>@@inject IOrderService Orders
+
+@@code {
+    OrderDto? order;
+    protected override async Task OnInitializedAsync() =&gt; order = await Orders.GetOrderAsync(42);
+}</code></pre>
+
+            <p>
+                See it working in the <a href="/autoapi/example/todos">Todos example</a>, and learn each part step by step in the
+                <a href="/autoapi/tutorials">tutorials</a>.
+            </p>
+
+            <h2>Attributes</h2>
+
+            <p>All attributes live in the <code>RForge.Blazor.AutoApi</code> namespace.</p>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Goes on</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>[RForgeAutoApi]</code></td>
+                        <td>Interface</td>
+                        <td>
+                            Opts in <strong>every method</strong> of the interface. <code>HttpClientName</code> and
+                            <code>RouteSegment</code> are optional.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>[RForgeAutoApiMethod]</code></td>
+                        <td>Method</td>
+                        <td>
+                            Overrides the defaults for one method: <code>HttpMethod</code> (<code>Get</code>, <code>Post</code>,
+                            <code>Put</code>, <code>Patch</code>, <code>Delete</code>), a static <code>Route</code> and
+                            <code>HttpClientName</code>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>[RfAuthorize]</code> and <code>[RfAllowAnonymous]</code></td>
+                        <td>Interface or method</td>
+                        <td>
+                            Mirror ASP.NET's <code>AuthorizeAttribute</code> (<code>Policy</code>, <code>Roles</code>,
+                            <code>AuthenticationSchemes</code>) and <code>AllowAnonymousAttribute</code>, without an ASP.NET reference.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>[RForgeAutoApiHost]</code></td>
+                        <td>Server marker class</td>
+                        <td>Generates <code>MapRForgeAutoApi()</code> and <code>AddRForgeAutoApiServer()</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>[RForgeAutoApiClient]</code></td>
+                        <td>Client marker class</td>
+                        <td>Generates a client for each interface and <code>AddRForgeAutoApi()</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>[assembly: RForgeAutoApiDefaults]</code></td>
+                        <td>Shared library</td>
+                        <td>
+                            Settings both sides must agree on, read by both generators: <code>RoutePrefix</code> (default
+                            <code>/api/auto</code>), <code>DefaultHttpMethod</code> (default <code>Post</code>),
+                            <code>HttpClientName</code>, <code>JsonContext</code> and <code>ExcludedAttributes</code>.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Routes and Binding</h2>
+
+            <ul>
+                <li>
+                    The default route is <code>{RoutePrefix}/{RouteSegment}/{MethodName}</code>, for example
+                    <code>/api/auto/IOrderService/GetOrderAsync</code>. Custom routes are static: placeholders such as
+                    <code>{id}</code> are not supported (<code>RFAA007</code>).
+                </li>
+                <li>
+                    <code>Post</code> (the default), <code>Put</code> and <code>Patch</code> send a JSON object keyed by parameter
+                    name, even for a single parameter, so adding a parameter with a default value is not a breaking change.
+                </li>
+                <li>
+                    <code>Get</code> and <code>Delete</code> send a query string and accept <strong>simple types only</strong>
+                    (primitives, <code>string</code>, <code>decimal</code>, <code>Guid</code>, the date and time types, enums and
+                    their nullable versions). <code>RFAA006</code> reports anything else.
+                </li>
+                <li>
+                    <code>CancellationToken</code> parameters are never sent. On the client the token goes to
+                    <code>HttpClient</code>; on the server it is <code>RequestAborted</code>.
+                </li>
+                <li>
+                    <code>Task</code> and <code>ValueTask</code> return 204; <code>Task&lt;T&gt;</code> and
+                    <code>ValueTask&lt;T&gt;</code> return 200 with a JSON body.
+                </li>
+            </ul>
+
+            <h2>Error Handling</h2>
+
+            <p>
+                The same <code>catch</code> block works in Interactive Server and in WebAssembly.
+            </p>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>RfException(message, statusCode = 400, code = null)</code></td>
+                        <td>An expected error whose message is safe to show to users.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfUnauthorizedException</code> (401)</td>
+                        <td>Not authenticated.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfForbiddenException</code> (403)</td>
+                        <td>Authenticated but not authorized.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfNotFoundException</code> (404)</td>
+                        <td>The requested item does not exist.</td>
+                    </tr>
+                    <tr>
+                        <td><code>RfApiException</code></td>
+                        <td>An unexpected server failure. Thrown in WebAssembly only; in Interactive Server the original exception propagates.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <pre><code>try { order = await Orders.GetOrderAsync(id); }
+catch (RfException ex) { message = ex.Message; }          // expected, safe to display (both modes)
+catch (Exception ex)   { logger.LogError(ex, "..."); }    // unexpected</code></pre>
+
+            <h2>Diagnostics</h2>
+
+            <table class="table is-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Severity</th>
+                        <th>Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var diagnostic in Diagnostics)
+                    {
+                        <tr>
+                            <td><code>@diagnostic.Id</code></td>
+                            <td>@diagnostic.Severity</td>
+                            <td>@diagnostic.Meaning</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <p>
+                The <a href="https://github.com/Rumhyek/RForge/blob/main/docs/autoapi/spec.md">specification</a> covers authorization
+                in Interactive Server mode, copied endpoint attributes, HttpClient setup and serialization in detail.
+            </p>
+
+        </div>
+    </BasicUsage>
+
+</ComponentDetail>
+
+@code {
+
+    private static string AbstractionsSource(string path) =>
+        $"https://github.com/Rumhyek/RForge/tree/main/src/RForge/RForge.Blazor.AutoApi.Abstractions/{path}";
+
+    private static readonly (string Id, string Severity, string Meaning)[] Diagnostics =
+    [
+        ("RFAA001", "Error", "A [RForgeAutoApiHost] or [RForgeAutoApiClient] class must be static partial."),
+        ("RFAA002", "Warning", "The assembly of the given type contains no [RForgeAutoApi] interfaces."),
+        ("RFAA003", "Error", "Only Task, Task<T>, ValueTask and ValueTask<T> return types are supported."),
+        ("RFAA004", "Error", "Generic interfaces and generic methods are not supported."),
+        ("RFAA005", "Error", "ref, out and in parameters are not supported."),
+        ("RFAA006", "Error", "A GET or DELETE method has a parameter that is not a simple type."),
+        ("RFAA007", "Error", "A custom route contains a placeholder. Routes must be static."),
+        ("RFAA008", "Error", "A route is used by more than one method."),
+        ("RFAA009", "Warning", "A parameter or return type is not registered in the JSON context."),
+        ("RFAA010", "Warning", "An attribute could not be reconstructed and was not copied to the endpoint."),
+        ("RFAA011", "Error", "A method has more than one CancellationToken parameter."),
+        ("RFAA012", "Info", "No JsonContext configured. Reflection based serialization is used."),
+        ("RFAA013", "Error", "[RForgeAutoApi] interfaces may only contain instance methods."),
+        ("RFAA014", "Error", "Only one host class and one client class are allowed per project."),
+    ];
+
+}

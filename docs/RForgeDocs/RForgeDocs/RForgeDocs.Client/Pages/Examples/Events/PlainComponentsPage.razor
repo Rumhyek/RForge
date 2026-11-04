@@ -1,0 +1,55 @@
+@page "/events/example/plain-components"
+
+@rendermode InteractiveWebAssembly
+
+<ExampleDetail Title="Plain Components"
+               SubTitle="Events"
+               ComponentName="Events"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs.Client/Pages/Examples/Events/PlainComponentsPage.razor")"
+               ComponentDetailsUrl="/events/details" />
+
+<div class="columns">
+    <div class="column is-5">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <ExampleHeader Level="Simple" Mode="Interactive WebAssembly">
+                        Components that can't derive from <code>RfEventComponent</code> (third-party or legacy components) can still
+                        read hub state through an ordinary <code>[CascadingParameter]</code>.
+                    </ExampleHeader>
+
+                    <HowItWorks>
+                        <p><strong>Try it:</strong> change each theme. The two cards don't affect each other.</p>
+                        <ul>
+                            <li><code>PlainThemedCard</code> is a plain <code>ComponentBase</code> with <code>[CascadingParameter] ThemeState? Theme</code>. It knows nothing about the hub.</li>
+                            <li>In the first card, <code>options.CascadeRootState&lt;ThemeState&gt;()</code> (see <code>EventsDemoHub.Configure</code>) exposes the <em>root</em> theme as a <code>CascadingValueSource&lt;ThemeState&gt;</code>.</li>
+                            <li>In the second card, <code>&lt;StateScope TState="ThemeState" CascadeValue="true"&gt;</code> provides a <em>separate</em> instance to its subtree and also cascades it.</li>
+                            <li><code>ThemePicker</code> resolves the nearest provider, so the same component writes the root theme in the first card and the scoped theme in the second.</li>
+                            <li>Trade-off: cascade consumers re-render on <em>every</em> change. Event-aware consumers can use selectors (<code>ThemePicker</code> only watches <code>Name</code>).</li>
+                        </ul>
+                    </HowItWorks>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+            <section class="card mb-5">
+                <header class="card-header"><p class="card-header-title">Root theme&nbsp;<code>CascadeRootState&lt;ThemeState&gt;()</code></p></header>
+                <div class="card-content">
+                    <ThemePicker />
+                    <PlainThemedCard Caption="Plain component reading the root theme" />
+                </div>
+            </section>
+            <section class="card">
+                <header class="card-header"><p class="card-header-title">Scoped theme&nbsp;<code>&lt;StateScope CascadeValue="true"&gt;</code></p></header>
+                <div class="card-content">
+                    <StateScope TState="ThemeState" Initial="ThemeState.Ocean" CascadeValue="true">
+                        <ThemePicker />
+                        <PlainThemedCard Caption="Plain component inside the StateScope" />
+                    </StateScope>
+                </div>
+            </section>
+        </article>
+    </div>
+</div>

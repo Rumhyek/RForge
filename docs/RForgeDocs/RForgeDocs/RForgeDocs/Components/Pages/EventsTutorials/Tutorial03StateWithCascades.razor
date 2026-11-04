@@ -1,0 +1,178 @@
+@page "/events/tutorials/03-state-with-cascades"
+
+<TutorialDetail Tutorials="TutorialSet.Events" Slug="03-state-with-cascades">
+<p><strong>Goal:</strong> let components that <strong>don't</strong> derive from <code>RfEventComponent</code> (third-party components, components from another library, or ones you'd rather not change) read hub state through an ordinary <code>[CascadingParameter]</code>.</p>
+
+<p><em>See it running:</em> the <strong>Plain components</strong> sample page (<a href="/events/example/plain-components"><code>/events/example/plain-components</code></a>).</p>
+
+<h2 id="when-to-use-this">When to use this</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Consumer</th><th>How it reads state</th><th>Re-renders</th></tr>
+</thead>
+<tbody>
+<tr><td>Your own components</td><td><code>[UseState]</code> (<a href="/events/tutorials/02-state">tutorial 02</a>)</td><td>Only when the value (or selected part) changes</td></tr>
+<tr><td>Components you can't or won't change</td><td><code>[CascadingParameter]</code> (this tutorial)</td><td>On <strong>every</strong> change of that state</td></tr>
+</tbody>
+</table></div>
+
+<p>Prefer <code>[UseState]</code> wherever you can. Cascades are the compatibility path.</p>
+
+<h2 id="1-define-the-state">1. Define the state</h2>
+
+<pre><code>// MyApp.Client/Features/Theme/ThemeState.cs
+namespace MyApp.Client.Features.Theme;
+
+public sealed record ThemeState(string Name, string Background, string Foreground) : IState&lt;ThemeState&gt;
+{
+    public static ThemeState Initial =&gt; Light;
+
+    public static ThemeState Light { get; } = new("Light", "#ffffff", "#212529");
+    public static ThemeState Dark { get; } = new("Dark", "#212529", "#f8f9fa");
+    public static ThemeState Sepia { get; } = new("Sepia", "#f4ecd8", "#5b4636");
+}</code></pre>
+
+<h2 id="2-a-plain-consumer">2. A plain consumer</h2>
+
+<p>This component knows nothing about the hub. It's the kind of component you'd get from a UI library:</p>
+
+<pre><code>@@* MyApp.Client/Features/Theme/Components/ThemedPanel.razor *@@
+&lt;div class="p-3 rounded" style="background:@@Theme?.Background; color:@@Theme?.Foreground"&gt;
+    @@ChildContent
+&lt;/div&gt;
+
+@@code {
+    [CascadingParameter]
+    public ThemeState? Theme { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}</code></pre>
+
+<h2 id="3-cascade-the-root-state">3. Cascade the root state</h2>
+
+<p>Turn on <code>CascadeRootState&lt;T&gt;()</code> in the shared configuration:</p>
+
+<pre><code>// MyApp.Client/EventHubSetup.cs (excerpt)
+public static void Configure(RfEventOptions options)
+{
+    options.CascadeRootState&lt;ThemeState&gt;();
+}</code></pre>
+
+<p>The root <code>ThemeState</code> is now also a cascading value available everywhere, through a <code>CascadingValueSource&lt;ThemeState&gt;</code> that the hub updates on every change. Because <code>EventHubSetup</code> is shared, both the server and the WebAssembly host get it.</p>
+
+<h2 id="4-write-the-state">4. Write the state</h2>
+
+<p>Writers are ordinary event-aware components:</p>
+
+<pre><code>@@* MyApp.Client/Features/Theme/Components/ThemeSwitcher.razor *@@
+@@inherits RfEventComponent
+
+&lt;div class="btn-group btn-group-sm"&gt;
+    @@foreach (var theme in Themes)
+    {
+        &lt;button class="btn @@(theme.Name == Current ? "btn-dark" : "btn-outline-dark")" @@onclick="() =&gt; Pick(theme)"&gt;@@theme.Name&lt;/button&gt;
+    }
+&lt;/div&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Theme/Components/ThemeSwitcher.razor.cs
+namespace MyApp.Client.Features.Theme.Components;
+
+public partial class ThemeSwitcher
+{
+    private static readonly ThemeState[] Themes = [ThemeState.Light, ThemeState.Dark, ThemeState.Sepia];
+
+    [UseState(Select = nameof(SelectName))]
+    private partial string Current { get; }
+
+    private static string SelectName(ThemeState theme) =&gt; theme.Name;
+
+    // Writes to the NEAREST provider: the root, or an enclosing StateScope (step 6).
+    private void Pick(ThemeState theme) =&gt; State&lt;ThemeState&gt;().Set(theme);
+}</code></pre>
+
+<h2 id="5-writing-from-a-plain-component">5. Writing from a plain component</h2>
+
+<p>A plain component can't call <code>State&lt;T&gt;()</code>, but it can inject the hub:</p>
+
+<pre><code>@@* MyApp.Client/Features/Theme/Components/DarkModeToggle.razor *@@
+@@inject IRfEventHub Hub
+
+&lt;label class="form-check form-switch"&gt;
+    &lt;input class="form-check-input" type="checkbox" checked="@@(Theme?.Name == "Dark")" @@onchange="Toggle" /&gt;
+    Dark mode
+&lt;/label&gt;
+
+@@code {
+    [CascadingParameter]
+    public ThemeState? Theme { get; set; }
+
+    // The cascaded value is read-only; writes go through the store.
+    private void Toggle() =&gt;
+        Hub.State&lt;ThemeState&gt;().Update(t =&gt; t.Name == "Dark" ? ThemeState.Light : ThemeState.Dark);
+}</code></pre>
+
+<p><code>IRfEventHub</code> is the <strong>root</strong> hub. Inside a <code>StateScope</code> (next step), a plain component that needs to write to the <em>scoped</em> instance should take the cascaded scope instead:</p>
+
+<pre><code>[CascadingParameter]
+public IRfEventHubScope? Scope { get; set; }
+
+private void Toggle() =&gt; (Scope ?? Hub).State&lt;ThemeState&gt;().Update(/* … */);</code></pre>
+
+<h2 id="6-cascade-a-subtrees-own-copy">6. Cascade a subtree's own copy</h2>
+
+<p><code>&lt;StateScope CascadeValue="true"&gt;</code> gives a subtree its <strong>own</strong> instance of the state (<a href="/events/tutorials/06-scoped-state">tutorial 06</a>) and cascades that instance too:</p>
+
+<pre><code>@@* MyApp.Client/Pages/ThemePage.razor *@@
+@@page "/theme"
+@@rendermode InteractiveWebAssembly
+@@using MyApp.Client.Features.Theme
+@@using MyApp.Client.Features.Theme.Components
+
+&lt;h3&gt;Site theme (root)&lt;/h3&gt;
+&lt;ThemeSwitcher /&gt;
+&lt;DarkModeToggle /&gt;
+&lt;ThemedPanel&gt;Uses the root theme.&lt;/ThemedPanel&gt;
+
+&lt;h3 class="mt-4"&gt;Preview (its own theme)&lt;/h3&gt;
+&lt;StateScope TState="ThemeState" Initial="ThemeState.Sepia" CascadeValue="true"&gt;
+    &lt;ThemeSwitcher /&gt;
+    &lt;ThemedPanel&gt;Uses the preview's theme. Changing it doesn't affect the site.&lt;/ThemedPanel&gt;
+&lt;/StateScope&gt;</code></pre>
+
+<p>Inside the <code>StateScope</code>, both the event-aware <code>ThemeSwitcher</code> and the plain <code>ThemedPanel</code> see the scope's instance. Outside it, they see the root.</p>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li><code>CascadeRootState&lt;T&gt;()</code> registers a <code>CascadingValueSource&lt;T&gt;</code> through <code>AddCascadingValue</code> and calls <code>NotifyChangedAsync(newValue)</code> on every effective change.</li>
+<li><code>&lt;StateScope CascadeValue="true"&gt;</code> renders an extra, non-fixed <code>&lt;CascadingValue&gt;</code> around its children with the current value. Without the flag, it doesn't render one and costs nothing.</li>
+<li>Cascading-parameter consumers get the new value through <code>SetParametersAsync</code>, so they re-render on <strong>every</strong> change. There are no selectors on this path.</li>
+</ul>
+
+<h2 id="-best-practices">Best practices</h2>
+
+<ul>
+<li><strong>Use cascades only for components you can't put on <code>RfEventComponent</code>.</strong> Your own components should use <code>[UseState]</code> with selectors.</li>
+<li><strong>Configure <code>CascadeRootState</code> in <code>EventHubSetup.Configure</code></strong>, never in only one <code>Program.cs</code>. Otherwise the cascade disappears when the page switches runtime.</li>
+<li><strong>Keep cascaded state small and slow-changing</strong> (theme, culture, current user). A frequently changing state cascaded to many consumers re-renders all of them.</li>
+<li><strong>Write through the store</strong>, never by trying to change the cascaded object. The cascade is read-only.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[CascadingParameter]</code> is always <code>null</code></td><td><code>CascadeRootState&lt;T&gt;()</code> not configured, or <code>CascadeValue="true"</code> missing on the <code>StateScope</code></td><td>Add it in <code>EventHubSetup.Configure</code>, or set the flag</td></tr>
+<tr><td>Works on Server, <code>null</code> on WebAssembly</td><td>Configured in the server <code>Program.cs</code> only</td><td>Use the shared <code>EventHubSetup.Configure</code></td></tr>
+<tr><td>Plain component's toggle changes the wrong instance</td><td>It injected <code>IRfEventHub</code> (root) while inside a <code>StateScope</code></td><td>Use the cascaded <code>IRfEventHubScope</code></td></tr>
+<tr><td>Many components re-render on every change</td><td>They read via cascade</td><td>Move them to <code>[UseState]</code> with a selector</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/04-events">04 · Events</a></p>
+</TutorialDetail>

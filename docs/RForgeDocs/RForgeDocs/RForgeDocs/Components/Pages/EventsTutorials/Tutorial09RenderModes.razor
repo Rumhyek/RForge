@@ -1,0 +1,128 @@
+@page "/events/tutorials/09-render-modes"
+
+<TutorialDetail Tutorials="TutorialSet.Events" Slug="09-render-modes">
+<p><strong>Goal:</strong> know what the hub does in each render mode, and avoid the one boundary it can't cross.</p>
+
+<p><em>See it running:</em> the <strong>Render modes</strong> sample page (<a href="/events/example/render-modes"><code>/events/example/render-modes</code></a>).</p>
+
+<h2 id="the-one-rule">The one rule</h2>
+
+<blockquote>
+<p><strong>A hub belongs to a DI container. Components share a hub only when they share a container.</strong></p>
+</blockquote>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Where the component runs</th><th>Its hub</th><th>Shared with</th></tr>
+</thead>
+<tbody>
+<tr><td>Static SSR</td><td>One per HTTP request</td><td>Components rendered in that request</td></tr>
+<tr><td>Interactive Server</td><td>One per circuit</td><td><strong>Every</strong> Interactive Server component on the page, for that user</td></tr>
+<tr><td>Interactive WebAssembly</td><td>One per browser app instance</td><td><strong>Every</strong> WebAssembly component on the page</td></tr>
+<tr><td>Interactive Auto</td><td>Server's or WebAssembly's, depending on which the instance landed on</td><td>That runtime's components</td></tr>
+<tr><td>Prerendering</td><td>One per request (thrown away afterward)</td><td>The prerender only. See <a href="/events/tutorials/08-prerendering-and-persistence">tutorial 08</a></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="what-works-in-each-mode">What works in each mode</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Mode</th><th>Events</th><th>State</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Static SSR</td><td>within the request</td><td>within the request</td><td>Nothing updates after the HTML is sent</td></tr>
+<tr><td>Interactive Server</td><td>✅</td><td>✅</td><td>Publishing from background threads is safe</td></tr>
+<tr><td>Interactive WebAssembly</td><td>✅</td><td>✅</td><td>Generated code is trim/AOT-safe</td></tr>
+<tr><td>Interactive Auto</td><td>per runtime</td><td>per runtime</td><td>State doesn't move from Server to WebAssembly</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="1-register-in-both-hosts">1. Register in both hosts</h2>
+
+<p>If any component runs in WebAssembly (WebAssembly or Auto render mode), the client needs its own hub:</p>
+
+<pre><code>// MyApp.Client/Program.cs (excerpt)
+builder.Services.AddRForgeEvents(EventHubSetup.Configure);</code></pre>
+
+<pre><code>// MyApp/Program.cs (excerpt)
+builder.Services.AddRForgeEvents(EventHubSetup.Configure);</code></pre>
+
+<p>Same <code>EventHubSetup.Configure</code> in both, so <code>CascadeRootState</code>, <code>PersistState</code> and error handling match (<a href="/events/tutorials/01-setup#3-create-one-shared-configuration">tutorial 01</a>).</p>
+
+<h2 id="2-mixed-islands-dont-talk-to-each-other">2. Mixed islands don't talk to each other</h2>
+
+<p>On a page with both a Server island and a WebAssembly island, each talks to a <strong>different</strong> hub:</p>
+
+<pre><code>@@* MyApp/Components/Pages/IslandsPage.razor *@@
+@@page "/islands"
+@@using MyApp.Client.Features.Welcome.Components
+
+@@* Static page hosting two islands. *@@
+&lt;Greeting @@rendermode="InteractiveServer" /&gt;          @@* circuit hub *@@
+&lt;NameEditor @@rendermode="InteractiveServer" /&gt;        @@* same circuit hub: shares with the Greeting above *@@
+&lt;NameEditor @@rendermode="InteractiveWebAssembly" /&gt;   @@* WebAssembly hub: typing here does NOT update the Greeting *@@</code></pre>
+
+<p>This is a deliberate limitation (<a href="https://github.com/Rumhyek/RForge/blob/main/docs/events/design/decisions.md#adr-007-no-js-and-no-cross-island-bridge">ADR-007</a>). Bridging would require JavaScript interop or a server round trip.</p>
+
+<p>What to do instead:</p>
+
+<ul>
+<li><strong>Use one interactive render mode per area that has to communicate.</strong> Most apps already do: a global render mode on <code>&lt;Routes&gt;</code>, or one per page.</li>
+<li>If two different-mode islands really must coordinate, use an app-level channel (an API, a SignalR hub, browser storage), and translate it into hub events on each side.</li>
+</ul>
+
+<h2 id="3-declare-scopes-inside-the-island">3. Declare scopes inside the island</h2>
+
+<p>Cascading values don't cross from static rendering into an interactive island, and scopes are cascading values:</p>
+
+<pre><code>@@* MyApp/Components/Pages/ScopeBoundaryPage.razor *@@
+@@page "/scope-boundary"
+@@using MyApp.Client.Features.Settings.Components
+
+@@* ❌ This EventScope is rendered statically. The island inside can't see it, so
+      SettingsPanel's children end up attached to the circuit's root hub instead. *@@
+&lt;EventScope Name="outer"&gt;
+    &lt;SettingsPanel @@rendermode="InteractiveServer" /&gt;
+&lt;/EventScope&gt;
+
+@@* SettingsPanel declares its own &lt;EventScope Name="settings"&gt; inside itself,
+      so the scope lives in the island. *@@
+&lt;SettingsPanel @@rendermode="InteractiveServer" /&gt;</code></pre>
+
+<p>Rule of thumb: <strong>a component that needs a scope declares it itself</strong> (as in <a href="/events/tutorials/05-scopes-and-routing">tutorial 05</a>), so it doesn't matter where the component is placed. If your whole app is interactive (render mode set on <code>&lt;Routes&gt;</code>), scopes in layouts work too.</p>
+
+<h2 id="4-auto-same-component-two-possible-hubs">4. Auto: same component, two possible hubs</h2>
+
+<p>An <code>InteractiveAuto</code> page runs on Server until the WebAssembly runtime is downloaded, then on WebAssembly for later visits. Each visit gets a fresh hub in whichever runtime it lands on:</p>
+
+<ul>
+<li>Root state isn't carried from the Server phase to the WebAssembly phase. Reload data from its source (see "load if not loaded" in <a href="/events/tutorials/08-prerendering-and-persistence#4-load-only-if-needed">tutorial 08</a>).</li>
+<li>Server-only services (<code>MyApp/Services</code>) aren't available in WebAssembly. Pages that need them should be <code>InteractiveServer</code>.</li>
+</ul>
+
+<h2 id="-best-practices">Best practices</h2>
+
+<ul>
+<li><strong>Choose one interactive render mode per page region</strong>, ideally per page or app-wide.</li>
+<li><strong>Keep event-aware code in the Client project</strong> so it can run anywhere. Put only server-only pages and services in the server project.</li>
+<li><strong>Let features declare their own scopes</strong>, so render-mode boundaries never cut a feature in half.</li>
+<li><strong>Turn off prerendering</strong> (<code>prerender: false</code>) where a page starts background work or the prerendered HTML isn't useful.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td>Two parts of a page don't update each other</td><td>They're different render modes (different hubs)</td><td>Use the same render mode</td></tr>
+<tr><td><code>No registered service of type 'IRfEventHub'</code> in the browser</td><td>Hub not registered in <code>MyApp.Client/Program.cs</code></td><td>Register it (<a href="/events/tutorials/01-setup#4-register-the-hub-in-both-hosts">tutorial 01</a>)</td></tr>
+<tr><td>A scope "doesn't work" in an island</td><td>The scope was declared in static markup outside the island</td><td>Declare it inside the interactive component</td></tr>
+<tr><td>State resets when Auto switches to WebAssembly</td><td>New runtime, new hub</td><td>Reload the data, or keep it in your backend</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/10-manual-registration">10 · Manual registration</a></p>
+</TutorialDetail>

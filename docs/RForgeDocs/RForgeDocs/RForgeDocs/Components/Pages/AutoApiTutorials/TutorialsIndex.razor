@@ -1,0 +1,36 @@
+@page "/autoapi/tutorials"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi">
+<p>Step-by-step guides for using <code>RForge.Blazor.AutoApi</code> in a Blazor Web App. They assume you already know Blazor components, dependency injection, minimal APIs and render modes, and explain only what is specific to the generated API.</p>
+
+<p>Start with <a href="/autoapi/tutorials/01-setup">Setup</a>. After that, each tutorial stands alone: it has its own small example, so you can jump straight to the topic you need.</p>
+
+<div class="table-container">
+    <table class="table is-striped">
+        <thead>
+            <tr><th>#</th><th>Tutorial</th><th>You'll learn</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var tutorial in TutorialSet.AutoApi.All)
+            {
+                <tr>
+                    <td>@tutorial.Number</td>
+                    <td><a href="@tutorial.Url">@tutorial.Title</a></td>
+                    <td>@tutorial.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<h2 id="conventions-used-everywhere">Conventions used everywhere</h2>
+
+<p>Each code block starts with a comment giving the <strong>file path</strong> it belongs in, for example <code>// MyApp.Shared/IBookService.cs</code>. The tutorials use three projects: <code>MyApp.Shared</code> for the interface and its types, <code>MyApp</code> for the server, and <code>MyApp.Client</code> for WebAssembly. That layout is a recommendation, not a requirement. <a href="/autoapi/tutorials/01-setup">Setup</a> lists the few things that are required.</p>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+<li><a href="/autoapi/example/todos">Todos example</a>: a todo list that calls one interface from Interactive Server and from WebAssembly.</li>
+<li><a href="https://github.com/Rumhyek/RForge/blob/main/docs/autoapi/spec.md">Specification</a>: every attribute, route and diagnostic in one document.</li>
+</ul>
+</TutorialDetail>

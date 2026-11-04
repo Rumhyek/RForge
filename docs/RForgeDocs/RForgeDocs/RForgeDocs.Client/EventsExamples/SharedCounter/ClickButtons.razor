@@ -1,0 +1,9 @@
+@inherits RfEventComponent
+
+<div class="buttons mb-2">
+    <button class="button is-primary" @onclick="() => Add(1)">+1</button>
+    <button class="button is-primary" @onclick="() => Add(2)">+2</button>
+    <button class="button is-light" @onclick="Reset">Reset</button>
+    <button class="button is-light" @onclick="SetSame" title="Sets a value equal to the current one">Set same value</button>
+</div>
+<RenderBadge Count="@(++_renders)" />

@@ -1,0 +1,19 @@
+@inherits RfEventComponent
+
+@switch (Status.Status)
+{
+    case CheckoutStatus.Processing:
+        <div class="is-flex is-align-items-center is-gap-2">
+            <button class="button is-loading is-small is-white" tabindex="-1" aria-hidden="true">&nbsp;</button>
+            <span>Processing payment…</span>
+        </div>
+        break;
+
+    case CheckoutStatus.Confirmed:
+        <div class="notification is-success is-light mb-0">
+            <div class="has-text-weight-semibold">Order confirmed 🎉</div>
+            <div class="is-size-7">Order id: <code>@Status.OrderId</code></div>
+            <button class="button is-small is-success is-outlined mt-2" @onclick="StartOver">Start a new order</button>
+        </div>
+        break;
+}

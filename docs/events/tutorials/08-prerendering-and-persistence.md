@@ -136,7 +136,7 @@ Open `/profile`, then view the page source. The prerendered HTML already contain
 - **Events are never persisted**: they're fire-and-forget.
 - **Persistence only bridges prerender → interactive.** It doesn't carry state from a Server-phase Auto page to a later WebAssembly-phase page. For that, reload from your API.
 
-## ✅ Best practices
+## Best practices
 
 - **Keep one `AppJsonContext` in the Client project** listing every persisted state type, next to `EventHubSetup.cs`.
 - **Persist only what's expensive to load** (API/database results). Cheap UI state can just start from `Initial`.

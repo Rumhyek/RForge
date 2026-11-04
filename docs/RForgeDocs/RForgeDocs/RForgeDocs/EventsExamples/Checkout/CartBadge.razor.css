@@ -1,0 +1,14 @@
+.cart-badge {
+    font-size: 1.25rem;
+    display: inline-block;
+}
+
+    .cart-badge.pulse {
+        animation: cart-pulse 0.6s ease;
+    }
+
+@keyframes cart-pulse {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}

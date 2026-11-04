@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <!-- [UseState] is a C# 13 partial property; net8 defaults to C# 12. -->
+    <LangVersion>13</LangVersion>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
   </PropertyGroup>
@@ -15,6 +17,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\RForge\RForge.Blazor.Components\RForge.Blazor.Components.csproj" />
+    <ProjectReference Include="..\..\..\..\src\RForge\RForge.Blazor.Events\RForge.Blazor.Events.csproj" />
+    <ProjectReference Include="..\..\..\..\src\RForge\RForge.Blazor.Events.Generators\RForge.Blazor.Events.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\..\src\RForge\RForge.Blazor.AutoApi.Generator\RForge.Blazor.AutoApi.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\RForgeDocs.Abstractions\RForgeDocs.Abstractions.csproj" />
   </ItemGroup>
 

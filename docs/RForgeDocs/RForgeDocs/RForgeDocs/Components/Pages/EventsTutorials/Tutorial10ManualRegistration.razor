@@ -1,0 +1,245 @@
+@page "/events/tutorials/10-manual-registration"
+
+<TutorialDetail Tutorials="TutorialSet.Events" Slug="10-manual-registration">
+<p><strong>Goal:</strong> subscribe without <code>[Subscribe]</code> and <code>[UseState]</code>, for the cases attributes can't express: selectors that depend on parameters, custom comparers, conditional or dynamic subscriptions.</p>
+
+<p><em>See it running:</em> <code>TickerTile</code> on the <strong>Live dashboard</strong> sample page (<a href="/events/example/live-dashboard"><code>/events/example/live-dashboard</code></a>).</p>
+
+<h2 id="what-the-attributes-generate">What the attributes generate</h2>
+
+<p>The source generator turns attributes into an override of <code>RegisterSubscriptions</code>. You can write that override yourself, using the same <code>SubscriptionBuilder</code>:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Attribute</th><th>Manual equivalent</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[UseState] partial T X { get; }</code></td><td><code>_x = builder.State&lt;T&gt;();</code> then read <code>_x.Value</code></td></tr>
+<tr><td><code>[UseState(Select = nameof(S))] partial V X { get; }</code></td><td><code>_x = builder.State&lt;T, V&gt;(S);</code></td></tr>
+<tr><td><code>[Subscribe] void On(E e)</code></td><td><code>builder.On&lt;E&gt;(On);</code></td></tr>
+<tr><td><code>Scope = ScopeKind.Root</code> / <code>ScopeName = "n"</code></td><td><code>at: ScopeTarget.Root</code> / <code>ScopeTarget.Named("n")</code></td></tr>
+<tr><td><code>Render = false</code></td><td><code>render: false</code></td></tr>
+</tbody>
+</table></div>
+
+<p><code>RegisterSubscriptions</code> runs <strong>after parameters are set</strong> and <strong>before <code>OnInitialized</code></strong>, which is what makes parameter-dependent selectors possible.</p>
+
+<h2 id="1-a-selector-that-depends-on-a-parameter">1. A selector that depends on a parameter</h2>
+
+<p>Attribute selectors must be <code>static</code>, so they can't see <code>[Parameter]</code> values. A lambda can:</p>
+
+<pre><code>// MyApp.Client/Features/Stocks/PriceState.cs
+using System.Collections.Immutable;
+
+namespace MyApp.Client.Features.Stocks;
+
+public sealed record PriceState(ImmutableDictionary&lt;string, decimal&gt; Prices) : IState&lt;PriceState&gt;
+{
+    public static PriceState Initial =&gt; new(ImmutableDictionary&lt;string, decimal&gt;.Empty);
+}
+
+public sealed record PriceChanged(string Symbol, decimal Change) : IEvent;</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Stocks/Components/PriceTile.razor *@@
+@@inherits RfEventComponent
+
+&lt;div class="card text-center"&gt;
+    &lt;div class="card-body"&gt;
+        &lt;div class="fw-semibold"&gt;@@Symbol&lt;/div&gt;
+        &lt;div class="fs-4"&gt;@@_price.Value.ToString("N2")&lt;/div&gt;
+        &lt;small&gt;@@(_lastChange &gt;= 0 ? "▲" : "▼")&lt;/small&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Stocks/Components/PriceTile.razor.cs
+using Microsoft.AspNetCore.Components;
+
+namespace MyApp.Client.Features.Stocks.Components;
+
+public partial class PriceTile
+{
+    private SelectorHandle&lt;PriceState, decimal&gt; _price = default!;
+    private decimal _lastChange;
+
+    [Parameter, EditorRequired]
+    public string Symbol { get; set; } = "";
+
+    protected override void RegisterSubscriptions(SubscriptionBuilder builder)
+    {
+        base.RegisterSubscriptions(builder);
+
+        // Symbol is already set here. Re-render only when THIS symbol's price changes.
+        _price = builder.State&lt;PriceState, decimal&gt;(p =&gt; p.Prices.GetValueOrDefault(Symbol));
+
+        // Track the direction without a render of its own; the price selector triggers the render.
+        builder.On&lt;PriceChanged&gt;(e =&gt;
+        {
+            if (e.Symbol == Symbol)
+            {
+                _lastChange = e.Change;
+            }
+        }, render: false);
+    }
+}</code></pre>
+
+<blockquote>
+<p>Parameters are read <strong>once</strong>, when registering. If <code>Symbol</code> can change for the same component instance, put <code>@@key="symbol"</code> on the component where it's used so Blazor re-creates it instead.</p>
+</blockquote>
+
+<h2 id="2-a-custom-comparer">2. A custom comparer</h2>
+
+<p>Selectors compare with default equality. Pass a comparer to change that, for example to ignore case:</p>
+
+<pre><code>// MyApp.Client/Features/Stocks/Components/WatchlistLabel.razor.cs
+namespace MyApp.Client.Features.Stocks.Components;
+
+public partial class WatchlistLabel
+{
+    private SelectorHandle&lt;WatchlistState, string&gt; _name = default!;
+
+    protected override void RegisterSubscriptions(SubscriptionBuilder builder)
+    {
+        base.RegisterSubscriptions(builder);
+        _name = builder.State&lt;WatchlistState, string&gt;(w =&gt; w.Name, comparer: StringComparer.OrdinalIgnoreCase);
+    }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Stocks/Components/WatchlistLabel.razor *@@
+@@inherits RfEventComponent
+
+&lt;h3&gt;@@_name.Value&lt;/h3&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Stocks/WatchlistState.cs
+namespace MyApp.Client.Features.Stocks;
+
+public sealed record WatchlistState(string Name) : IState&lt;WatchlistState&gt;
+{
+    public static WatchlistState Initial =&gt; new("My watchlist");
+}</code></pre>
+
+<h2 id="3-mix-attributes-and-manual-code">3. Mix attributes and manual code</h2>
+
+<p>A component with attributes already has a generated <code>RegisterSubscriptions</code>, so <strong>don't override it</strong> (that's error <code>RFEVT009</code>). Implement the generated hook instead, which runs after the generated registrations:</p>
+
+<pre><code>// MyApp.Client/Features/Stocks/Components/PriceAlerts.razor.cs
+using Microsoft.AspNetCore.Components;
+
+namespace MyApp.Client.Features.Stocks.Components;
+
+public partial class PriceAlerts
+{
+    private readonly List&lt;string&gt; _alerts = [];
+
+    [Parameter]
+    public bool IncludeSmallMoves { get; set; }
+
+    [UseState(Select = nameof(SelectCount))]
+    private partial int Tracked { get; }
+
+    private static int SelectCount(PriceState prices) =&gt; prices.Prices.Count;
+
+    // Generated by the source generator; runs after the attribute-based registrations.
+    partial void OnRegisterSubscriptions(SubscriptionBuilder builder)
+    {
+        // Conditional subscription: decided once, from a parameter.
+        if (IncludeSmallMoves)
+        {
+            builder.On&lt;PriceChanged&gt;(e =&gt; _alerts.Insert(0, $"{e.Symbol} {e.Change:+0.00;-0.00}"));
+        }
+        else
+        {
+            builder.On&lt;PriceChanged&gt;(e =&gt;
+            {
+                if (Math.Abs(e.Change) &gt;= 1)
+                {
+                    _alerts.Insert(0, $"{e.Symbol} moved {e.Change:+0.00;-0.00}");
+                }
+            });
+        }
+    }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Stocks/Components/PriceAlerts.razor *@@
+@@inherits RfEventComponent
+
+&lt;p&gt;Tracking @@Tracked symbols&lt;/p&gt;
+&lt;ul&gt;@@foreach (var alert in _alerts.Take(5)) { &lt;li&gt;@@alert&lt;/li&gt; }&lt;/ul&gt;</code></pre>
+
+<h2 id="4-subscribe-later-or-to-something-decided-at-runtime">4. Subscribe later, or to something decided at runtime</h2>
+
+<p><code>SubscriptionBuilder</code> only works during registration. To subscribe later (after a button click, say), use the scope directly, <strong>marshal to the renderer yourself</strong>, and dispose in <code>DisposeAsyncCore</code>:</p>
+
+<pre><code>// MyApp.Client/Features/Stocks/Components/LiveFeedToggle.razor.cs
+namespace MyApp.Client.Features.Stocks.Components;
+
+public partial class LiveFeedToggle
+{
+    private IDisposable? _subscription;
+    private int _received;
+
+    private void Toggle()
+    {
+        if (_subscription is not null)
+        {
+            _subscription.Dispose();
+            _subscription = null;
+            return;
+        }
+
+        // Scope.Subscribe is the raw API: no InvokeAsync, no automatic render, no automatic disposal.
+        _subscription = Scope.Subscribe&lt;PriceChanged&gt;(async (e, cancellationToken) =&gt;
+            await InvokeAsync(() =&gt;
+            {
+                _received++;
+                StateHasChanged();
+            }));
+    }
+
+    protected override ValueTask DisposeAsyncCore()
+    {
+        _subscription?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Stocks/Components/LiveFeedToggle.razor *@@
+@@inherits RfEventComponent
+
+&lt;button class="btn btn-sm btn-outline-secondary" @@onclick="Toggle"&gt;@@(_subscription is null ? "Listen" : "Stop") (@@_received)&lt;/button&gt;</code></pre>
+
+<p>Prefer step 3 (decide at registration) when you can. Late subscriptions are the escape hatch.</p>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li><code>SubscriptionBuilder.On</code> and <code>.State</code> wrap your delegate so it runs through <code>InvokeAsync</code>, re-renders (unless <code>render: false</code>), routes exceptions to the <code>ErrorBoundary</code>, and is released when the component is disposed: exactly what the attributes do.</li>
+<li><code>Scope.Subscribe</code> and <code>IStateStore.Subscribe</code> are the lower-level APIs that services use (<a href="/events/tutorials/07-services-and-background-work">tutorial 07</a>). They do none of that for you.</li>
+</ul>
+
+<h2 id="-best-practices">Best practices</h2>
+
+<ul>
+<li><strong>Default to attributes.</strong> Use manual registration only for what attributes can't express, and say why in a comment.</li>
+<li><strong>Call <code>base.RegisterSubscriptions(builder)</code> first</strong> in a manual override, so registrations from a base component aren't lost.</li>
+<li><strong>Mixing? Use the <code>OnRegisterSubscriptions</code> hook</strong>, never a second override.</li>
+<li><strong>Store handles in fields</strong> (<code>_price</code>) and read <code>.Value</code> in markup. Handles are released automatically.</li>
+<li><strong>Pair every <code>Scope.Subscribe</code> with a dispose</strong> in <code>DisposeAsyncCore</code>, and wrap UI work in <code>InvokeAsync</code>.</li>
+<li><strong>Use <code>@@key</code> when a parameter that a selector captured can change.</strong></li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>InvalidOperationException: SubscriptionBuilder can only be used inside RegisterSubscriptions</code></td><td>Builder stored and used later</td><td>Use <code>Scope.Subscribe</code> for late subscriptions</td></tr>
+<tr><td><code>RFEVT009</code></td><td>Override of <code>RegisterSubscriptions</code> in a component that also has attributes</td><td>Move the code into <code>partial void OnRegisterSubscriptions</code></td></tr>
+<tr><td>Tile shows the old symbol after its parameter changes</td><td>Selector captured the parameter at registration</td><td>Add <code>@@key</code></td></tr>
+<tr><td><code>Dispatcher</code> exceptions from a late subscription</td><td>Handler touches UI without <code>InvokeAsync</code></td><td>Wrap the body in <code>InvokeAsync</code></td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/11-testing-with-bunit">11 · Testing with bUnit</a></p>
+</TutorialDetail>

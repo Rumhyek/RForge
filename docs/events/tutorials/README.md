@@ -27,7 +27,7 @@ Every event-aware component in these tutorials follows two rules. [Setup](01-set
 1. **The `.razor` file starts with `@inherits RfEventComponent`.**
 2. **`[Subscribe]` and `[UseState]` members live in the code-behind (`.razor.cs`)**, never in an `@code` block.
 
-Each code block starts with a comment giving the **file path** it belongs in, for example `// MyApp.Client/Features/Counter/CounterState.cs`. The paths follow the [recommended project layout](01-setup.md#1-lay-out-the-project).
+Each code block starts with a comment giving the **file path** it belongs in, for example `// MyApp.Client/Features/Counter/CounterState.cs`. The paths follow the [recommended project layout](01-setup.md#1-lay-out-the-project-recommended-not-required).
 
 ## See also
 

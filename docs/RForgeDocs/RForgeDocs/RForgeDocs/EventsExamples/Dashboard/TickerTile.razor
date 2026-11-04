@@ -1,0 +1,10 @@
+@inherits RfEventComponent
+
+<div class="ticker-tile card has-text-centered @(_lastChange > 0 ? "up" : _lastChange < 0 ? "down" : "")">
+    <div class="card-content py-2 px-3">
+        <div class="has-text-weight-semibold">@Symbol</div>
+        <div class="is-size-4">@_price.Value.ToString("N2")</div>
+        <div class="is-size-7">@(_lastChange >= 0 ? "▲" : "▼") @Math.Abs(_lastChange).ToString("N2")</div>
+        <RenderBadge Count="@(++_renders)" />
+    </div>
+</div>

@@ -1,0 +1,69 @@
+@page "/events/example/live-dashboard"
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inherits RfEventComponent
+
+<ExampleDetail Title="Live Dashboard"
+               SubTitle="Events"
+               ComponentName="Events"
+               PageSourceUrl="@RForgeHelpers.RepoDocsUrl("/RForgeDocs/Components/Pages/Examples/Events/LiveDashboardPage.razor")"
+               ComponentDetailsUrl="/events/details" />
+
+<div class="columns">
+    <div class="column is-4">
+        <article class="section">
+            <div class="box">
+                <div class="content">
+                    <ExampleHeader Level="Complex" Mode="Interactive Server (no prerender)">
+                        A server-side service publishes price ticks from a background timer thread. Tiles re-render only for their own symbol.
+                    </ExampleHeader>
+
+                    <HowItWorks>
+                        <p><strong>Try it:</strong> start the feed at ~12 ticks/s and compare the render counters.</p>
+                        <ul>
+                            <li><code>MarketFeed</code> is a <strong>Scoped</strong> service (one per circuit). It updates <code>MarketState</code> and publishes <code>PriceTick</code> from a thread-pool timer, off the renderer's thread.</li>
+                            <li>Components don't call <code>InvokeAsync</code> themselves. <code>RfEventComponent</code> marshals every handler and state notification.</li>
+                            <li><code>TickerTile</code> uses the <em>manual</em> API: <code>builder.State&lt;MarketState, decimal&gt;(m =&gt; m.Prices[Symbol])</code>. Each tile re-renders only when its own price moves.</li>
+                            <li><code>BigMoves</code> uses <code>[Subscribe(Render = false)]</code> and calls <code>StateHasChanged()</code> only for big moves.</li>
+                            <li>This page uses <code>prerender: false</code>, so the feed never starts in a throwaway prerender scope. Leaving the page stops the feed in <code>DisposeAsyncCore</code>.</li>
+                        </ul>
+                    </HowItWorks>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="column">
+        <article class="section">
+            <div class="is-flex is-flex-wrap-wrap is-align-items-center is-gap-2 mb-3">
+                @if (Market.Running)
+                {
+                    <button class="button is-danger is-outlined" @onclick="Stop">Stop feed</button>
+                }
+                else
+                {
+                    <button class="button is-success" @onclick="Start">Start feed</button>
+                }
+                <div class="select">
+                    <select @bind="_intervalMs" disabled="@Market.Running">
+                        <option value="1000">1 tick / s</option>
+                        <option value="250">4 ticks / s</option>
+                        <option value="80">~12 ticks / s</option>
+                    </select>
+                </div>
+                <span class="ml-2">Total ticks: <strong>@Market.Ticks</strong></span>
+            </div>
+
+            <div class="columns is-multiline is-mobile">
+                @foreach (var symbol in MarketFeed.Symbols)
+                {
+                    <div class="column is-6-mobile is-4-tablet is-2-widescreen"><TickerTile Symbol="@symbol" /></div>
+                }
+            </div>
+
+            <div class="columns">
+                <div class="column is-6"><TickTape /></div>
+                <div class="column is-6"><BigMoves /></div>
+            </div>
+        </article>
+    </div>
+</div>

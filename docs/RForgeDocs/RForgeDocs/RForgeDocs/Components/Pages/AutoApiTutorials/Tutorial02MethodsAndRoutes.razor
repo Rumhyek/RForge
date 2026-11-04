@@ -1,0 +1,211 @@
+@page "/autoapi/tutorials/02-methods-and-routes"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="02-methods-and-routes">
+<p><strong>Goal:</strong> know which URL and HTTP method every interface method gets, and change them when the defaults don't fit.</p>
+
+<p><em>See it running:</em> the <strong>Todos</strong> example (<a href="/autoapi/example/todos"><code>/autoapi/example/todos</code></a>) uses one <code>Get</code>, one <code>Delete</code> and two default <code>Post</code> methods.</p>
+
+<p>This tutorial assumes the three projects from <a href="/autoapi/tutorials/01-setup">tutorial 01</a>. You only edit <code>IBookService</code> and the defaults in the shared library. The server and the client are generated from the same source, so they always agree on every route in this tutorial.</p>
+
+<h2 id="1-the-default-route">1. The default route</h2>
+
+<pre><code>// MyApp.Shared/IBookService.cs
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Shared;
+
+[RForgeAutoApi]
+public interface IBookService
+{
+    Task&lt;BookDto?&gt; GetBookAsync(int id, CancellationToken cancellationToken = default);
+
+    Task&lt;string&gt; DescribeAsync(int id);
+}</code></pre>
+
+<p>Every method becomes one endpoint:</p>
+
+<pre><code>POST /api/auto/{InterfaceName}/{MethodName}</code></pre>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Method</th><th>Endpoint</th></tr>
+</thead>
+<tbody>
+<tr><td><code>GetBookAsync</code></td><td><code>POST /api/auto/IBookService/GetBookAsync</code></td></tr>
+<tr><td><code>DescribeAsync</code></td><td><code>POST /api/auto/IBookService/DescribeAsync</code></td></tr>
+</tbody>
+</table></div>
+
+<p>The method name is used as written, including the <code>Async</code> suffix.</p>
+
+<h2 id="2-choose-the-http-method">2. Choose the HTTP method</h2>
+
+<p><code>[RForgeAutoApiMethod]</code> overrides the defaults for one method:</p>
+
+<pre><code>// MyApp.Shared/IBookService.cs
+[RForgeAutoApi]
+public interface IBookService
+{
+    // GET /api/auto/IBookService/GetAllAsync
+    [RForgeAutoApiMethod(HttpMethod = RfHttpMethod.Get)]
+    Task&lt;List&lt;BookDto&gt;&gt; GetAllAsync(CancellationToken cancellationToken = default);
+
+    // PUT /api/auto/IBookService/AddAsync
+    [RForgeAutoApiMethod(HttpMethod = RfHttpMethod.Put)]
+    Task&lt;BookDto&gt; AddAsync(string title, string author);
+
+    // POST /api/auto/IBookService/GetBookAsync (the default)
+    Task&lt;BookDto?&gt; GetBookAsync(int id, CancellationToken cancellationToken = default);
+}</code></pre>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th><code>RfHttpMethod</code></th><th>Parameters are sent as</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Post</code> (default), <code>Put</code>, <code>Patch</code></td><td>A JSON object in the request body</td></tr>
+<tr><td><code>Get</code>, <code>Delete</code></td><td>The query string, and only <a href="/autoapi/tutorials/03-parameters-and-serialization#1-how-parameters-are-sent">simple types</a> are allowed</td></tr>
+</tbody>
+</table></div>
+
+<p>The generated endpoint only answers its own HTTP method.</p>
+
+<p>To change the default for the whole library, set <code>DefaultHttpMethod</code> in the assembly attribute. Methods without their own <code>HttpMethod</code> use it:</p>
+
+<pre><code>// MyApp.Shared/AppJsonContext.cs
+[assembly: RForgeAutoApiDefaults(JsonContext = typeof(AppJsonContext), DefaultHttpMethod = RfHttpMethod.Put)]</code></pre>
+
+<h2 id="3-change-the-route-prefix-and-segment">3. Change the route prefix and segment</h2>
+
+<p>The route is <code>{RoutePrefix}/{RouteSegment}/{MethodName}</code>. The prefix defaults to <code>/api/auto</code> and the segment to the interface name. Set the prefix once for the library, and the segment per interface:</p>
+
+<pre><code>// MyApp.Shared/AppJsonContext.cs
+[assembly: RForgeAutoApiDefaults(JsonContext = typeof(AppJsonContext), RoutePrefix = "/api/v1")]</code></pre>
+
+<pre><code>// MyApp.Shared/IBookService.cs
+[RForgeAutoApi(RouteSegment = "books")]
+public interface IBookService
+{
+    // PUT /api/v1/books/GetBookAsync   (with DefaultHttpMethod = Put from section 2)
+    Task&lt;BookDto?&gt; GetBookAsync(int id, CancellationToken cancellationToken = default);
+}</code></pre>
+
+<p>Without <code>RouteSegment</code>, the same method would be <code>/api/v1/IBookService/GetBookAsync</code>.</p>
+
+<h2 id="4-use-a-custom-route">4. Use a custom route</h2>
+
+<p><code>Route</code> replaces the <code>{RouteSegment}/{MethodName}</code> part. It is relative to the prefix:</p>
+
+<pre><code>// MyApp.Shared/IBookService.cs
+// DELETE /api/v1/books/remove?id=3
+[RForgeAutoApiMethod(HttpMethod = RfHttpMethod.Delete, Route = "books/remove")]
+Task DeleteAsync(int id);</code></pre>
+
+<p>Custom routes are <strong>static</strong>. A placeholder such as <code>books/{id}</code> is an error (<code>RFAA007</code>), because parameters travel in the body or the query string, never in the path. Two methods with the same route are also an error (<code>RFAA008</code>).</p>
+
+<h2 id="5-overloads">5. Overloads</h2>
+
+<p>Overloads would map to the same route, so the generator adds a number to the later ones, in declaration order:</p>
+
+<pre><code>// MyApp.Shared/IBookService.cs
+Task&lt;string&gt; DescribeAsync(int id);                    // POST /api/v1/IBookService/DescribeAsync
+Task&lt;string&gt; DescribeAsync(int id, bool verbose);      // POST /api/v1/IBookService/DescribeAsync1</code></pre>
+
+<p>The client numbers them the same way, so calls reach the right method. The numbers follow declaration order, so <strong>reordering overloads changes their routes</strong>. Deploy the server and the client together, or give each overload its own <code>Route</code>, which doesn't change when you reorder.</p>
+
+<h2 id="6-inherited-methods">6. Inherited methods</h2>
+
+<p>Methods from base interfaces are included, under the segment of the <code>[RForgeAutoApi]</code> interface you declared. The base interface doesn't need the attribute:</p>
+
+<pre><code>// MyApp.Shared/IBookService.cs
+public interface IBookReader
+{
+    Task&lt;int&gt; CountAsync();
+}
+
+[RForgeAutoApi]
+public interface IBookService : IBookReader
+{
+    // ...
+}</code></pre>
+
+<p><code>CountAsync</code> is served at <code>POST /api/v1/IBookService/CountAsync</code>.</p>
+
+<h2 id="7-return-types-and-status-codes">7. Return types and status codes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Return type</th><th>Response</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Task</code>, <code>ValueTask</code></td><td><code>204 No Content</code></td></tr>
+<tr><td><code>Task&lt;T&gt;</code>, <code>ValueTask&lt;T&gt;</code></td><td><code>200 OK</code> with the JSON value</td></tr>
+<tr><td><code>Task&lt;T&gt;</code> that returns <code>null</code></td><td><code>200 OK</code> with the JSON body <code>null</code></td></tr>
+</tbody>
+</table></div>
+
+<p>Nothing else is allowed. <code>void</code> and plain <code>string</code> fail the build (<code>RFAA003</code>), because the client has to be asynchronous:</p>
+
+<pre><code>// MyApp.Shared/IBadService.cs (does not build)
+[RForgeAutoApi]
+public interface IBadService
+{
+    void Save();          // error RFAA003: 'IBadService.Save' returns 'void'; only Task, Task&lt;T&gt;, ValueTask and ValueTask&lt;T&gt; are supported
+    string Name();        // error RFAA003
+}</code></pre>
+
+<h2 id="8-what-the-generator-rejects">8. What the generator rejects</h2>
+
+<p>All of these are build errors, reported on the marker class (<code>[RForgeAutoApiHost]</code> and <code>[RForgeAutoApiClient]</code>):</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Code</th><th>Rule</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RFAA003</code></td><td>The return type must be <code>Task</code>, <code>Task&lt;T&gt;</code>, <code>ValueTask</code> or <code>ValueTask&lt;T&gt;</code></td><td><code>void Save();</code></td></tr>
+<tr><td><code>RFAA004</code></td><td>No generic interfaces and no generic methods</td><td><code>Task&lt;T&gt; GetAsync&lt;T&gt;(int id);</code></td></tr>
+<tr><td><code>RFAA007</code></td><td>Custom routes can't contain a placeholder</td><td><code>Route = "books/{id}"</code></td></tr>
+<tr><td><code>RFAA008</code></td><td>Two methods can't share a route</td><td>Two methods with <code>Route = "shared"</code></td></tr>
+<tr><td><code>RFAA013</code></td><td>Interfaces may contain only instance methods</td><td><code>string Name { get; }</code></td></tr>
+</tbody>
+</table></div>
+
+<p>For example, a duplicate route reports:</p>
+
+<pre><code>error RFAA008: Route '/api/v1/shared' is used by more than one method ('IBadDuplicate.AAsync' and 'IBadDuplicate.BAsync')</code></pre>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li>The route is built once from the interface, the method and the assembly defaults. The server maps it and the client calls it.</li>
+<li>Each endpoint accepts exactly one HTTP method. A request with another method doesn't reach your service.</li>
+<li>The prefix, the default HTTP method and the JSON context are read from <code>[assembly: RForgeAutoApiDefaults]</code>.</li>
+</ul>
+
+<h2 id="-best-practices">Best practices</h2>
+
+<ul>
+<li><strong>Use <code>Get</code> for reads that take simple parameters</strong>, so browsers and proxies can treat them as reads. Keep the default <code>Post</code> for everything that takes objects.</li>
+<li><strong>Version the prefix</strong> (<code>/api/v1</code>) in the assembly attribute if other clients will call these endpoints.</li>
+<li><strong>Give overloads distinct names</strong>, or a <code>Route</code> each, when you expect to reorder or remove them.</li>
+<li><strong>Keep the method names stable.</strong> The method name is part of the route.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RFAA003</code> on a synchronous method</td><td>The return type isn't a <code>Task</code> or <code>ValueTask</code></td><td>Return <code>Task</code> or <code>Task&lt;T&gt;</code></td></tr>
+<tr><td><code>RFAA007</code> on a route</td><td><code>{id}</code> placeholder in <code>Route</code></td><td>Send <code>id</code> as a parameter instead</td></tr>
+<tr><td><code>RFAA013</code> on a property</td><td>The interface declares a property or event</td><td>Replace it with a method</td></tr>
+<tr><td>An old client gets the wrong overload after a release</td><td>Overloads were reordered, which renumbers their routes</td><td>Deploy server and client together, or give each overload its own <code>Route</code></td></tr>
+<tr><td>A custom <code>Route</code> starts with <code>/api/...</code> and the URL is doubled</td><td><code>Route</code> is relative to the prefix</td><td>Remove the prefix from the route</td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/autoapi/tutorials/03-parameters-and-serialization">03 · Parameters and serialization</a></p>
+</TutorialDetail>

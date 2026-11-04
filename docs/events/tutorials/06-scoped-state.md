@@ -211,7 +211,7 @@ public sealed record PollNotesState(string Text) : IState<PollNotesState>
 - Resolution walks up from the component's nearest scope to the first provider of the type. Root provides every type implicitly.
 - Each component resolves once, at initialization, so the lookup isn't repeated on every render.
 
-## ✅ Best practices
+## Best practices
 
 - **Put the `StateScope` in the widget's root component** (`PollCard`), so callers just write `<PollCard />` and can't forget it.
 - **Pass starting data through `Initial`** from the widget's parameters. Don't write to the store from the parent.

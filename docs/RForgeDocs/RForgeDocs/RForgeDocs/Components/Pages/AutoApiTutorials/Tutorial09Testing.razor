@@ -1,0 +1,559 @@
+@page "/autoapi/tutorials/09-testing"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="09-testing">
+<p><strong>Goal:</strong> test the code AutoApi generates, and the components that use it. You will run the real generated client against the real generated endpoints in memory, check that errors and authorization behave the same in every render mode, and test components with a fake service and no HTTP at all.</p>
+
+<p>The examples use the <code>IBookService</code> interface below. Everything here works for any interface.</p>
+
+<pre><code>// MyApp.Shared/IBookService.cs
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+[assembly: RForgeAutoApiDefaults(JsonContext = typeof(AppJsonContext))]
+
+namespace MyApp.Shared;
+
+public record BookDto(int Id, string Title, string Author);
+
+[RForgeAutoApi]
+[RfAuthorize]
+public interface IBookService
+{
+    [RForgeAutoApiMethod(HttpMethod = RfHttpMethod.Get)]
+    [RfAllowAnonymous]
+    Task&lt;List&lt;BookDto&gt;&gt; GetAllAsync(CancellationToken cancellationToken = default);
+
+    Task&lt;BookDto?&gt; GetBookAsync(int id, CancellationToken cancellationToken = default);
+
+    [RfAuthorize(Roles = "Librarian")]
+    Task&lt;BookDto&gt; AddBookAsync(BookDto book, CancellationToken cancellationToken = default);
+}
+
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+[JsonSerializable(typeof(BookDto))]
+[JsonSerializable(typeof(List&lt;BookDto&gt;))]
+[JsonSerializable(typeof(int))]
+public partial class AppJsonContext : JsonSerializerContext { }</code></pre>
+
+<h2 id="two-levels-of-test">Two levels of test</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Level</th><th>What it proves</th><th>What it needs</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Round trip</strong> (sections 2 to 5)</td><td>The generated client and the generated endpoints agree: arguments, results, error types, status codes and authorization.</td><td>An in-memory server (<code>TestServer</code>) and both generators.</td></tr>
+<tr><td><strong>Component</strong> (section 6)</td><td>A component shows the right thing for what the service returns or throws.</td><td>A fake <code>IBookService</code>. No server, no HTTP.</td></tr>
+</tbody>
+</table></div>
+
+<p>Test your real service logic the usual way, as plain unit tests of the class. This tutorial is about the parts AutoApi adds around it.</p>
+
+<h2 id="1-create-the-test-project">1. Create the test project</h2>
+
+<pre><code>&lt;!-- MyApp.Tests/MyApp.Tests.csproj --&gt;
+&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net10.0&lt;/TargetFramework&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+    &lt;IsPackable&gt;false&lt;/IsPackable&gt;
+  &lt;/PropertyGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;FrameworkReference Include="Microsoft.AspNetCore.App" /&gt;
+    &lt;PackageReference Include="bunit" Version="2.11.3" /&gt;
+    &lt;PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.0" /&gt;
+    &lt;PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" /&gt;
+    &lt;PackageReference Include="xunit" Version="2.9.3" /&gt;
+    &lt;PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" /&gt;
+    &lt;PackageReference Include="RForge.Blazor.AutoApi.Generator" Version="1.0.0" /&gt;
+  &lt;/ItemGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;ProjectReference Include="..\MyApp.Shared\MyApp.Shared.csproj" /&gt;
+    &lt;ProjectReference Include="..\MyApp.Client\MyApp.Client.csproj" /&gt;
+  &lt;/ItemGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;Using Include="Xunit" /&gt;
+  &lt;/ItemGroup&gt;
+
+&lt;/Project&gt;</code></pre>
+
+<p>Why the test project references the generator itself: the generated code lives in the project that has the marker class, and NuGet doesn't pass analyzers through project references. The test project declares its own marker classes (next section), so it needs its own generator reference. The shared library comes in through the project reference, along with the abstractions package. Drop <code>bunit</code> and <code>MyApp.Client</code> if you only do round-trip tests.</p>
+
+<p>Use your app's target framework in place of <code>net10.0</code> if it differs. The tests only need a framework the AutoApi packages support (.NET 8, 9 or 10).</p>
+
+<h2 id="2-describe-the-server-under-test">2. Describe the server under test</h2>
+
+<pre><code>// MyApp.Tests/TestApi.cs
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Tests;
+
+// The test project runs both generators: one marker class builds the endpoints, the other the client.
+[RForgeAutoApiHost(typeof(IBookService))]
+public static partial class TestEndpoints { }
+
+[RForgeAutoApiClient(typeof(IBookService))]
+public static partial class TestClients { }
+
+/// &lt;summary&gt;Holds the books for one test host, and lets a test make the service fail.&lt;/summary&gt;
+public sealed class BookStore
+{
+    public List&lt;BookDto&gt; Books { get; } = [new(1, "Dune", "Frank Herbert")];
+    public Exception? FailWith { get; set; }
+}
+
+/// &lt;summary&gt;A stand-in for the real service. It follows the same rules, without a database.&lt;/summary&gt;
+public sealed class InMemoryBookService(BookStore store) : IBookService
+{
+    public Task&lt;List&lt;BookDto&gt;&gt; GetAllAsync(CancellationToken cancellationToken = default)
+        =&gt; Task.FromResult(store.Books.ToList());
+
+    public Task&lt;BookDto?&gt; GetBookAsync(int id, CancellationToken cancellationToken = default)
+    {
+        if (store.FailWith is not null) throw store.FailWith;
+
+        var book = store.Books.FirstOrDefault(b =&gt; b.Id == id)
+            ?? throw new RfNotFoundException($"Book {id} was not found.", "book_not_found");
+        return Task.FromResult&lt;BookDto?&gt;(book);
+    }
+
+    public Task&lt;BookDto&gt; AddBookAsync(BookDto book, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(book.Title)) throw new RfException("A title is required.", 422, "title_required");
+
+        var added = book with { Id = store.Books.Max(b =&gt; b.Id) + 1 };
+        store.Books.Add(added);
+        return Task.FromResult(added);
+    }
+}</code></pre>
+
+<ul>
+<li>The two marker classes generate <code>MapRForgeAutoApi()</code> and <code>AddRForgeAutoApiServer()</code> (host), and <code>AddRForgeAutoApi()</code> (client), as extension methods in <code>MyApp.Tests</code>. Each project can have one marker class of each kind (<a href="/autoapi/tutorials/10-troubleshooting">troubleshooting</a>, <code>RFAA014</code>).</li>
+<li><code>InMemoryBookService</code> can be your real service with a fake repository behind it, or a small stand-in like this one. What matters is that it throws the same <code>Rf…</code> exceptions as the real one.</li>
+<li><code>BookStore.FailWith</code> lets a test simulate a bug (an unexpected exception) without a special service class.</li>
+</ul>
+
+<p>Next, a way to sign a request in without a real identity provider:</p>
+
+<pre><code>// MyApp.Tests/TestAuthHandler.cs
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace MyApp.Tests;
+
+/// &lt;summary&gt;Signs a request in from the X-Test-User and X-Test-Roles headers.&lt;/summary&gt;
+public sealed class TestAuthHandler(IOptionsMonitor&lt;AuthenticationSchemeOptions&gt; options, ILoggerFactory logger, UrlEncoder encoder)
+    : AuthenticationHandler&lt;AuthenticationSchemeOptions&gt;(options, logger, encoder)
+{
+    public const string SchemeName = "Test";
+
+    protected override Task&lt;AuthenticateResult&gt; HandleAuthenticateAsync()
+    {
+        if (!Request.Headers.TryGetValue("X-Test-User", out var user))
+            return Task.FromResult(AuthenticateResult.NoResult());
+
+        var claims = new List&lt;Claim&gt; { new(ClaimTypes.Name, user.ToString()) };
+        if (Request.Headers.TryGetValue("X-Test-Roles", out var roles))
+            claims.AddRange(roles.ToString().Split(',').Select(r =&gt; new Claim(ClaimTypes.Role, r)));
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, SchemeName));
+        return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, SchemeName)));
+    }
+}</code></pre>
+
+<p>A request with no <code>X-Test-User</code> header is anonymous. The client factory in the next file adds the headers.</p>
+
+<h2 id="3-start-the-server-and-make-clients">3. Start the server and make clients</h2>
+
+<pre><code>// MyApp.Tests/BookApiFixture.cs
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using MyApp.Shared;
+
+namespace MyApp.Tests;
+
+/// &lt;summary&gt;An in-memory server with the generated endpoints, plus a factory for generated clients that call it.&lt;/summary&gt;
+public sealed class BookApiFixture : IAsyncLifetime
+{
+    private WebApplication _app = null!;
+
+    public BookStore Store { get; } = new();
+
+    public async Task InitializeAsync()
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Production" });
+        builder.WebHost.UseTestServer();
+        builder.Logging.ClearProviders();
+
+        builder.Services.AddAuthentication(TestAuthHandler.SchemeName)
+            .AddScheme&lt;AuthenticationSchemeOptions, TestAuthHandler&gt;(TestAuthHandler.SchemeName, _ =&gt; { });
+        builder.Services.AddAuthorization();
+
+        builder.Services.AddSingleton(Store);
+        builder.Services.AddScoped&lt;IBookService, InMemoryBookService&gt;();
+        builder.Services.AddRForgeAutoApiServer();   // after the registration it wraps
+
+        _app = builder.Build();
+        _app.UseAuthentication();
+        _app.UseAuthorization();
+        _app.MapRForgeAutoApi();
+        await _app.StartAsync();
+    }
+
+    /// &lt;summary&gt;Builds the container a WebAssembly app would have, with HttpClients that talk to the test server.&lt;/summary&gt;
+    public IBookService CreateBookService(string? user = null, string? roles = null)
+    {
+        var server = _app.GetTestServer();
+
+        var services = new ServiceCollection();
+        services.AddRForgeAutoApi()
+            .ConfigurePrimaryHttpMessageHandler(() =&gt; server.CreateHandler())
+            .ConfigureHttpClient(client =&gt;
+            {
+                client.BaseAddress = new Uri("http://localhost/");
+                if (user is not null) client.DefaultRequestHeaders.Add("X-Test-User", user);
+                if (roles is not null) client.DefaultRequestHeaders.Add("X-Test-Roles", roles);
+            });
+
+        return services.BuildServiceProvider().GetRequiredService&lt;IBookService&gt;();
+    }
+
+    public async Task DisposeAsync() =&gt; await _app.DisposeAsync();
+}</code></pre>
+
+<p>Three things to notice:</p>
+
+<ol>
+<li><strong>The server is set up like your app's <code>Program.cs</code></strong>: register the service, then <code>AddRForgeAutoApiServer()</code> after it, then <code>MapRForgeAutoApi()</code>.</li>
+<li><strong><code>EnvironmentName = "Production"</code></strong> matters. In Development the server adds the exception type, message and stack trace to unexpected-error responses, which hides the behavior you want to test. See <a href="/autoapi/tutorials/04-errors">tutorial 04</a>.</li>
+<li><strong><code>CreateBookService</code> builds a WebAssembly-style container.</strong> <code>AddRForgeAutoApi()</code> registers the generated client for <code>IBookService</code> and returns the <code>IHttpClientBuilder</code> of the default client. The test swaps its handler for the test server's, sets the base address (a <code>HttpClient</code> can't send a relative request without one) and adds the sign-in headers.</li>
+</ol>
+
+<h2 id="4-test-the-round-trip">4. Test the round trip</h2>
+
+<pre><code>// MyApp.Tests/BookApiTests.cs
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Tests;
+
+public sealed class BookApiTests(BookApiFixture fixture) : IClassFixture&lt;BookApiFixture&gt;
+{
+    [Fact]
+    public async Task A_book_makes_a_round_trip()
+    {
+        var books = fixture.CreateBookService(user: "alice");
+
+        var book = await books.GetBookAsync(1);
+
+        Assert.Equal(new BookDto(1, "Dune", "Frank Herbert"), book);
+    }
+
+    [Fact]
+    public async Task A_GET_method_works_without_signing_in()
+    {
+        var books = fixture.CreateBookService();
+
+        Assert.NotEmpty(await books.GetAllAsync());
+    }
+
+    [Fact]
+    public async Task An_expected_error_keeps_its_message_status_and_code()
+    {
+        var books = fixture.CreateBookService(user: "lee", roles: "Librarian");
+
+        var ex = await Assert.ThrowsAsync&lt;RfException&gt;(() =&gt; books.AddBookAsync(new BookDto(0, " ", "Anon")));
+
+        Assert.Equal("A title is required.", ex.Message);
+        Assert.Equal(422, ex.StatusCode);
+        Assert.Equal("title_required", ex.Code);
+    }
+
+    [Fact]
+    public async Task A_missing_book_throws_RfNotFoundException()
+    {
+        var books = fixture.CreateBookService(user: "alice");
+
+        var ex = await Assert.ThrowsAsync&lt;RfNotFoundException&gt;(() =&gt; books.GetBookAsync(99));
+
+        Assert.Equal("book_not_found", ex.Code);
+    }
+
+    [Fact]
+    public async Task An_unexpected_error_hides_its_details()
+    {
+        var books = fixture.CreateBookService(user: "alice");
+        fixture.Store.FailWith = new InvalidOperationException("connection string is xyz");
+        try
+        {
+            var ex = await Assert.ThrowsAsync&lt;RfApiException&gt;(() =&gt; books.GetBookAsync(1));
+
+            Assert.Equal(500, ex.StatusCode);
+            Assert.Null(ex.Detail);
+            Assert.DoesNotContain("xyz", ex.Message);
+        }
+        finally
+        {
+            fixture.Store.FailWith = null;
+        }
+    }
+
+    [Fact]
+    public async Task Signing_in_is_required()
+    {
+        var books = fixture.CreateBookService();   // no user header
+
+        await Assert.ThrowsAsync&lt;RfUnauthorizedException&gt;(() =&gt; books.GetBookAsync(1));
+    }
+
+    [Fact]
+    public async Task The_Librarian_role_is_required_to_add_a_book()
+    {
+        var reader = fixture.CreateBookService(user: "alice", roles: "Reader");
+        var librarian = fixture.CreateBookService(user: "lee", roles: "Librarian");
+        var book = new BookDto(0, "Emma", "Jane Austen");
+
+        await Assert.ThrowsAsync&lt;RfForbiddenException&gt;(() =&gt; reader.AddBookAsync(book));
+        var added = await librarian.AddBookAsync(book);
+
+        Assert.True(added.Id &gt; 0);
+    }
+}</code></pre>
+
+<p>What each test pins down:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Test</th><th>The rule it guards</th></tr>
+</thead>
+<tbody>
+<tr><td>Round trip</td><td>Arguments and results survive serialization, including <code>BookDto</code> and <code>int</code>.</td></tr>
+<tr><td>GET without signing in</td><td><code>[RfAllowAnonymous]</code> on a method overrides <code>[RfAuthorize]</code> on the interface.</td></tr>
+<tr><td>Expected error</td><td>An <code>RfException</code> arrives with the same <code>Message</code>, <code>StatusCode</code> and <code>Code</code>.</td></tr>
+<tr><td>Missing book</td><td><code>RfNotFoundException</code> keeps its own type across the wire.</td></tr>
+<tr><td>Unexpected error</td><td>Anything else becomes an <code>RfApiException</code> (500) with no internals leaked.</td></tr>
+<tr><td>Signing in</td><td>A missing user gives <code>RfUnauthorizedException</code> (401).</td></tr>
+<tr><td>Role</td><td>A signed-in user without the role gives <code>RfForbiddenException</code> (403).</td></tr>
+</tbody>
+</table></div>
+
+<p>The tests assert on exception types and properties, not on status codes or JSON. That is the contract your components rely on. <a href="/autoapi/tutorials/04-errors">Tutorial 04</a> covers the exceptions and <a href="/autoapi/tutorials/05-authorization">tutorial 05</a> the authorization rules.</p>
+
+<h2 id="5-test-interactive-server-mode">5. Test Interactive Server mode</h2>
+
+<p>In Interactive Server mode and during prerendering, components call the real service directly. No HTTP request is made, so the endpoint's authorization never runs. <code>AddRForgeAutoApiServer()</code> wraps the service in a decorator that applies the same rules. Test that too:</p>
+
+<pre><code>// MyApp.Tests/ServerModeTests.cs
+using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Tests;
+
+public sealed class ServerModeTests
+{
+    // Interactive Server and prerendering call the real service directly, with no HTTP request.
+    // AddRForgeAutoApiServer wraps it so the same authorization rules apply.
+    private static IBookService BookServiceFor(ClaimsPrincipal user)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthorization();
+        services.AddScoped&lt;AuthenticationStateProvider&gt;(_ =&gt; new FixedAuthenticationStateProvider(user));
+        services.AddSingleton&lt;BookStore&gt;();
+        services.AddScoped&lt;IBookService, InMemoryBookService&gt;();
+        services.AddRForgeAutoApiServer();
+
+        return services.BuildServiceProvider().CreateScope().ServiceProvider.GetRequiredService&lt;IBookService&gt;();
+    }
+
+    private static ClaimsPrincipal SignedIn(params string[] roles) =&gt;
+        new(new ClaimsIdentity(
+            new[] { new Claim(ClaimTypes.Name, "bob") }.Concat(roles.Select(r =&gt; new Claim(ClaimTypes.Role, r))),
+            authenticationType: "circuit"));
+
+    [Fact]
+    public async Task An_anonymous_user_is_rejected()
+    {
+        var books = BookServiceFor(new ClaimsPrincipal(new ClaimsIdentity()));
+
+        await Assert.ThrowsAsync&lt;RfUnauthorizedException&gt;(() =&gt; books.GetBookAsync(1));
+        Assert.NotEmpty(await books.GetAllAsync());   // [RfAllowAnonymous]
+    }
+
+    [Fact]
+    public async Task A_user_without_the_role_is_forbidden()
+    {
+        var books = BookServiceFor(SignedIn("Reader"));
+
+        await Assert.ThrowsAsync&lt;RfForbiddenException&gt;(() =&gt; books.AddBookAsync(new BookDto(0, "Emma", "Jane Austen")));
+    }
+
+    private sealed class FixedAuthenticationStateProvider(ClaimsPrincipal user) : AuthenticationStateProvider
+    {
+        public override Task&lt;AuthenticationState&gt; GetAuthenticationStateAsync() =&gt; Task.FromResult(new AuthenticationState(user));
+    }
+}</code></pre>
+
+<p>Inside a Blazor circuit, the decorator reads the current user from <code>AuthenticationStateProvider</code>, so the test supplies a fixed one. The exception types are the same as in the round-trip tests: a component's <code>catch</code> block doesn't care which mode it runs in.</p>
+
+<h2 id="6-test-components-with-a-fake-service">6. Test components with a fake service</h2>
+
+<p>A component that injects <code>IBookService</code> doesn't know whether the implementation is the real service, the generated client or a fake. In a component test, register a fake and the generated code, HTTP and the server are all out of the picture.</p>
+
+<p>First, a component to test:</p>
+
+<pre><code>@@* MyApp.Client/Features/Books/BookList.razor *@@
+@@using MyApp.Shared
+@@using RForge.Blazor.AutoApi
+@@inject IBookService Books
+
+@@if (_error is not null)
+{
+    &lt;p class="error"&gt;@@_error&lt;/p&gt;
+}
+else if (_books is null)
+{
+    &lt;p&gt;Loading...&lt;/p&gt;
+}
+else
+{
+    &lt;ul&gt;
+        @@foreach (var book in _books)
+        {
+            &lt;li&gt;@@book.Title by @@book.Author&lt;/li&gt;
+        }
+    &lt;/ul&gt;
+}
+
+@@code {
+    private List&lt;BookDto&gt;? _books;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _books = await Books.GetAllAsync();
+        }
+        catch (RfException ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}</code></pre>
+
+<p>Then the tests, with a hand-written fake that returns a list or throws what you tell it to:</p>
+
+<pre><code>// MyApp.Tests/BookListTests.cs
+using Bunit;
+using Microsoft.Extensions.DependencyInjection;
+using MyApp.Client;
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Tests;
+
+/// &lt;summary&gt;A hand-written stand-in for IBookService. No HTTP, no server, no generated code involved.&lt;/summary&gt;
+public sealed class FakeBookService : IBookService
+{
+    public List&lt;BookDto&gt; Books { get; set; } = [];
+    public Exception? Failure { get; set; }
+
+    public Task&lt;List&lt;BookDto&gt;&gt; GetAllAsync(CancellationToken cancellationToken = default)
+        =&gt; Failure is null ? Task.FromResult(Books) : Task.FromException&lt;List&lt;BookDto&gt;&gt;(Failure);
+
+    public Task&lt;BookDto?&gt; GetBookAsync(int id, CancellationToken cancellationToken = default)
+        =&gt; Task.FromResult(Books.FirstOrDefault(b =&gt; b.Id == id));
+
+    public Task&lt;BookDto&gt; AddBookAsync(BookDto book, CancellationToken cancellationToken = default)
+    {
+        Books.Add(book);
+        return Task.FromResult(book);
+    }
+}
+
+public sealed class BookListTests : BunitContext
+{
+    private readonly FakeBookService _books = new();
+
+    public BookListTests() =&gt; Services.AddSingleton&lt;IBookService&gt;(_books);
+
+    [Fact]
+    public void Lists_the_books()
+    {
+        _books.Books = [new(1, "Dune", "Frank Herbert"), new(2, "Emma", "Jane Austen")];
+
+        var cut = Render&lt;BookList&gt;();
+
+        Assert.Equal(["Dune by Frank Herbert", "Emma by Jane Austen"], cut.FindAll("li").Select(li =&gt; li.TextContent));
+    }
+
+    [Fact]
+    public void Shows_an_expected_error_message()
+    {
+        _books.Failure = new RfException("The library is closed.", 503, "closed");
+
+        var cut = Render&lt;BookList&gt;();
+
+        Assert.Equal("The library is closed.", cut.Find("p.error").TextContent);
+    }
+}</code></pre>
+
+<ul>
+<li>You don't need <code>AddRForgeAutoApi()</code> or <code>AddRForgeAutoApiServer()</code> here. They would only matter if the test wanted the generated code, and for component tests it doesn't.</li>
+<li>To test how a component handles any failure, make the fake throw the matching exception: <code>RfException</code> for an expected error, <code>RfUnauthorizedException</code> for a lost session, and so on.</li>
+<li>Use a mocking library instead of the hand-written fake if you prefer. The only requirement is that the container resolves <code>IBookService</code> to something.</li>
+</ul>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li>The generated endpoints and the generated client come from the same interface, so a round-trip test exercises both ends of the contract.</li>
+<li><code>TestServer</code> runs the whole ASP.NET pipeline in memory: routing, authentication, authorization, the endpoint filter that turns exceptions into ProblemDetails. Only the network is missing.</li>
+<li>Sign-in headers and the test auth scheme stand in for your real identity setup. The <code>[RfAuthorize]</code> rules run exactly as they do in production.</li>
+</ul>
+
+<h2 id="-best-practices">Best practices</h2>
+
+<ul>
+<li>Test the round trip once per interface, and cover each exception type and each authorization rule you rely on. These tests are short and catch the mistakes that only show up in WebAssembly.</li>
+<li>Also test Interactive Server mode for any interface with <code>[RfAuthorize]</code>. It is a different code path (the decorator) with the same promise.</li>
+<li>Use fakes in component tests. A component test that starts a server is a slow integration test.</li>
+<li>Keep <code>EnvironmentName = "Production"</code> in the fixture, so unexpected errors are tested the way users see them.</li>
+<li>Assert on exception types and <code>Code</code>, not on message text you don't control.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>InvalidOperationException: An invalid request URI was provided. Either the request URI must be an absolute URI or BaseAddress must be set.</code></td><td>The test client has no base address.</td><td>Set <code>client.BaseAddress</code> in <code>ConfigureHttpClient</code>, as in the fixture.</td></tr>
+<tr><td><code>InvalidOperationException: 'MyApp.Shared.IBookService' is not registered. Register your implementation before calling AddRForgeAutoApiServer().</code></td><td><code>AddRForgeAutoApiServer()</code> ran before the service was registered.</td><td>Register the service first.</td></tr>
+<tr><td>Build error <code>'IServiceCollection' does not contain a definition for 'AddRForgeAutoApi'</code></td><td>The test project has no generator reference, or is missing the marker class or its namespace.</td><td>Add the <code>RForge.Blazor.AutoApi.Generator</code> package to the test project, declare the marker classes, and import their namespace.</td></tr>
+<tr><td>A test expects a Forbidden error but gets <code>RfUnauthorizedException</code></td><td>The request had no user. 401 means "not signed in", 403 means "signed in without permission".</td><td>Pass a <code>user</code> as well as <code>roles</code> to <code>CreateBookService</code>.</td></tr>
+</tbody>
+</table></div>
+
+<p><a href="/autoapi/tutorials/10-troubleshooting">Troubleshooting</a> lists every build diagnostic and runtime problem.</p>
+</TutorialDetail>

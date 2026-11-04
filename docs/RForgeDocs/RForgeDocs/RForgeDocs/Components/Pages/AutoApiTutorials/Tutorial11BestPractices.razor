@@ -1,0 +1,131 @@
+@page "/autoapi/tutorials/11-best-practices"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="11-best-practices">
+<p>A one-page checklist of the recommendations from the tutorials. Each item links to the tutorial that explains it.</p>
+
+<h2 id="project-layout-recommended">Project layout (recommended)</h2>
+
+<p>This is the layout the tutorials use. It is a recommendation, not a requirement. The things that are required are called out in <a href="/autoapi/tutorials/01-setup">tutorial 01</a>.</p>
+
+<pre><code>MyApp.Shared/                           references RForge.Blazor.AutoApi.Abstractions only, no ASP.NET
+├── I&lt;Feature&gt;Service.cs                [RForgeAutoApi] interfaces
+├── &lt;Feature&gt;Dto.cs                     the types the interfaces send and return
+└── AppJsonContext.cs                   the JsonSerializerContext, plus [assembly: RForgeAutoApiDefaults(...)]
+MyApp/                                  server project (references the Generator package)
+├── Program.cs                          register services, AddRForgeAutoApiServer(), MapRForgeAutoApi()
+├── AutoApiEndpoints.cs                 the [RForgeAutoApiHost] class
+└── Services/&lt;Feature&gt;Service.cs        the real implementations
+MyApp.Client/                           WebAssembly project (references the Generator package)
+├── Program.cs                          AddRForgeAutoApi()
+├── AutoApiClients.cs                   the [RForgeAutoApiClient] class
+└── Features/…                          components that inject the interfaces
+MyApp.Tests/                            round-trip, server-mode and component tests</code></pre>
+
+<h2 id="where-each-file-goes">Where each file goes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>File</th><th>Put it in</th><th>Why</th><th>Tutorial</th></tr>
+</thead>
+<tbody>
+<tr><td>Interfaces, DTOs, <code>JsonSerializerContext</code></td><td><code>MyApp.Shared</code></td><td>Both the server and the client need them, and the generators read them from a referenced assembly</td><td><a href="/autoapi/tutorials/01-setup">01</a>, <a href="/autoapi/tutorials/03-parameters-and-serialization">03</a></td></tr>
+<tr><td><code>[assembly: RForgeAutoApiDefaults]</code></td><td><code>MyApp.Shared</code></td><td>Both generators read it, so the server and client always agree on prefix, default method and JSON context</td><td><a href="/autoapi/tutorials/01-setup">01</a>, <a href="/autoapi/tutorials/03-parameters-and-serialization">03</a></td></tr>
+<tr><td><code>[RForgeAutoApiHost]</code> class</td><td>The server project</td><td>It generates ASP.NET code</td><td><a href="/autoapi/tutorials/01-setup">01</a></td></tr>
+<tr><td><code>[RForgeAutoApiClient]</code> class</td><td>The WebAssembly project</td><td>It generates the <code>HttpClient</code> implementation</td><td><a href="/autoapi/tutorials/01-setup">01</a></td></tr>
+<tr><td>Generator package reference</td><td>Every project that has a marker class</td><td>NuGet doesn't pass analyzers through project references</td><td><a href="/autoapi/tutorials/01-setup">01</a>, <a href="/autoapi/tutorials/10-troubleshooting">10</a></td></tr>
+<tr><td>The real services</td><td>The server project, registered before <code>AddRForgeAutoApiServer()</code></td><td>Server mode and prerendering call them directly</td><td><a href="/autoapi/tutorials/05-authorization">05</a>, <a href="/autoapi/tutorials/06-render-modes">06</a></td></tr>
+<tr><td>Handlers and client names</td><td><code>MyApp.Client/Program.cs</code>, on the builder <code>AddRForgeAutoApi()</code> returns</td><td>One place to add tokens and extra clients</td><td><a href="/autoapi/tutorials/07-httpclient-setup">07</a></td></tr>
+<tr><td>Rate limiting and other endpoint conventions</td><td><code>Program.cs</code>, chained on <code>MapRForgeAutoApi()</code></td><td>They apply to every generated endpoint</td><td><a href="/autoapi/tutorials/08-endpoint-conventions">08</a></td></tr>
+<tr><td>Tests</td><td><code>MyApp.Tests</code></td><td>One fixture shares an in-memory server</td><td><a href="/autoapi/tutorials/09-testing">09</a></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="naming">Naming</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Thing</th><th>Convention</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td>Interface</td><td><code>I&lt;Feature&gt;Service</code></td><td><code>IBookService</code></td></tr>
+<tr><td>Method</td><td>Verb, ends in <code>Async</code></td><td><code>GetBookAsync</code>, <code>AddBookAsync</code></td></tr>
+<tr><td>Data type</td><td><code>&lt;Noun&gt;Dto</code></td><td><code>BookDto</code></td></tr>
+<tr><td>Marker classes</td><td><code>AutoApiEndpoints</code> and <code>AutoApiClients</code></td><td></td></tr>
+<tr><td>Error <code>code</code></td><td>Lower snake case, one per reason</td><td><code>title_required</code>, <code>book_not_found</code></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="interfaces-and-methods">Interfaces and methods</h2>
+
+<ul>
+<li>[ ] Every method returns <code>Task</code>, <code>Task&lt;T&gt;</code>, <code>ValueTask</code> or <code>ValueTask&lt;T&gt;</code>. No generics, no <code>ref</code>/<code>out</code>/<code>in</code>, no properties or events. (<a href="/autoapi/tutorials/02-methods-and-routes">02</a>, <a href="/autoapi/tutorials/10-troubleshooting">10</a>)</li>
+<li>[ ] Remember that <code>[RForgeAutoApi]</code> opts in <strong>every</strong> method of the interface. Split an interface if some methods should not be callable from the browser. (<a href="/autoapi/tutorials/02-methods-and-routes">02</a>)</li>
+<li>[ ] Keep the default <code>Post</code> unless a method is a safe read. Use <code>Get</code> and <code>Delete</code> only with simple parameters. (<a href="/autoapi/tutorials/02-methods-and-routes">02</a>, <a href="/autoapi/tutorials/03-parameters-and-serialization">03</a>)</li>
+<li>[ ] Take a <code>CancellationToken</code> (at most one) and pass it on to your async calls. (<a href="/autoapi/tutorials/03-parameters-and-serialization">03</a>)</li>
+<li>[ ] Avoid overloads, or give each its own <code>Route</code>. Default routes for overloads are numbered in declaration order. (<a href="/autoapi/tutorials/02-methods-and-routes">02</a>)</li>
+<li>[ ] Add new parameters with a default value. Adding one is not a breaking change. (<a href="/autoapi/tutorials/03-parameters-and-serialization">03</a>)</li>
+</ul>
+
+<h2 id="serialization">Serialization</h2>
+
+<ul>
+<li>[ ] Declare one <code>JsonSerializerContext</code> in the shared library and point <code>RForgeAutoApiDefaults.JsonContext</code> at it. (<a href="/autoapi/tutorials/03-parameters-and-serialization">03</a>)</li>
+<li>[ ] List every parameter and return type in it, including <code>List&lt;T&gt;</code> and simple types such as <code>int</code>. (<a href="/autoapi/tutorials/03-parameters-and-serialization">03</a>)</li>
+<li>[ ] Treat <code>RFAA009</code> as an error in CI, so a missing type can't fall back to reflection unnoticed. (<a href="/autoapi/tutorials/10-troubleshooting">10</a>)</li>
+</ul>
+
+<h2 id="errors">Errors</h2>
+
+<ul>
+<li>[ ] Throw <code>RfException</code> (with a <code>code</code>) for expected failures, and <code>RfNotFoundException</code> for a missing item. (<a href="/autoapi/tutorials/04-errors">04</a>)</li>
+<li>[ ] Write <code>RfException</code> messages you are happy to show a user. They are sent to the browser. (<a href="/autoapi/tutorials/04-errors">04</a>)</li>
+<li>[ ] In components, <code>catch (RfException)</code> to show the message, and log everything else. The same <code>catch</code> works in every render mode. (<a href="/autoapi/tutorials/04-errors">04</a>)</li>
+<li>[ ] Don't catch <code>Exception</code> to hide failures. Unexpected errors arrive as <code>RfApiException</code> in WebAssembly, with the details left on the server. (<a href="/autoapi/tutorials/04-errors">04</a>)</li>
+</ul>
+
+<h2 id="authorization">Authorization</h2>
+
+<ul>
+<li>[ ] Put <code>[RfAuthorize]</code> on the interface and <code>[RfAllowAnonymous]</code> on the few methods that are public. (<a href="/autoapi/tutorials/05-authorization">05</a>)</li>
+<li>[ ] Register services that have authorization rules as Scoped or Transient. A Singleton throws at startup. (<a href="/autoapi/tutorials/05-authorization">05</a>, <a href="/autoapi/tutorials/10-troubleshooting">10</a>)</li>
+<li>[ ] Call <code>AddRForgeAutoApiServer()</code> after all your service registrations. (<a href="/autoapi/tutorials/05-authorization">05</a>, <a href="/autoapi/tutorials/10-troubleshooting">10</a>)</li>
+<li>[ ] Remember that Interactive Server mode makes no HTTP call. The decorator, not the endpoint, enforces the rules there. (<a href="/autoapi/tutorials/05-authorization">05</a>, <a href="/autoapi/tutorials/06-render-modes">06</a>)</li>
+</ul>
+
+<h2 id="components-and-render-modes">Components and render modes</h2>
+
+<ul>
+<li>[ ] Inject the interface and nothing else. Don't check the render mode in the component. (<a href="/autoapi/tutorials/06-render-modes">06</a>)</li>
+<li>[ ] Don't assume a call is cheap or free of serialization. In WebAssembly it is an HTTP request. (<a href="/autoapi/tutorials/06-render-modes">06</a>)</li>
+</ul>
+
+<h2 id="httpclient-and-endpoints">HttpClient and endpoints</h2>
+
+<ul>
+<li>[ ] Add handlers (for example a token handler) to the builder <code>AddRForgeAutoApi()</code> returns. (<a href="/autoapi/tutorials/07-httpclient-setup">07</a>)</li>
+<li>[ ] Use <code>HttpClientName</code> only when an interface really talks to a different host. (<a href="/autoapi/tutorials/07-httpclient-setup">07</a>)</li>
+<li>[ ] Chain rate limiting and other conventions onto <code>MapRForgeAutoApi()</code>. (<a href="/autoapi/tutorials/08-endpoint-conventions">08</a>)</li>
+</ul>
+
+<h2 id="deploying">Deploying</h2>
+
+<ul>
+<li>[ ] Deploy the server and the WebAssembly client from the same build. The routes are generated from the same source, so mixed versions can disagree. (<a href="/autoapi/tutorials/02-methods-and-routes">02</a>, <a href="/autoapi/tutorials/10-troubleshooting">10</a>)</li>
+</ul>
+
+<h2 id="testing">Testing</h2>
+
+<ul>
+<li>[ ] One round-trip fixture with <code>TestServer</code> and a test auth scheme. Cover each exception type and each authorization rule. (<a href="/autoapi/tutorials/09-testing">09</a>)</li>
+<li>[ ] Test Interactive Server mode for any interface with <code>[RfAuthorize]</code>. (<a href="/autoapi/tutorials/09-testing">09</a>)</li>
+<li>[ ] Test components with a fake of the interface, not with a server. (<a href="/autoapi/tutorials/09-testing">09</a>)</li>
+<li>[ ] Run the fixture with <code>EnvironmentName = "Production"</code>, so unexpected errors are tested the way users see them. (<a href="/autoapi/tutorials/09-testing">09</a>)</li>
+</ul>
+
+<h2 id="build-settings">Build settings</h2>
+
+<ul>
+<li>[ ] Set <code>&lt;WarningsAsErrors&gt;$(WarningsAsErrors);RFAA009;RFAA010&lt;/WarningsAsErrors&gt;</code> so the two warnings fail the build. (<a href="/autoapi/tutorials/10-troubleshooting">10</a>)</li>
+<li>[ ] When something looks wrong, set <code>&lt;EmitCompilerGeneratedFiles&gt;true&lt;/EmitCompilerGeneratedFiles&gt;</code> and read the generated endpoints and client. (<a href="/autoapi/tutorials/10-troubleshooting">10</a>)</li>
+</ul>
+</TutorialDetail>

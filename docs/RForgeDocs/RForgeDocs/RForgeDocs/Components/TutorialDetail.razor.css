@@ -1,0 +1,11 @@
+.content-container {
+    max-width: 900px;
+}
+
+.container.is-fluid {
+    max-width: 1920px !important;
+}
+
+.content-container ::deep pre {
+    font-size: .85rem;
+}

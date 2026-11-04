@@ -1,0 +1,33 @@
+@* The checkout gets its own named event scope plus its own CheckoutForm state. *@
+<EventScope Name="checkout">
+    <StateScope TState="CheckoutForm" Name="checkout-form">
+        <section class="card">
+            <header class="card-header"><div class="card-header-title"><CheckoutSteps /></div></header>
+            <div class="card-content">
+                <AddressStep />
+                <PaymentStep />
+                <ReviewStep />
+                <OrderStatus />
+            </div>
+            <footer class="card-footer">
+                <div class="card-footer-item is-block is-size-7">
+                    @* A broken listener is contained by its ErrorBoundary; the order still goes through. *@
+                    <ErrorBoundary @ref="_analyticsBoundary">
+                        <ChildContent>
+                            <AnalyticsTracker />
+                        </ChildContent>
+                        <ErrorContent Context="error">
+                            <span class="has-text-danger">⚠ Analytics widget crashed: @error.Message</span>
+                            <button class="button is-small is-ghost p-0 ml-2" @onclick="() => _analyticsBoundary?.Recover()">Recover</button>
+                        </ErrorContent>
+                    </ErrorBoundary>
+                    <PaymentProcessor />
+                </div>
+            </footer>
+        </section>
+    </StateScope>
+</EventScope>
+
+@code {
+    private ErrorBoundary _analyticsBoundary;
+}

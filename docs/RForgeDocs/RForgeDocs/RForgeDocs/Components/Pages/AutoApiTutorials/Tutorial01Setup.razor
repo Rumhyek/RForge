@@ -1,0 +1,301 @@
+@page "/autoapi/tutorials/01-setup"
+
+<TutorialDetail Tutorials="TutorialSet.AutoApi" Slug="01-setup">
+<p><strong>Goal:</strong> add RForge.Blazor.AutoApi to a Blazor Web App, describe a service once, and call it from a component that works in every render mode.</p>
+
+<p><em>See it running:</em> the <strong>Todos</strong> example (<a href="/autoapi/example/todos"><code>/autoapi/example/todos</code></a>).</p>
+
+<p>This tutorial uses a Blazor Web App with <strong>Auto</strong> interactivity. It has a server project (<code>MyApp</code>) and a client project (<code>MyApp.Client</code>), and we add a shared library (<code>MyApp.Shared</code>) for the interface. If your app has no WebAssembly project, you don't need AutoApi: components that only run on the server can call your services directly.</p>
+
+<h2 id="1-create-the-projects">1. Create the projects</h2>
+
+<pre><code>dotnet new blazor -int Auto -n MyApp
+cd MyApp
+dotnet new classlib -n MyApp.Shared
+dotnet sln add MyApp.Shared
+dotnet add MyApp.Client reference MyApp.Shared
+dotnet add MyApp reference MyApp.Shared</code></pre>
+
+<p><code>MyApp.Shared</code> holds the interface and the types it uses. Both the server and the client reference it, because the server needs the interface to implement it and the client needs it to generate a copy.</p>
+
+<h2 id="2-lay-out-the-project-recommended-not-required">2. Lay out the project (recommended, not required)</h2>
+
+<p>This is the layout the tutorials use. It is a recommendation: you can organize files however suits your app. Only these four things are required:</p>
+
+<ol>
+<li>The interface lives in a project that both the server and the client reference.</li>
+<li>The server and the client projects each reference <code>RForge.Blazor.AutoApi.Generator</code> (NuGet doesn't pass analyzers through project references, so <a href="#3-reference-the-packages">step 3</a> adds it to both).</li>
+<li>There is one <code>[RForgeAutoApiHost]</code> class in the server project and one <code>[RForgeAutoApiClient]</code> class in the client project (<code>RFAA014</code> reports a second one). Both must be <code>static partial</code>.</li>
+<li>The <code>JsonSerializerContext</code> you name in <code>[assembly: RForgeAutoApiDefaults]</code> lives in a <strong>referenced</strong> assembly, not in the project that has the marker class (<a href="/autoapi/tutorials/03-parameters-and-serialization">tutorial 03</a>).</li>
+</ol>
+
+<p>The recommended layout:</p>
+
+<pre><code>MyApp.Shared/                          interfaces and the types they use (no ASP.NET reference)
+├── BookDto.cs                         data types sent over the wire
+├── IBookService.cs                    [RForgeAutoApi] interface
+└── AppJsonContext.cs                  JsonSerializerContext + [assembly: RForgeAutoApiDefaults]
+MyApp/                                 server project (Blazor Web App host)
+├── Program.cs                         registers the service, adds and maps the generated endpoints
+├── AutoApiEndpoints.cs                [RForgeAutoApiHost] marker class
+└── BookService.cs                     your real implementation
+MyApp.Client/                          WebAssembly project
+├── Program.cs                         registers the generated HttpClient implementation
+├── AutoApiClients.cs                  [RForgeAutoApiClient] marker class
+└── Pages/                             components that inject IBookService</code></pre>
+
+<p>Why we suggest these locations:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>File</th><th>Location</th><th>Why</th></tr>
+</thead>
+<tbody>
+<tr><td>Interface and data types</td><td><code>MyApp.Shared/</code></td><td>One definition for both sides. Keeping ASP.NET out of this project means any project can reference it.</td></tr>
+<tr><td>Real implementation</td><td><code>MyApp/</code></td><td>It uses databases, secrets and server APIs, so it must not ship to the browser.</td></tr>
+<tr><td>Marker classes</td><td>Next to each <code>Program.cs</code></td><td>The generator adds the extension methods you call from <code>Program.cs</code> to these classes.</td></tr>
+<tr><td>Components</td><td><code>MyApp.Client/</code></td><td>Components that run in WebAssembly have to live in a project the browser downloads. The server can still render them.</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="3-reference-the-packages">3. Reference the packages</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Project</th><th>Package</th></tr>
+</thead>
+<tbody>
+<tr><td><code>MyApp.Shared</code></td><td><code>RForge.Blazor.AutoApi.Abstractions</code></td></tr>
+<tr><td><code>MyApp</code></td><td><code>RForge.Blazor.AutoApi.Generator</code></td></tr>
+<tr><td><code>MyApp.Client</code></td><td><code>RForge.Blazor.AutoApi.Generator</code></td></tr>
+</tbody>
+</table></div>
+
+<pre><code>dotnet add MyApp.Shared package RForge.Blazor.AutoApi.Abstractions
+dotnet add MyApp        package RForge.Blazor.AutoApi.Generator
+dotnet add MyApp.Client package RForge.Blazor.AutoApi.Generator</code></pre>
+
+<p>or in each <code>.csproj</code>:</p>
+
+<pre><code>&lt;!-- MyApp.Shared/MyApp.Shared.csproj --&gt;
+&lt;ItemGroup&gt;
+  &lt;PackageReference Include="RForge.Blazor.AutoApi.Abstractions" Version="1.0.0" /&gt;
+&lt;/ItemGroup&gt;</code></pre>
+
+<pre><code>&lt;!-- MyApp/MyApp.csproj and MyApp.Client/MyApp.Client.csproj --&gt;
+&lt;ItemGroup&gt;
+  &lt;PackageReference Include="RForge.Blazor.AutoApi.Generator" Version="1.0.0" /&gt;
+&lt;/ItemGroup&gt;</code></pre>
+
+<p>The abstractions package holds the attributes and exception types and has no ASP.NET dependency. The generator package is an analyzer: it adds no runtime assembly, and it brings in the abstractions and <code>Microsoft.Extensions.Http</code>.</p>
+
+<blockquote>
+<p><strong>Tip:</strong> the <code>RForge.Blazor</code> package installs the whole family, including both AutoApi packages. Reference it in the server and client projects where you would reference the generator, and keep the shared library on the abstractions package so it stays small.</p>
+</blockquote>
+
+<h2 id="4-describe-the-service-in-the-shared-library">4. Describe the service in the shared library</h2>
+
+<pre><code>// MyApp.Shared/BookDto.cs
+namespace MyApp.Shared;
+
+public record BookDto(int Id, string Title, string Author);</code></pre>
+
+<pre><code>// MyApp.Shared/IBookService.cs
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Shared;
+
+[RForgeAutoApi]
+public interface IBookService
+{
+    Task&lt;BookDto?&gt; GetBookAsync(int id, CancellationToken cancellationToken = default);
+}</code></pre>
+
+<p><code>[RForgeAutoApi]</code> opts in <strong>every method</strong> of the interface. There is no per-method opt-in, because the generated client has to implement the whole interface.</p>
+
+<p>Now the JSON context. It lists every type that crosses the wire so serialization needs no reflection, and the <code>[assembly: RForgeAutoApiDefaults]</code> line tells both generators where to find it:</p>
+
+<pre><code>// MyApp.Shared/AppJsonContext.cs
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+[assembly: RForgeAutoApiDefaults(JsonContext = typeof(AppJsonContext))]
+
+namespace MyApp.Shared;
+
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+[JsonSerializable(typeof(BookDto))]
+[JsonSerializable(typeof(int))]
+public partial class AppJsonContext : JsonSerializerContext;</code></pre>
+
+<p>Every parameter type and return type needs a <code>[JsonSerializable]</code> entry. <a href="/autoapi/tutorials/03-parameters-and-serialization">Tutorial 03</a> explains what happens when one is missing.</p>
+
+<h2 id="5-implement-register-and-map-on-the-server">5. Implement, register and map on the server</h2>
+
+<pre><code>// MyApp/BookService.cs
+using MyApp.Shared;
+
+namespace MyApp;
+
+public sealed class BookService : IBookService
+{
+    private static readonly BookDto[] Books =
+    [
+        new(1, "Dune", "Frank Herbert"),
+        new(2, "Hyperion", "Dan Simmons"),
+    ];
+
+    public Task&lt;BookDto?&gt; GetBookAsync(int id, CancellationToken cancellationToken = default)
+        =&gt; Task.FromResult(Books.FirstOrDefault(b =&gt; b.Id == id));
+}</code></pre>
+
+<pre><code>// MyApp/AutoApiEndpoints.cs
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+namespace MyApp;
+
+[RForgeAutoApiHost(typeof(IBookService))]   // any type from the shared library
+public static partial class AutoApiEndpoints { }</code></pre>
+
+<p>The type you pass only tells the generator which <strong>assembly</strong> to scan. It finds every <code>[RForgeAutoApi]</code> interface in that assembly, so one type is enough however many interfaces the library has.</p>
+
+<p>In <code>Program.cs</code>, register your service, then add the generated wrapper, then map the endpoints:</p>
+
+<pre><code>// MyApp/Program.cs (changes only)
+using MyApp;
+using MyApp.Shared;
+
+builder.Services.AddScoped&lt;IBookService, BookService&gt;();   // your real implementation
+builder.Services.AddRForgeAutoApiServer();                 // after your registrations
+
+var app = builder.Build();
+// ...
+app.MapStaticAssets();
+app.MapRForgeAutoApi();                                    // the endpoints WebAssembly calls</code></pre>
+
+<p>The generator adds <code>MapRForgeAutoApi()</code> and <code>AddRForgeAutoApiServer()</code> to your marker class, in the marker class's namespace. That is why <code>Program.cs</code> needs <code>using MyApp;</code>.</p>
+
+<p><code>AddRForgeAutoApiServer()</code> wraps your existing registration so authorization is enforced in Interactive Server mode too (<a href="/autoapi/tutorials/05-authorization">tutorial 05</a>). It finds your registration, so call it <strong>after</strong> <code>AddScoped</code>. If the interface isn't registered yet, the app fails at startup:</p>
+
+<pre><code>System.InvalidOperationException: 'MyApp.Shared.IBookService' is not registered. Register your implementation before calling AddRForgeAutoApiServer().</code></pre>
+
+<h2 id="6-register-the-generated-client">6. Register the generated client</h2>
+
+<pre><code>// MyApp.Client/AutoApiClients.cs
+using MyApp.Shared;
+using RForge.Blazor.AutoApi;
+
+namespace MyApp.Client;
+
+[RForgeAutoApiClient(typeof(IBookService))]
+public static partial class AutoApiClients { }</code></pre>
+
+<pre><code>// MyApp.Client/Program.cs
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MyApp.Client;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+// Registers the generated HttpClient implementation of IBookService.
+builder.Services.AddRForgeAutoApi();
+
+await builder.Build().RunAsync();</code></pre>
+
+<p><code>AddRForgeAutoApi()</code> registers the implementation as Scoped. It uses <code>TryAdd</code>, so an implementation you registered earlier wins. The server project does <strong>not</strong> call it: on the server, <code>IBookService</code> is your <code>BookService</code>.</p>
+
+<h2 id="7-use-it-from-a-component">7. Use it from a component</h2>
+
+<pre><code>@@* MyApp.Client/Pages/Book.razor *@@
+@@page "/book"
+@@rendermode InteractiveAuto
+@@using MyApp.Shared
+@@inject IBookService Books
+
+&lt;PageTitle&gt;Book&lt;/PageTitle&gt;
+
+@@if (book is null)
+{
+    &lt;p&gt;Loading...&lt;/p&gt;
+}
+else
+{
+    &lt;p&gt;@@book.Title by @@book.Author&lt;/p&gt;
+}
+
+@@code {
+    private BookDto? book;
+
+    protected override async Task OnInitializedAsync() =&gt; book = await Books.GetBookAsync(1);
+}</code></pre>
+
+<p>The component only knows <code>IBookService</code>. During prerendering and in Interactive Server mode, <code>Books</code> is your <code>BookService</code>. After the page switches to WebAssembly, <code>Books</code> is the generated client, which posts to <code>/api/auto/IBookService/GetBookAsync</code>. Run the app and open <code>/book</code>: both give <code>Dune by Frank Herbert</code>.</p>
+
+<p>You can call the endpoint yourself. The body is a JSON object keyed by parameter name:</p>
+
+<pre><code>curl -X POST https://localhost:5001/api/auto/IBookService/GetBookAsync \
+     -H "Content-Type: application/json" -d '{"id":1}'
+# {"id":1,"title":"Dune","author":"Frank Herbert"}</code></pre>
+
+<p>A method that returns <code>null</code> answers <code>200</code> with the JSON body <code>null</code>.</p>
+
+<h2 id="8-look-at-the-generated-code">8. Look at the generated code</h2>
+
+<p>Add <code>EmitCompilerGeneratedFiles</code> to a project to write the generated files to disk:</p>
+
+<pre><code>&lt;!-- MyApp/MyApp.csproj and MyApp.Client/MyApp.Client.csproj --&gt;
+&lt;PropertyGroup&gt;
+  &lt;EmitCompilerGeneratedFiles&gt;true&lt;/EmitCompilerGeneratedFiles&gt;
+&lt;/PropertyGroup&gt;</code></pre>
+
+<p>After a build they appear under <code>obj/&lt;configuration&gt;/&lt;framework&gt;/generated/RForge.Blazor.AutoApi.Generator/RForge.Blazor.AutoApi.Generator.AutoApiGenerator/</code>:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Project</th><th>File</th><th>Contains</th></tr>
+</thead>
+<tbody>
+<tr><td><code>MyApp</code></td><td><code>MyApp.AutoApiEndpoints.RForgeAutoApi.Server.g.cs</code></td><td><code>MapRForgeAutoApi()</code>, <code>AddRForgeAutoApiServer()</code> and one handler per method</td></tr>
+<tr><td><code>MyApp.Client</code></td><td><code>MyApp.Client.AutoApiClients.RForgeAutoApi.Client.g.cs</code></td><td><code>AddRForgeAutoApi()</code> and a private <code>BookServiceAutoApiClient</code> that implements <code>IBookService</code></td></tr>
+</tbody>
+</table></div>
+
+<p>The other <code>.g.cs</code> files are small runtime helpers the generator emits as <code>internal</code> source, so there is no extra assembly to deploy.</p>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li>The generator reads <code>[RForgeAutoApi]</code> interfaces from the assemblies named in the marker attributes. It writes the server half into the <code>[RForgeAutoApiHost]</code> class and the client half into the <code>[RForgeAutoApiClient]</code> class.</li>
+<li>Each method becomes <code>POST /api/auto/{InterfaceName}/{MethodName}</code> by default. <a href="/autoapi/tutorials/02-methods-and-routes">Tutorial 02</a> shows how to change that.</li>
+<li>The server and the client are generated from the same interface, so their routes and parameter names always agree.</li>
+<li>Nothing uses reflection at runtime when you provide a <code>JsonSerializerContext</code>.</li>
+</ul>
+
+<h2 id="-best-practices">Best practices</h2>
+
+<ul>
+<li><strong>Keep the shared library free of ASP.NET.</strong> It only needs the abstractions package, so any project can reference it.</li>
+<li><strong>Name the JSON context in <code>[assembly: RForgeAutoApiDefaults]</code> from the start</strong>, so the generated code never falls back to reflection.</li>
+<li><strong>Register your implementation, then <code>AddRForgeAutoApiServer()</code>.</strong> Keep the two lines together in <code>Program.cs</code>.</li>
+<li><strong>Deploy the server and the client together.</strong> The routes come from the same source, and a stale client calls routes that may have changed.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>CS1061: 'IServiceCollection' does not contain a definition for 'AddRForgeAutoApi'</code></td><td>The client project has no <code>RForge.Blazor.AutoApi.Generator</code> reference, or <code>Program.cs</code> is missing <code>using MyApp.Client;</code></td><td>Add the package to <code>MyApp.Client</code>, and import the namespace of the marker class</td></tr>
+<tr><td><code>'MyApp.Shared.IBookService' is not registered</code> at startup</td><td><code>AddRForgeAutoApiServer()</code> ran before your <code>AddScoped</code>, or an <code>[RForgeAutoApi]</code> interface in the scanned assembly has no registration at all</td><td>Register an implementation of every <code>[RForgeAutoApi]</code> interface first</td></tr>
+<tr><td>The page works on the server but fails after it switches to WebAssembly</td><td>The client's <code>Program.cs</code> doesn't call <code>AddRForgeAutoApi()</code>, or <code>MapRForgeAutoApi()</code> is missing on the server</td><td>Add the missing call</td></tr>
+<tr><td><code>RFAA014</code> error</td><td>A second <code>[RForgeAutoApiHost]</code> or <code>[RForgeAutoApiClient]</code> class in the same project</td><td>Keep one marker class per project</td></tr>
+<tr><td><code>RFAA009</code> warning</td><td>A parameter or return type is missing from the JSON context</td><td>See <a href="/autoapi/tutorials/03-parameters-and-serialization">tutorial 03</a></td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/autoapi/tutorials/02-methods-and-routes">02 · Methods and routes</a></p>
+</TutorialDetail>

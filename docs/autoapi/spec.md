@@ -165,10 +165,13 @@ group.MapPost("IOrderService/GetOrderAsync", static async (HttpContext ctx) =>
 `MapRForgeAutoApi()` returns a `RouteGroupBuilder` that contains every generated endpoint, with one nested group per route prefix. Conventions you chain onto it apply to all endpoints:
 
 ```csharp
-app.MapRForgeAutoApi().RequireRateLimiting("api").DisableAntiforgery();
+app.MapRForgeAutoApi().RequireRateLimiting("api");
 ```
 
-Each endpoint gets `.WithTags("{InterfaceName}")` and `.WithName("{InterfaceName}_{MethodName}{n}")`. The **request body schema is not described in OpenAPI in v1**, because the body is a generated envelope rather than a CLR type.
+Each endpoint gets `.WithTags("{InterfaceName}")` and `.WithName("{InterfaceName}_{MethodName}{n}")`.
+
+- **OpenAPI:** the generated endpoints are **not listed** by `Microsoft.AspNetCore.OpenApi` (tested with 10.0). Their handler is a plain request delegate with no signature to describe, and the body is a generated envelope rather than a CLR type.
+- **Antiforgery:** the endpoints accept JSON, not form posts, so `UseAntiforgery()` does not validate them and `DisableAntiforgery()` is not needed.
 
 ### 5.5 Copying attributes to the endpoint
 
@@ -176,11 +179,12 @@ Every attribute on an interface method, and on the interface itself, is added to
 
 | Excluded | Reason |
 | --- | --- |
-| RForge attributes (`RForgeAutoApi*`, `RfAuthorize`, `RfAllowAnonymous`) | Translated instead (see below) |
+| Every attribute in the `RForge.Blazor.AutoApi` namespace (`RForgeAutoApi*`, `RfAuthorize`, `RfAllowAnonymous`, ...) | Configuration for the generator, or translated instead (see below) |
 | `System.Runtime.CompilerServices.*` | Compiler-generated (`Nullable`, `AsyncStateMachine`, ...) |
 | `System.Diagnostics.CodeAnalysis.*` | Nullability and analysis hints |
 | `System.Diagnostics.*` (`DebuggerStepThrough`, `Conditional`, ...) | Debugger and compiler only |
-| `System.ObsoleteAttribute` | Applies to callers, not endpoints |
+| `System.Runtime.InteropServices.*` | Interop hints |
+| `System.ObsoleteAttribute` and `System.Reflection.DefaultMemberAttribute` | Apply to callers, not endpoints |
 | Anything in `RForgeAutoApiDefaults.ExcludedAttributes` | User-defined |
 
 Translations:
@@ -188,7 +192,7 @@ Translations:
 - `[RfAllowAnonymous]` → `.AllowAnonymous()`
 - Any other attribute → `.WithMetadata(new global::Ns.SomeAttribute(ctorArgs) { Named = ... })`
 
-If an attribute can't be rebuilt from its compile-time arguments, it is skipped and RFAA010 is reported.
+If an attribute can't be rebuilt from its compile-time arguments, or isn't accessible from the host project (for example an `internal` attribute in the shared library), it is skipped and RFAA010 is reported.
 
 ### 5.6 Authorization in Interactive Server mode: `AddRForgeAutoApiServer()`
 
@@ -418,4 +422,4 @@ dotnet pack src/RForge/RForge.Blazor.AutoApi.Abstractions -c Release -p:Version=
 dotnet pack src/RForge/RForge.Blazor.AutoApi.Generator -c Release -p:Version=0.1.0
 ```
 
-To look at the generated code, add `<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>` to a consuming project. Files appear under `obj/<config>/<tfm>/generated/RForge.Blazor.AutoApi.Generator/`.
+To look at the generated code, add `<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>` to a consuming project. Files appear under `obj/<config>/<tfm>/generated/RForge.Blazor.AutoApi.Generator/RForge.Blazor.AutoApi.Generator.AutoApiGenerator/`.

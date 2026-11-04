@@ -1,0 +1,20 @@
+@inherits RfEventComponent
+
+<section class="card">
+    <header class="card-header">
+        <p class="card-header-title">Activity log <small class="has-text-grey ml-1">(root subscriber)</small></p>
+        <div class="card-header-icon">
+            <span class="tag is-light">Clear-done events seen: @_clearSeen</span>
+        </div>
+    </header>
+    <div class="activity-log">
+        @if (_entries.Count == 0)
+        {
+            <div class="p-3 is-size-7 has-text-grey">Add or tick items in any list…</div>
+        }
+        @foreach (var entry in _entries)
+        {
+            <div class="px-3 py-2 is-size-7 activity-entry">@entry</div>
+        }
+    </div>
+</section>

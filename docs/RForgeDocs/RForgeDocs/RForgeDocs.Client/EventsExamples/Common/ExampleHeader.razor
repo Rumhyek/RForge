@@ -1,0 +1,17 @@
+<div class="tags mb-2">
+    <span class="tag @(Level == "Complex" ? "is-danger" : "is-success")">@Level</span>
+    <span class="tag is-light" title="Render mode">@Mode</span>
+</div>
+<p>@ChildContent</p>
+
+@code {
+    /// <summary>"Simple" or "Complex".</summary>
+    [Parameter]
+    public string Level { get; set; } = "Simple";
+
+    [Parameter]
+    public string Mode { get; set; } = "";
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

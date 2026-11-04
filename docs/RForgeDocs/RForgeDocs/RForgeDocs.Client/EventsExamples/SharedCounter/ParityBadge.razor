@@ -1,0 +1,13 @@
+@inherits RfEventComponent
+
+<div class="mb-2">
+    @if (IsEven)
+    {
+        <span class="tag is-large is-info">even</span>
+    }
+    else
+    {
+        <span class="tag is-large is-warning">odd</span>
+    }
+</div>
+<RenderBadge Count="@(++_renders)" />

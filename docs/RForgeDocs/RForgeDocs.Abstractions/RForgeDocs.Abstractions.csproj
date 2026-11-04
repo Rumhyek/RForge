@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\RForge\RForge.Blazor.Abstractions\RForge.Blazor.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\RForge\RForge.Blazor.AutoApi.Abstractions\RForge.Blazor.AutoApi.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

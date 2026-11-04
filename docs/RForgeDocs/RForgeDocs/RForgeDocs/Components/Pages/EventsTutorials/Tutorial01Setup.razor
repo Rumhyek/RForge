@@ -1,0 +1,261 @@
+@page "/events/tutorials/01-setup"
+
+<TutorialDetail Tutorials="TutorialSet.Events" Slug="01-setup">
+<p><strong>Goal:</strong> add RForge.Blazor.Events to a Blazor Web App and build a first component that uses it.</p>
+
+<p>This tutorial uses a Blazor Web App with <strong>Auto</strong> interactivity, which has a server project (<code>MyApp</code>) and a client project (<code>MyApp.Client</code>). That covers every render mode. If your app only uses Interactive Server, you have a single project: put the "Client" files in it and skip the client-specific steps.</p>
+
+<h2 id="1-lay-out-the-project-recommended-not-required">1. Lay out the project (recommended, not required)</h2>
+
+<p>This is the layout the tutorials use. It is a recommendation: you can organize files however suits your app. Only these four things are required:</p>
+
+<ol>
+<li>Every project that contains event-aware components references <code>RForge.Blazor.Events</code> (NuGet doesn't pass analyzers through project references, so <a href="#2-reference-the-package">step 2</a> adds it to both projects).</li>
+<li>Every host that runs interactive components calls <code>AddRForgeEvents</code>, with the same configuration (<a href="#4-register-the-hub-in-both-hosts">step 4</a>).</li>
+<li>State and event types live in a project that your WebAssembly code can see.</li>
+<li>Event-aware components start with <code>@@inherits RfEventComponent</code>, and keep <code>[Subscribe]</code> and <code>[UseState]</code> members in the code-behind (<code>.razor.cs</code>), not in an <code>@@code</code> block.</li>
+</ol>
+
+<p>The recommended layout:</p>
+
+<pre><code>MyApp/                                  server project (Blazor Web App host)
+├── Program.cs                          registers the hub for the server
+├── Services/                           server-only services (Scoped) that publish or subscribe
+└── Components/                         layout, App.razor, server-only pages
+MyApp.Client/                           everything that might run in WebAssembly
+├── Program.cs                          registers the hub for the WebAssembly runtime
+├── EventHubSetup.cs                    ONE hub configuration shared by both Program.cs files
+├── AppJsonContext.cs                   JSON metadata for persisted state (tutorial 08)
+├── GlobalUsings.cs                     global using RForge.Blazor.Events;
+├── _Imports.razor                      @@using RForge.Blazor.Events
+├── Features/
+│   └── &lt;Feature&gt;/
+│       ├── &lt;Feature&gt;State.cs           IState records
+│       ├── &lt;Feature&gt;Events.cs          IEvent records
+│       └── Components/
+│           ├── Something.razor         markup, starts with @@inherits RfEventComponent
+│           └── Something.razor.cs      code-behind with [Subscribe] / [UseState]
+└── Pages/                              routable pages that run in WebAssembly / Auto</code></pre>
+
+<p>Why we suggest these locations:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>File</th><th>Location</th><th>Why</th></tr>
+</thead>
+<tbody>
+<tr><td>State and event types</td><td><code>MyApp.Client/Features/…</code></td><td>WebAssembly and Auto components need them, and the server project references the client, so both sides can use them. Types placed in the server project are invisible to WebAssembly.</td></tr>
+<tr><td>Components that use the hub</td><td><code>MyApp.Client/Features/&lt;Feature&gt;/Components/</code></td><td>Same reason. The server can still render them with <code>InteractiveServer</code>. Keeping them next to their state and events makes a feature easy to find, move or delete.</td></tr>
+<tr><td><code>EventHubSetup.cs</code></td><td><code>MyApp.Client/</code></td><td>The server and the WebAssembly runtime each have their <strong>own</strong> hub. One shared configuration method keeps them identical.</td></tr>
+<tr><td>Server-only services</td><td><code>MyApp/Services/</code></td><td>Anything using databases, secrets or server APIs must not ship to the browser.</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="2-reference-the-package">2. Reference the package</h2>
+
+<p>Add the <a href="https://www.nuget.org/packages/RForge.Blazor.Events"><code>RForge.Blazor.Events</code></a> package to <strong>both</strong> projects:</p>
+
+<pre><code>dotnet add MyApp.Client package RForge.Blazor.Events
+dotnet add MyApp package RForge.Blazor.Events</code></pre>
+
+<p>or in each <code>.csproj</code>:</p>
+
+<pre><code>&lt;!-- MyApp.Client/MyApp.Client.csproj and MyApp/MyApp.csproj --&gt;
+&lt;ItemGroup&gt;
+  &lt;PackageReference Include="RForge.Blazor.Events" Version="1.0.0" /&gt;
+&lt;/ItemGroup&gt;</code></pre>
+
+<p>The package contains the runtime library <strong>and</strong> the source generator/analyzers, so nothing else is needed.</p>
+
+<p><strong>Why both projects?</strong> The runtime library would reach the server through its reference to <code>MyApp.Client</code>, but NuGet doesn't pass a package's <strong>analyzers</strong> (which include the source generator) through project references. Any project that contains components using <code>[Subscribe]</code> or <code>[UseState]</code> needs its own reference. Referencing the package in both projects also keeps them on the same version.</p>
+
+<blockquote>
+<p><strong>Tip:</strong> with several projects, use <a href="https://learn.microsoft.com/nuget/consume-packages/central-package-management">Central Package Management</a> (<code>Directory.Packages.props</code>) so the version is defined once.</p>
+</blockquote>
+
+<h2 id="3-create-one-shared-configuration">3. Create one shared configuration</h2>
+
+<pre><code>// MyApp.Client/EventHubSetup.cs
+namespace MyApp.Client;
+
+/// &lt;summary&gt;Hub options shared by the server and the WebAssembly host, so both hubs behave the same.&lt;/summary&gt;
+public static class EventHubSetup
+{
+    public static void Configure(RfEventOptions options)
+    {
+        // Later tutorials add options here, for example:
+        //   options.CascadeRootState&lt;ThemeState&gt;();               (tutorial 03)
+        //   options.PersistState(AppJsonContext.Default.X);       (tutorial 08)
+    }
+}</code></pre>
+
+<h2 id="4-register-the-hub-in-both-hosts">4. Register the hub in both hosts</h2>
+
+<pre><code>// MyApp/Program.cs
+using MyApp.Client;
+using MyApp.Components;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
+
+// One root hub per circuit (Server) and per request (static rendering / prerendering).
+builder.Services.AddRForgeEvents(EventHubSetup.Configure);
+
+var app = builder.Build();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseHsts();
+}
+else
+{
+    app.UseWebAssemblyDebugging();
+}
+
+app.UseHttpsRedirection();
+app.UseAntiforgery();
+app.MapStaticAssets();
+app.MapRazorComponents&lt;App&gt;()
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(MyApp.Client._Imports).Assembly);
+
+app.Run();</code></pre>
+
+<pre><code>// MyApp.Client/Program.cs
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MyApp.Client;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+// The WebAssembly runtime has its own DI container, so it needs its own hub.
+builder.Services.AddRForgeEvents(EventHubSetup.Configure);
+
+await builder.Build().RunAsync();</code></pre>
+
+<blockquote>
+<p>Forgetting the client registration is the most common setup mistake. Everything works on Server, then fails with <em>"no registered service of type IRfEventHub"</em> when a page switches to WebAssembly.</p>
+</blockquote>
+
+<h2 id="5-import-the-namespace">5. Import the namespace</h2>
+
+<p><code>.razor</code> files and <code>.cs</code> files have separate imports, so add both:</p>
+
+<pre><code>@@* MyApp.Client/_Imports.razor *@@
+@@using System.Net.Http
+@@using System.Net.Http.Json
+@@using Microsoft.AspNetCore.Components.Forms
+@@using Microsoft.AspNetCore.Components.Routing
+@@using Microsoft.AspNetCore.Components.Web
+@@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@@using Microsoft.AspNetCore.Components.Web.Virtualization
+@@using Microsoft.JSInterop
+@@using MyApp.Client
+@@using RForge.Blazor.Events</code></pre>
+
+<pre><code>// MyApp.Client/GlobalUsings.cs
+global using RForge.Blazor.Events;</code></pre>
+
+<p>In the server project, add <code>@@using RForge.Blazor.Events</code> to <code>MyApp/Components/_Imports.razor</code> if server components use the hub, and <code>using RForge.Blazor.Events;</code> at the top of server services (or a <code>GlobalUsings.cs</code> there too). The client's global using doesn't apply to the server project.</p>
+
+<h2 id="6-build-a-first-event-aware-component">6. Build a first event-aware component</h2>
+
+<p>Two components that share no parent: one edits a name, the other greets it.</p>
+
+<pre><code>// MyApp.Client/Features/Welcome/WelcomeState.cs
+namespace MyApp.Client.Features.Welcome;
+
+public sealed record WelcomeState(string Name) : IState&lt;WelcomeState&gt;
+{
+    public static WelcomeState Initial =&gt; new("stranger");
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Welcome/Components/NameEditor.razor *@@
+@@inherits RfEventComponent
+
+&lt;input class="form-control" placeholder="Your name" @@bind="_name" @@bind:event="oninput" @@bind:after="Save" /&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Welcome/Components/NameEditor.razor.cs
+namespace MyApp.Client.Features.Welcome.Components;
+
+public partial class NameEditor
+{
+    private string _name = "";
+
+    private void Save() =&gt; State&lt;WelcomeState&gt;().Set(new WelcomeState(_name.Length == 0 ? "stranger" : _name));
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Features/Welcome/Components/Greeting.razor *@@
+@@inherits RfEventComponent
+
+&lt;h2&gt;Hello, @@Welcome.Name!&lt;/h2&gt;</code></pre>
+
+<pre><code>// MyApp.Client/Features/Welcome/Components/Greeting.razor.cs
+namespace MyApp.Client.Features.Welcome.Components;
+
+public partial class Greeting
+{
+    [UseState]
+    private partial WelcomeState Welcome { get; }
+}</code></pre>
+
+<pre><code>@@* MyApp.Client/Pages/WelcomePage.razor *@@
+@@page "/welcome"
+@@rendermode InteractiveAuto
+@@using MyApp.Client.Features.Welcome.Components
+
+&lt;Greeting /&gt;
+&lt;hr /&gt;
+&lt;NameEditor /&gt;</code></pre>
+
+<p>Run the app and open <code>/welcome</code>. Typing in the box updates the greeting, although neither component knows the other exists.</p>
+
+<h2 id="7-check-that-the-generator-ran">7. Check that the generator ran</h2>
+
+<p><code>[UseState] private partial WelcomeState Welcome { get; }</code> has no body. The source generator writes it. To see the generated code:</p>
+
+<ul>
+<li><strong>Visual Studio / Rider:</strong> <em>Dependencies → Analyzers → RForge.Blazor.Events.Generators → …Greeting.Hub.g.cs</em></li>
+<li><strong>Any editor:</strong> add <code>&lt;EmitCompilerGeneratedFiles&gt;true&lt;/EmitCompilerGeneratedFiles&gt;</code> to the csproj and look under <code>obj/…/generated/</code>.</li>
+</ul>
+
+<p>If the generator isn't running, the build fails with <strong>CS9248</strong> ("partial property must have an implementation part"). That almost always means the project containing the component has no <code>RForge.Blazor.Events</code> package reference of its own (see <a href="#2-reference-the-package">step 2</a>).</p>
+
+<h2 id="how-it-works">How it works</h2>
+
+<ul>
+<li><code>AddRForgeEvents</code> registers a <strong>Scoped</strong> root hub: one per circuit on Server, one per app instance in WebAssembly.</li>
+<li><code>RfEventComponent</code> finds the hub, runs the generated <code>RegisterSubscriptions</code> before your <code>OnInitialized</code>, re-renders the component when state it reads changes, and unsubscribes on dispose.</li>
+<li>State types are created lazily from their <code>Initial</code> value the first time anything asks for them. No registration is needed.</li>
+</ul>
+
+<h2 id="-best-practices">Best practices</h2>
+
+<ul>
+<li><strong>Put state, events and event-aware components in the Client project.</strong> Then they work in every render mode.</li>
+<li><strong>Use one <code>EventHubSetup.Configure</code> for both hosts.</strong> Two hand-written configurations drift apart.</li>
+<li><strong>One feature folder per concept</strong> (<code>Features/Cart</code>, <code>Features/Welcome</code>). State, events and components that change together live together.</li>
+<li><strong>Always pair <code>.razor</code> with <code>.razor.cs</code></strong> for event-aware components, even small ones. The attributes only work in the code-behind, and consistency means nobody has to remember which components are special.</li>
+</ul>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>CS0263: Partial declarations … must not specify different base classes</code></td><td>Base class declared only in the code-behind</td><td>Add <code>@@inherits RfEventComponent</code> to the <code>.razor</code> file</td></tr>
+<tr><td><code>RFEVT001</code></td><td><code>[Subscribe]</code>/<code>[UseState]</code> inside an <code>@@code</code> block</td><td>Move the member to the <code>.razor.cs</code> file</td></tr>
+<tr><td><code>RFEVT003</code></td><td>Attributes used in a component that doesn't derive from <code>RfEventComponent</code></td><td>Add <code>@@inherits RfEventComponent</code></td></tr>
+<tr><td><code>CS9248</code> on a <code>[UseState]</code> property</td><td>The project has no <code>RForge.Blazor.Events</code> package reference of its own, so the generator didn't run</td><td>Add the package to that project (<a href="#2-reference-the-package">step 2</a>)</td></tr>
+<tr><td>Works on Server, fails on WebAssembly</td><td>Hub not registered in <code>MyApp.Client/Program.cs</code></td><td>See <a href="#4-register-the-hub-in-both-hosts">step 4</a></td></tr>
+</tbody>
+</table></div>
+
+<p><strong>Next:</strong> <a href="/events/tutorials/02-state">02 · State</a></p>
+</TutorialDetail>

@@ -1,0 +1,104 @@
+@page "/events/tutorials/12-troubleshooting"
+
+<TutorialDetail Tutorials="TutorialSet.Events" Slug="12-troubleshooting">
+<h2 id="build-diagnostics">Build diagnostics</h2>
+
+<p>The analyzer that ships with the package reports these. Errors stop the build. Warnings and info point at likely bugs.</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>ID</th><th>Severity</th><th>Message (short)</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RFEVT001</code></td><td>Error</td><td>Attribute used in a <code>.razor</code> <code>@@code</code> block</td><td>Move the member to the <code>.razor.cs</code> code-behind. The generator can't see code inside <code>.razor</code> files.</td></tr>
+<tr><td><code>RFEVT002</code></td><td>Error</td><td>Type (or a containing type) isn't <code>partial</code></td><td>Add <code>partial</code> to the class and to any class it's nested in</td></tr>
+<tr><td><code>RFEVT003</code></td><td>Error</td><td>Type doesn't derive from <code>RfEventComponent</code></td><td>Add <code>@@inherits RfEventComponent</code> to the <code>.razor</code> file (or <code>: RfEventComponent</code> for a C#-only component)</td></tr>
+<tr><td><code>RFEVT004</code></td><td>Error</td><td>Invalid <code>[Subscribe]</code> signature</td><td>Use <code>void M(E)</code>, <code>Task/ValueTask M(E)</code>, or <code>Task/ValueTask M(E, CancellationToken)</code>. Non-static, non-generic, no <code>ref</code>/<code>out</code>.</td></tr>
+<tr><td><code>RFEVT005</code></td><td>Error</td><td>Handler's first parameter isn't an <code>IEvent</code></td><td>Make the type implement <code>IEvent</code>, or fix the parameter type</td></tr>
+<tr><td><code>RFEVT006</code></td><td>Error</td><td><code>[UseState]</code> property isn't a partial get-only declaration</td><td>Write it as <code>private partial T Name { get; }</code>, non-static and without a body</td></tr>
+<tr><td><code>RFEVT007</code></td><td>Error</td><td><code>[UseState]</code> property type isn't a state type</td><td>Use a type implementing <code>IState&lt;T&gt;</code>, or add <code>Select = …</code></td></tr>
+<tr><td><code>RFEVT008</code></td><td>Error</td><td>Invalid selector</td><td><code>static TProperty Select(TState state)</code> in the same class. Tuple names may differ.</td></tr>
+<tr><td><code>RFEVT009</code></td><td>Error</td><td>Attributes <strong>and</strong> a <code>RegisterSubscriptions</code> override</td><td>Move the manual code into <code>partial void OnRegisterSubscriptions(SubscriptionBuilder builder)</code></td></tr>
+<tr><td><code>RFEVT010</code></td><td>Warning</td><td>Inconsistent <code>Scope</code>/<code>ScopeName</code></td><td>Use either <code>Scope = ScopeKind.Root</code> or <code>ScopeName = "x"</code>, not both</td></tr>
+<tr><td><code>RFEVT011</code></td><td>Warning</td><td>Two handlers for the same event in one component</td><td>Merge them. Both would run.</td></tr>
+<tr><td><code>RFEVT012</code></td><td>Info</td><td>Event type isn't immutable</td><td>Use a <code>record</code> with init-only properties</td></tr>
+<tr><td><code>RFEVT013</code></td><td>Warning</td><td>State type isn't a <code>record</code></td><td>Use a <code>record</code>, so equal values don't re-render everything</td></tr>
+<tr><td><code>RFEVT014</code></td><td>Warning</td><td>Component implements <code>IDisposable</code>/<code>IAsyncDisposable</code> itself</td><td>Override <code>DisposeAsyncCore</code> instead</td></tr>
+</tbody>
+</table></div>
+
+<p>Compiler errors you may see alongside them:</p>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Error</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>CS0263</code> <em>(different base classes)</em></td><td>Base class declared in the code-behind but not in the <code>.razor</code> file. Add <code>@@inherits RfEventComponent</code>.</td></tr>
+<tr><td><code>CS9248</code> <em>(partial property must have an implementation part)</em></td><td>The generator didn't run. The project containing the component needs its own <code>RForge.Blazor.Events</code> package reference, because analyzers don't flow through project references (<a href="/events/tutorials/01-setup#2-reference-the-package">setup step 2</a>).</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="runtime-problems">Runtime problems</h2>
+
+<h3 id="my-component-doesnt-update">"My component doesn't update"</h3>
+
+<p>Check in this order:</p>
+
+<ol>
+<li>Does it <strong>read</strong> the state through <code>[UseState]</code> (or a handle)? <code>State&lt;T&gt;().Value</code> in markup is a one-off read with no subscription.</li>
+<li>Is the state <strong>replaced</strong> rather than mutated? <code>Update(s =&gt; s with { … })</code> notifies. <code>s.Items.Add(…)</code> on a mutable list doesn't.</li>
+<li>Does a selector return the <strong>same value</strong>? Then not re-rendering is correct.</li>
+<li>Is the writer in a <strong>different render mode</strong> (Server vs. WebAssembly island)? Different modes use different hubs (<a href="/events/tutorials/09-render-modes">tutorial 09</a>).</li>
+<li>For events: was the handler mounted <strong>before</strong> the publish? Events aren't replayed.</li>
+</ol>
+
+<h3 id="my-handler-never-runs">"My handler never runs"</h3>
+
+<ul>
+<li>The listener is inside an <code>EventScope</code>/<code>StateScope</code> and the event was published from <strong>outside</strong> it. Publishes bubble <em>up</em>, not down into other scopes. Publish with <code>Route.Global</code>, or listen with <code>[Subscribe(Scope = ScopeKind.Root)]</code> (<a href="/events/tutorials/05-scopes-and-routing">tutorial 05</a>).</li>
+<li>The publish used <code>Route.Local</code> or <code>Route.Broadcast</code> from a scope the listener isn't in.</li>
+<li>The listener's component is rendered in a different render mode from the publisher.</li>
+</ul>
+
+<h3 id="exceptions">Exceptions</h3>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Exception</th><th>Cause</th><th>Fix</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RfEventScopeNotFoundException</code></td><td><code>Route.Named("x")</code> or <code>ScopeName = "x"</code> with no enclosing scope named <code>x</code></td><td>Check the name, and that the component is inside that scope</td></tr>
+<tr><td><code>RfEventReentrancyException</code></td><td>Handlers publish events that trigger each other (A → B → A …)</td><td>Break the loop, or skip publishing when nothing changed</td></tr>
+<tr><td><code>ObjectDisposedException</code> from the hub</td><td>Using a scope or store after its component/circuit ended (often a timer)</td><td>Stop background work on dispose. Catch it in timer callbacks.</td></tr>
+<tr><td><code>InvalidOperationException: SubscriptionBuilder can only be used inside RegisterSubscriptions</code></td><td>The builder was stored and used later</td><td>Use <code>Scope.Subscribe</code> (<a href="/events/tutorials/10-manual-registration#4-subscribe-later-or-to-something-decided-at-runtime">tutorial 10</a>)</td></tr>
+<tr><td><code>No registered service of type 'RForge.Blazor.Events.IRfEventHub'</code></td><td><code>AddRForgeEvents</code> missing in this host (often the WebAssembly client)</td><td>Register in both <code>Program.cs</code> files</td></tr>
+<tr><td><code>MissingRendererInfoException</code> (tests)</td><td>bUnit needs <code>SetRendererInfo</code></td><td>See <a href="/events/tutorials/11-testing-with-bunit">tutorial 11</a></td></tr>
+</tbody>
+</table></div>
+
+<h3 id="other-surprises">Other surprises</h3>
+
+<div class="table-container"><table class="table is-striped">
+<thead>
+<tr><th>Surprise</th><th>Explanation</th></tr>
+</thead>
+<tbody>
+<tr><td>One user sees another user's data on Server</td><td>A service holding <code>IRfEventHub</code> is registered as <strong>Singleton</strong>. Make it Scoped.</td></tr>
+<tr><td>Changing <code>StateScope</code>'s <code>Initial</code> parameter does nothing</td><td>It's read once (a warning is logged). Write to the store.</td></tr>
+<tr><td>A <code>StateScope</code> breaks <code>Route.Local</code></td><td>A <code>StateScope</code> is also a scope: inside it, "local" means the <code>StateScope</code></td></tr>
+<tr><td>State resets when an Auto page later runs in WebAssembly</td><td>New runtime, new hub. Reload from the source.</td></tr>
+<tr><td>State loaded during prerender disappears</td><td>Not opted into persistence (<a href="/events/tutorials/08-prerendering-and-persistence">tutorial 08</a>)</td></tr>
+<tr><td>A click feels slow</td><td>A handler awaits long work. Delivery is sequential, so fire and forget.</td></tr>
+<tr><td>Analyzer errors don't appear, only compiler errors</td><td>The C# compiler skips analyzers when other compile errors exist. Fix those first and the <code>RFEVT</code> errors will show.</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="still-stuck">Still stuck?</h2>
+
+<ul>
+<li>Look at the generated code (<code>*.Hub.g.cs</code>, <a href="/events/tutorials/01-setup#7-check-that-the-generator-ran">setup step 7</a>) to see exactly what was registered.</li>
+<li>Compare with the matching page in the <a href="https://github.com/Rumhyek/RForge/tree/main/samples">sample app</a>.</li>
+<li>Read the relevant part of the <a href="https://github.com/Rumhyek/RForge/blob/main/docs/events/design/index.md">design spec</a>: <a href="https://github.com/Rumhyek/RForge/blob/main/docs/events/design/events.md">events</a>, <a href="https://github.com/Rumhyek/RForge/blob/main/docs/events/design/state.md">state</a>, <a href="https://github.com/Rumhyek/RForge/blob/main/docs/events/design/scoping.md">scoping</a>, <a href="https://github.com/Rumhyek/RForge/blob/main/docs/events/design/render-modes.md">render modes</a>.</li>
+</ul>
+</TutorialDetail>
