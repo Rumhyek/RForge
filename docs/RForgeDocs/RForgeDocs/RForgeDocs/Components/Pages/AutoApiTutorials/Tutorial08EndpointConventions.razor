@@ -103,7 +103,7 @@ public interface IShelfService
 <tr><th>Not copied</th><th>Why</th></tr>
 </thead>
 <tbody>
-<tr><td>RForge's own attributes (<code>RForgeAutoApi*</code>, <code>RfAuthorize</code>, <code>RfAllowAnonymous</code>)</td><td>Translated instead: <code>RequireAuthorization(...)</code> and <code>AllowAnonymous()</code> (<a href="/autoapi/tutorials/05-authorization">tutorial 05</a>)</td></tr>
+<tr><td>Every attribute in the <code>RForge.Blazor.AutoApi</code> namespace (<code>RForgeAutoApi*</code>, <code>RfAuthorize</code>, <code>RfAllowAnonymous</code>, ...)</td><td>Configuration for the generator, or translated instead: <code>RequireAuthorization(...)</code> and <code>AllowAnonymous()</code> (<a href="/autoapi/tutorials/05-authorization">tutorial 05</a>)</td></tr>
 <tr><td>Anything in <code>System.Runtime.CompilerServices</code>, <code>System.Runtime.InteropServices</code> and <code>System.Diagnostics</code> (including <code>System.Diagnostics.CodeAnalysis</code>)</td><td>Compiler, interop and analysis hints</td></tr>
 <tr><td><code>System.ObsoleteAttribute</code> and <code>System.Reflection.DefaultMemberAttribute</code></td><td>They describe the interface to callers, not the endpoint</td></tr>
 <tr><td>Attributes on parameters</td><td>Only interfaces and methods are read</td></tr>

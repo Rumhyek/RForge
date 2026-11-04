@@ -102,7 +102,7 @@ and the filter from step 1 sees it. An attribute on the **interface** is copied 
 
 | Not copied | Why |
 |---|---|
-| RForge's own attributes (`RForgeAutoApi*`, `RfAuthorize`, `RfAllowAnonymous`) | Translated instead: `RequireAuthorization(...)` and `AllowAnonymous()` ([tutorial 05](05-authorization.md)) |
+| Every attribute in the `RForge.Blazor.AutoApi` namespace (`RForgeAutoApi*`, `RfAuthorize`, `RfAllowAnonymous`, ...) | Configuration for the generator, or translated instead: `RequireAuthorization(...)` and `AllowAnonymous()` ([tutorial 05](05-authorization.md)) |
 | Anything in `System.Runtime.CompilerServices`, `System.Runtime.InteropServices` and `System.Diagnostics` (including `System.Diagnostics.CodeAnalysis`) | Compiler, interop and analysis hints |
 | `System.ObsoleteAttribute` and `System.Reflection.DefaultMemberAttribute` | They describe the interface to callers, not the endpoint |
 | Attributes on parameters | Only interfaces and methods are read |

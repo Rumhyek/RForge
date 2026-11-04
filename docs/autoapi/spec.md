@@ -179,7 +179,7 @@ Every attribute on an interface method, and on the interface itself, is added to
 
 | Excluded | Reason |
 | --- | --- |
-| RForge attributes (`RForgeAutoApi*`, `RfAuthorize`, `RfAllowAnonymous`) | Translated instead (see below) |
+| Every attribute in the `RForge.Blazor.AutoApi` namespace (`RForgeAutoApi*`, `RfAuthorize`, `RfAllowAnonymous`, ...) | Configuration for the generator, or translated instead (see below) |
 | `System.Runtime.CompilerServices.*` | Compiler-generated (`Nullable`, `AsyncStateMachine`, ...) |
 | `System.Diagnostics.CodeAnalysis.*` | Nullability and analysis hints |
 | `System.Diagnostics.*` (`DebuggerStepThrough`, `Conditional`, ...) | Debugger and compiler only |
